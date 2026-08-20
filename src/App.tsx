@@ -5,7 +5,7 @@ import { CursorTrail } from './components/CursorTrail';
 import { Chatbot } from './components/Chatbot';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
-import { ImageSlideshow, fetchFirebaseStorageFolderImages } from './components/ImageSlideshow';
+import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { executivesData as staticExecs, ssrcData as staticSsrc, studentBrandsData as staticBrands } from './data';
@@ -90,7 +90,7 @@ export default function App() {
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
   const [executivesData, setExecutivesData] = useState<any[]>(staticExecs);
   const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
-  const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[], storageFolder?: string } | null>(null);
+  const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
   const [studentBrandsData, setStudentBrandsData] = useState<any[]>(staticBrands);
   const [ssrcMembersData, setSsrcMembersData] = useState<any[]>(staticSsrc);
   const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
@@ -121,13 +121,6 @@ export default function App() {
     // Instantly end initial loading skeleton
     setIsLoadingData(false);
 
-    // Prefetch all event image folders in background in parallel
-    fetchFirebaseStorageFolderImages("Mr and Miss Nass Lasu Fresher");
-    fetchFirebaseStorageFolderImages("Nass Lasu Dinner And Award Night");
-    fetchFirebaseStorageFolderImages("Nass Lasu Dinner and Award Night");
-    fetchFirebaseStorageFolderImages("Science Vs Food");
-    fetchFirebaseStorageFolderImages("Science Vs Food 3.0");
-    
     // Fetch data from Firebase
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
       if (!snap.empty) {
@@ -174,7 +167,6 @@ export default function App() {
             ...initialMatch,
             ...data,
             id: doc.id,
-            storageFolder: data.storageFolder || undefined,
             images: cleanImages
           };
         });
@@ -1142,8 +1134,6 @@ export default function App() {
 
               <div ref={eventsScrollRef} className="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory hide-scrollbar scroll-smooth px-4 md:px-0">
                 {eventsData.map((event) => {
-                  const targetFolder = event.storageFolder;
-
                   const rawImages = event.images 
                     ? (typeof event.images === 'string' ? event.images.split(',') : event.images)
                     : [];
@@ -1152,7 +1142,7 @@ export default function App() {
                     .map((s: any) => String(s).trim())
                     .filter((s: string) => s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:'));
 
-                  const shouldRenderSlideshow = imagesArray.length > 0 || Boolean(targetFolder);
+                  const shouldRenderSlideshow = imagesArray.length > 0;
 
                   return (
                   <div key={event.id} className="w-[85vw] sm:w-[320px] flex-none aspect-[4/5] relative rounded-2xl overflow-hidden group snap-center border border-white/10 hover:border-yellow-400/50 transition-all p-1 bg-white/5 backdrop-blur-xl">
@@ -1163,23 +1153,7 @@ export default function App() {
                         images={imagesArray} 
                         interval={1500}
                         alt={event.title} 
-                        storageFolder={targetFolder}
                         fallbackImage={(event.image || '').trim().startsWith('http') || (event.image || '').trim().startsWith('/') ? (event.image || '').trim() : encodeURI((event.image || '').replace(/['"]/g, '').trim())}
-                        onImagesFetched={(fetchedUrls) => {
-                          setEventsData(prevEvents =>
-                            prevEvents.map(e => {
-                              if (e.id === event.id || e.title === event.title) {
-                                const currentImages = (e.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
-                                const merged = Array.from(new Set([...fetchedUrls, ...currentImages]));
-                                if (merged.length === (e.images || []).length && merged.every((val, idx) => val === (e.images || [])[idx])) {
-                                  return e;
-                                }
-                                return { ...e, images: merged };
-                              }
-                              return e;
-                            })
-                          );
-                        }}
                       />
                     ) : (
                       <img 
@@ -1202,8 +1176,7 @@ export default function App() {
                             const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
                             setSelectedEventGallery({
                               title: event.title,
-                              images: validImages,
-                              storageFolder: targetFolder
+                              images: validImages
                             });
                           }}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 text-xs font-bold rounded-lg transition-colors shadow-lg cursor-pointer"
@@ -1604,7 +1577,6 @@ export default function App() {
         <PageantGallery
           title={selectedEventGallery.title}
           images={selectedEventGallery.images}
-          storageFolder={selectedEventGallery.storageFolder}
           onClose={() => setSelectedEventGallery(null)}
         />
       )}

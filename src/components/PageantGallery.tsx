@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { fetchFirebaseStorageFolderImages, getCachedStorageFolderImages } from './ImageSlideshow';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PageantGalleryProps {
   images?: string[];
   title: string;
-  storageFolder?: string;
   onClose: () => void;
 }
 
@@ -61,44 +59,13 @@ const sortWithCoverFirst = (list: string[]): string[] => {
   return result;
 };
 
-export function PageantGallery({ images = [], title, storageFolder, onClose }: PageantGalleryProps) {
-  const [galleryImages, setGalleryImages] = useState<string[]>(() => {
-    const cached = storageFolder ? getCachedStorageFolderImages(storageFolder) : null;
-    const valid = (images || []).filter(isValidUrl);
-    const combined = Array.from(new Set([...(cached || []), ...valid]));
-    return sortWithCoverFirst(combined);
-  });
+export function PageantGallery({ images = [], title, onClose }: PageantGalleryProps) {
+  const [galleryImages, setGalleryImages] = useState<string[]>(() => sortWithCoverFirst((images || []).filter(isValidUrl)));
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    return storageFolder ? (!getCachedStorageFolderImages(storageFolder) || getCachedStorageFolderImages(storageFolder)!.length === 0) : false;
-  });
 
   useEffect(() => {
-    if (storageFolder) {
-      setIsLoading(true);
-      fetchFirebaseStorageFolderImages(storageFolder)
-        .then((urls) => {
-          if (urls && urls.length > 0) {
-            setGalleryImages(prev => sortWithCoverFirst(Array.from(new Set([...urls, ...prev]))));
-          }
-        })
-        .catch((e) => {
-          console.warn("[PageantGallery] Storage fetch error:", e);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [storageFolder]);
-
-  useEffect(() => {
-    if (images && images.length > 0) {
-      const valid = images.filter(isValidUrl);
-      if (valid.length > 0) {
-        setGalleryImages(prev => sortWithCoverFirst(Array.from(new Set([...valid, ...prev]))));
-      }
-    }
-  }, [images]);
+    setGalleryImages(sortWithCoverFirst((images || []).filter(isValidUrl)));
+  }, [images?.join('|')]);
 
   const handleNext = () => {
     if (galleryImages.length === 0) return;
@@ -136,14 +103,7 @@ export function PageantGallery({ images = [], title, storageFolder, onClose }: P
           )}
         </div>
 
-        {isLoading && galleryImages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-white gap-3 p-8">
-            <Loader2 className="w-10 h-10 animate-spin text-yellow-400" />
-            <p className="text-sm font-semibold tracking-wide text-slate-300">
-              Loading...
-            </p>
-          </div>
-        ) : galleryImages.length === 0 ? (
+        {galleryImages.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-slate-400 gap-2 p-8">
             <p className="text-base font-semibold">No images available for this event yet.</p>
           </div>

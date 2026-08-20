@@ -57,11 +57,44 @@ const fileToDataUrl = (file: File): Promise<string> => {
   });
 };
 
+// Resize/compress an image file to a Blob before it ever leaves the browser.
+// This is what actually fixes "images take forever to show" — a raw phone
+// photo can be 3-8MB; this brings it down to roughly 100-300KB while still
+// looking sharp at the sizes the site displays images at.
+const compressImageToBlob = (file: File, maxDim = 1600, quality = 0.82): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => { img.src = e.target?.result as string; };
+    reader.onerror = reject;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
+        else { width = Math.round((width * maxDim) / height); height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(file); return; }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => (blob ? resolve(blob) : resolve(file)), 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+};
+
 const uploadFile = async (file: File): Promise<string> => {
   try {
-    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const isImage = file.type.startsWith('image/');
+    const uploadBody = isImage ? await compressImageToBlob(file) : file;
+    const ext = isImage ? 'jpg' : (file.name.split('.').pop() || 'bin');
+    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.[a-zA-Z0-9]+$/, '')}.${ext}`;
     const storageRef = ref(storage, `uploads/${fileName}`);
-    await uploadBytes(storageRef, file);
+    await uploadBytes(storageRef, uploadBody);
     return await getDownloadURL(storageRef);
   } catch (err) {
     console.warn('Firebase Storage upload failed or unconfigured, falling back to compressed Data URL:', err);
