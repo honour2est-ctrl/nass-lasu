@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // IMPORTANT: keep this list identical to ADMIN_EMAILS in src/adminAuth.ts
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email in [
+          'honour2est@gmail.com'
+        ];
+    }
+
+    // The whole site reads its content from Firestore, so every collection
+    // stays publicly readable. Only signed-in admins on the allowlist above
+    // can create, edit, or delete anything.
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

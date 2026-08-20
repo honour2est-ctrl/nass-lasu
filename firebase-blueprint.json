@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "studentBrand": {
+      "title": "Student Brand",
+      "description": "NASS LASU Online Marketplace Brand",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "productImageUrl": { "type": "string" },
+        "website": { "type": "string" },
+        "price": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "description": { "type": "string" },
+        "owner": { "type": "string" }
+      },
+      "required": ["name", "category", "imageUrl", "whatsappNumber", "owner", "description"]
+    },
+    "executive": {
+      "title": "Executive",
+      "description": "Faculty Executive",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "nickname": { "type": "string" },
+        "office": { "type": "string" },
+        "department": { "type": "string" },
+        "summary": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["name", "office", "department", "summary", "imageUrl"]
+    }
+  },
+  "firestore": {
+    "studentBrands/{brandId}": {
+      "schema": "studentBrand",
+      "description": "Collection of student brands"
+    },
+    "executives/{executiveId}": {
+      "schema": "executive",
+      "description": "Collection of faculty executives"
+    }
+  }
+}
