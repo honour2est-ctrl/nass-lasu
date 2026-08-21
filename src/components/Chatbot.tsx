@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'model', parts: [{ text: 'Hello! I am your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?' }] }
+    { role: 'model', parts: [{ text: 'Hello! I am Nass AI, your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?' }] }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export function Chatbot() {
     try {
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -63,17 +63,18 @@ export function Chatbot() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Floating Toggle Button with Bot Icon & Nass AI Text */}
+      {/* Floating Toggle Button with Custom Robot Avatar */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-yellow-400 text-slate-900 p-3 rounded-2xl shadow-2xl hover:bg-yellow-300 transition-all flex flex-col items-center justify-center font-bold text-xs border-2 border-slate-900 group"
+          className="bg-yellow-400 text-slate-900 p-2.5 rounded-2xl shadow-2xl hover:bg-yellow-300 transition-all flex flex-col items-center justify-center font-bold text-xs border-2 border-slate-900 group"
           title="Open Nass AI Secretariat Assistant"
         >
-          {/* Bot Icon */}
-          <svg className="w-6 h-6 mb-1 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2V4a2 2 0 012-2zm0 8v10m-4-6h8M6 8h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"></path>
-          </svg>
+          <img 
+            src="/bot-avatar.jpg" 
+            alt="Nass AI" 
+            className="w-9 h-9 rounded-full object-cover mb-1 border border-slate-900 shadow-inner" 
+          />
           <span className="tracking-wide font-extrabold text-[11px]">Nass AI</span>
         </button>
       )}
@@ -83,10 +84,12 @@ export function Chatbot() {
         <div className="w-80 md:w-96 h-[500px] bg-slate-900 text-white border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-xl">
           {/* Header */}
           <div className="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2V4a2 2 0 012-2zm0 8v10m-4-6h8M6 8h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"></path>
-              </svg>
+            <div className="flex items-center gap-2.5">
+              <img 
+                src="/bot-avatar.jpg" 
+                alt="Nass AI" 
+                className="w-7 h-7 rounded-full object-cover border border-yellow-400" 
+              />
               <div>
                 <h3 className="font-bold text-yellow-400 text-sm">Nass AI Assistant</h3>
                 <p className="text-[10px] text-slate-400">Secretariat Digital Hub</p>
