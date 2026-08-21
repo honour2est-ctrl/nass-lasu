@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function Chatbot() {
+export default function Chatbot() {
   const [messages, setMessages] = useState([
     { role: 'model', parts: [{ text: 'Hello! I am the Digital Secretariat Hub Assistant. How can I help you today?' }] }
   ]);
