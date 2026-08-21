@@ -1,192 +1,123 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User as UserIcon, X, Loader2, MapPin } from 'lucide-react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import React, { useState } from 'react';
 
-// PUT YOUR GEMINI API KEY HERE:
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-
-type Message = { role: 'user' | 'model'; parts: { text: string }[]; groundingChunks?: any[] };
-
-export const Chatbot = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([{
-    role: 'model',
-    parts: [{ text: 'Hello! I am the Digital Secretariat Hub Assistant. How can I help you today?' }]
-  }]);
+export function Chatbot() {
+  const [messages, setMessages] = useState([
+    { role: 'model', parts: [{ text: 'Hello! I am the Digital Secretariat Hub Assistant. How can I help you today?' }] }
+  ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [knowledgeBase, setKnowledgeBase] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Constitutional Knowledge Base & System Instruction
+  const systemInstruction = `
+You are the official NASS-LASU Secretariat Assistant, an intelligent digital representative for the Nigerian Association of Science Students, Lagos State University Chapter. 
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isOpen]);
+Use the following official knowledge base extracted from the NASS-LASU Constitution (2023 As Amended) and SSRC Standing Orders to answer user inquiries accurately:
 
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'knowledgeBase'), (snap) => {
-      if (!snap.empty) {
-        const kbText = snap.docs.map(doc => {
-          const data = doc.data();
-          return `Title: ${data.title}\nContent:\n${data.content}`;
-        }).join('\n\n');
-        setKnowledgeBase(kbText);
-      } else {
-        setKnowledgeBase('');
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (knowledgeBase):", error.message);
-    });
-    return () => unsub();
-  }, []);
+--- 1. GENERAL IDENTITY & SYMBOLS ---
+- Association Name: Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU).
+- Motto: "Toward Scientific Advancement."
+- Logo Symbolism: Two concentric circles represent unity; the "Y" shape stands for solidarity, equity, justice, and scientific advancement; Conical flask represents Chemical sciences, Microscope represents Biological sciences, and Computer represents Physical sciences.
+- Secretariat: Located within the Faculty and managed by the General Secretary in conjunction with the Assistant General Secretary.
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+--- 2. MEMBERSHIP & RIGHTS ---
+- Membership: All duly matriculated full-time undergraduate students of the Faculty of Science who pay their association dues.
+- Forfeiture of Membership: Graduating, joining a secret cult, or facing suspension/expulsion from the university.
+- Member Rights: Access to facilities, right to vote and be voted for (excluding part-time/sandwich students), and receipt of association packages.
 
-    const userText = input.trim();
-    const userMessage: Message = { role: 'user', parts: [{ text: userText }] };
-    
-    setMessages(prev => [...prev, userMessage]);
+--- 3. EXECUTIVE COUNCIL (SSEC) OFFICERS ---
+- Comprises: President, Vice President, General Secretary, Welfare Director, Public Relations Officer (PRO), Social Director, Financial Secretary, Treasurer, Sport Director, and Assistant General Secretary.
+- Academic Requirement: Executives must maintain a CGPA of not less than 3.00.
+- Financial Custodianship: The Financial Secretary handles records and receipts; the Treasurer keeps checkbooks, handles deposits within 48 hours, and maintains an imprest of not more than ₦3,000.
+
+--- 4. LEGISLATIVE COUNCIL (SSRC) & PROCEDURES ---
+- Composition: Five (5) honorable members from each department.
+- Functionaries: Speaker, Deputy Speaker, Clerk, Chief Whip, Under Secretary, and Sergeant-at-Arms.
+- Sittings: Convened at least once a month by the Speaker, upon request by the President, or by a simple majority.
+- The Mace: Symbol of parliamentary authority. Lies horizontally during normal sittings; stands upright during a Committee of the Whole House or when an observer is speaking.
+- Address Protocol: Members are addressed as "Honourable", and the House is addressed as "Rt. Hon Speaker, Deputy Speaker, all protocols duly observed."
+
+--- 5. FINANCES & SHARING FORMULA ---
+- Accounts: Central Account, SSEC Account, and SSRC Account.
+- Revenue Sharing Formula from Central Account: NASS-LASU SSEC (64%), NASS-LASU SSRC (35%), and Auditor General (1%).
+
+--- 6. BILL PASSAGE PROCESS ---
+1. First Reading: Bill presented by a member and read at the next business sitting.
+2. Committee Review: Sent to the House Committee on Standing Orders and Bills for up to 5 working days.
+3. Second Reading & Debate: Bill is read again, debated, and amendments are received.
+4. Third Reading & Passage: Read a third time with no further amendments, then passed via a Simple Majority vote.
+5. Assent: Forwarded to the President for assent within 5 working days, or vetoed by the House via a simple majority.
+
+Answer all questions professionally, upholding parliamentary decorum and referencing these constitutional guidelines.
+`;
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
+
+    const userText = input;
     setInput('');
-    setIsLoading(true);
+    const newMessages = [...messages, { role: 'user', parts: [{ text: userText }] }];
+    setMessages(newMessages);
+    setLoading(true);
 
     try {
-      // 1. Format the conversation history for Gemini
-      const chatHistory = messages.slice(1).map(m => ({
-        role: m.role,
-        parts: m.parts
-      }));
-      
-      // 2. Add the new user message
-      chatHistory.push({ role: 'user', parts: [{ text: userText }] });
-
-      // 3. Make a direct call to the Google Gemini API
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: `You are the official NASS LASU Secretariat Assistant. You must answer questions based ONLY on this official knowledge base provided by the executive council:\n\n${knowledgeBase}` }]
-          },
-          contents: chatHistory
-        })
-      });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: newMessages,
+            systemInstruction: {
+              parts: [{ text: systemInstruction }]
+            }
+          }),
+        }
+      );
 
       const data = await response.json();
-
-      if (!response.ok) {
+      if (data.candidates && data.candidates[0].content) {
+        const aiResponseText = data.candidates[0].content.parts[0].text;
+        setMessages([...newMessages, { role: 'model', parts: [{ text: aiResponseText }] }]);
+      } else {
         throw new Error(data.error?.message || 'Failed to generate response');
       }
-
-      // Extract the text from the AI's response
-      const aiResponseText = data.candidates[0].content.parts[0].text;
-
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: aiResponseText }] }]);
     } catch (error) {
-      console.error("Chatbot Error:", error);
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: 'Sorry, I encountered an error. Please make sure the API key is correct and try again.' }] }]);
+      console.error('Chatbot Error:', error);
+      setMessages([
+        ...newMessages,
+        { role: 'model', parts: [{ text: 'Sorry, I encountered an error. Please check your connection or configuration.' }] }
+      ]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <button 
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-4 rounded-full bg-yellow-400 text-slate-900 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-110 transition-transform z-50 flex items-center justify-center font-bold"
-      >
-        <Bot size={24} />
-      </button>
-
-      {isOpen && (
-        <div className="fixed bottom-24 right-6 w-80 md:w-96 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 flex flex-col h-[500px] max-h-[80vh]">
-          {/* Header */}
-          <div className="p-4 border-b border-white/10 flex justify-between items-center dark:bg-slate-800/50 bg-slate-200/50">
-            <div className="flex items-center gap-2 text-yellow-400 font-semibold font-sans tracking-tight">
-              <Bot size={20} />
-              Secretariat Assistant
-              <span className="text-[10px] bg-yellow-400/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-400/30">INTELLIGENT</span>
-            </div>
-            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white transition-colors">
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-yellow-400 text-slate-900'}`}>
-                  {msg.role === 'user' ? <UserIcon size={16} /> : <Bot size={16} />}
-                </div>
-                <div className={`px-4 py-2 rounded-2xl max-w-[85%] ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800/80 text-slate-200 border border-white/5 rounded-tl-none'}`}>
-                  <p className="text-sm whitespace-pre-wrap font-sans">{msg.parts[0].text}</p>
-                  
-                  {/* Maps Grounding Links */}
-                  {msg.groundingChunks && msg.groundingChunks.length > 0 && (
-                    <div className="mt-3 space-y-2 border-t border-white/10 pt-2">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Locations Mentioned:</span>
-                      <div className="flex flex-col gap-2">
-                        {msg.groundingChunks.filter((chunk: any) => chunk.web?.uri || chunk.web?.title).map((chunk: any, chunkIdx: number) => (
-                          <a 
-                            key={chunkIdx} 
-                            href={chunk.web?.uri} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900 p-2 rounded-lg border border-white/5 hover:border-yellow-400/30 transition-colors group"
-                          >
-                            <MapPin size={14} className="text-yellow-400 shrink-0 mt-0.5" />
-                            <span className="text-xs text-blue-300 group-hover:text-yellow-400 transition-colors line-clamp-2">
-                              {chunk.web?.title || 'View on Google Maps'}
-                            </span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-yellow-400 text-slate-900 flex items-center justify-center shrink-0">
-                  <Bot size={16} />
-                </div>
-                <div className="px-4 py-3 rounded-2xl bg-slate-800/80 border border-white/5 rounded-tl-none flex items-center">
-                  <Loader2 size={16} className="text-yellow-400 animate-spin" />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="p-3 border-t border-white/10 bg-slate-900/50">
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask about the secretariat..."
-                className="flex-1 bg-slate-800 text-white placeholder:text-slate-400 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400 border border-white/10"
-              />
-              <button 
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
-                className="p-2 rounded-full bg-yellow-400 text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-300 transition-colors flex items-center justify-center"
-              >
-                <Send size={18} />
-              </button>
+    <div className="flex flex-col h-full bg-slate-900 text-white p-4 rounded-lg">
+      <div className="flex-1 overflow-y-auto space-y-4 p-2">
+        {messages.map((msg, index) => (
+          <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[80%] p-3 rounded-lg ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-yellow-400'}`}>
+              {msg.parts[0].text}
             </div>
           </div>
-        </div>
-      )}
-    </>
+        ))}
+        {loading && <div className="text-slate-400 italic">Secretariat Assistant is typing...</div>}
+      </div>
+      <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask about the constitution, sittings, or offices..."
+          className="flex-1 bg-slate-800 border border-slate-700 rounded p-2 text-white focus:outline-none focus:border-blue-500"
+        />
+        <button type="submit" className="bg-blue-600 px-4 py-2 rounded text-white font-semibold hover:bg-blue-500">
+          Send
+        </button>
+      </form>
+    </div>
   );
-};
+}
