@@ -89,7 +89,7 @@ export default function App() {
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
-  const [executivesData, setExecutivesData] = useState<any[]>(staticExecs);
+  const [executivesData, setExecutivesData] = useState<any[]>([...staticExecs].sort(sortByOrder));
   const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
   const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
   const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
@@ -583,10 +583,7 @@ export default function App() {
                 ))
               ) : (
                 executivesData.map((ex, idx) => {
-                  const isGolden = ['President', 'Vice President', 'General Secretary'].includes(ex.office);
-                  const borderClasses = isGolden 
-                    ? "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]"
-                    : "border-[3px] border-t-blue-400 border-l-blue-500 border-b-blue-800 border-r-blue-700 shadow-[0_5px_15px_rgba(59,130,246,0.3)]";
+                  const borderClasses = "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]";
                   
                   return (
                     <motion.div 
@@ -602,14 +599,14 @@ export default function App() {
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
                         <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute bottom-6 left-6 right-6 z-20">
-                          <div className={`inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md ${isGolden ? 'bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]'}`}>
+                          <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
                             {ex.office}
                           </div>
                           <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
                             {ex.nickname ? (
                               <div className="flex flex-col gap-1">
-                                <span className={`text-3xl font-extrabold uppercase font-space-grotesk ${isGolden ? 'text-yellow-400' : 'text-blue-300'}`}>'{ex.nickname}'</span>
-                                <span className="text-base font-normal text-yellow-200">{ex.name}</span>
+                                <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
+                                <span className="text-base font-normal text-yellow-400">{ex.name}</span>
                               </div>
                             ) : (
                               ex.name
@@ -617,7 +614,7 @@ export default function App() {
                           </h4>
                           <div className="mt-3 flex items-center justify-between">
                             <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
-                            <span className={`inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors ${isGolden ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900' : 'bg-blue-900/60 text-blue-300 border border-blue-600/50 group-hover:bg-blue-500 group-hover:text-white'}`}>
+                            <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
                               Read More <ArrowRight size={10} />
                             </span>
                           </div>
@@ -1636,4 +1633,3 @@ export default function App() {
     </div>
   );
 }
-
