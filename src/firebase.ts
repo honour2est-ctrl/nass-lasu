@@ -1,101 +1,21 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User, Auth } from 'firebase/auth';
-import config from '../firebase-applet-config.json';
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
+// Keep any other imports you already have here, like firestore!
 
-const firebaseConfig = (config as any).default || config;
-
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/forms.body');
-provider.addScope('https://www.googleapis.com/auth/forms.responses.readonly');
-
-try {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-} catch (e) {
-  console.error("Firebase init error:", e);
-}
-
-const getFirebaseAuth = () => {
-  if (!auth && app) {
-    try {
-      auth = getAuth(app);
-    } catch (e) {
-      console.error("Firebase auth init error:", e);
-    }
-  }
-  return auth;
+const firebaseConfig = {
+  apiKey: "AIzaSyAHQdhqjSDgC2Gim6E4iyPo5pVg9Ylay0U",
+  authDomain: "nass-lasu-website.firebaseapp.com",
+  projectId: "nass-lasu-website",
+  storageBucket: "nass-lasu-website.firebasestorage.app",
+  messagingSenderId: "266888871449",
+  appId: "1:266888871449:web:ba6f07ef1926d137ec7488",
+  measurementId: "G-H48ECFXWPQ"
 };
 
-let isSigningIn = false;
-let cachedAccessToken: string | null = null;
-
-export const initAuth = (
-  onAuthSuccess?: (user: User, token: string) => void,
-  onAuthFailure?: () => void
-) => {
-  const currentAuth = getFirebaseAuth();
-  if (!currentAuth) {
-    if (onAuthFailure) onAuthFailure();
-    return () => {};
-  }
-  try {
-    return onAuthStateChanged(currentAuth, async (user: User | null) => {
-      if (user) {
-        if (cachedAccessToken) {
-          if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
-        } else if (!isSigningIn) {
-          cachedAccessToken = null;
-          if (onAuthFailure) onAuthFailure();
-        }
-      } else {
-        cachedAccessToken = null;
-        if (onAuthFailure) onAuthFailure();
-      }
-    }, (error) => {
-      console.warn("Auth state error:", error);
-      if (onAuthFailure) onAuthFailure();
-    });
-  } catch (e) {
-    console.warn("Failed to subscribe to auth state:", e);
-    if (onAuthFailure) onAuthFailure();
-    return () => {};
-  }
-};
-
-export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
-  const currentAuth = getFirebaseAuth();
-  if (!currentAuth) throw new Error("Auth not initialized");
-
-  try {
-    isSigningIn = true;
-    const result = await signInWithPopup(currentAuth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) {
-      throw new Error('Failed to get access token from Firebase Auth');
-    }
-
-    cachedAccessToken = credential.accessToken;
-    return { user: result.user, accessToken: cachedAccessToken };
-  } catch (error: any) {
-    console.error('Sign in error:', error);
-    if (error?.code === 'auth/configuration-not-found' || error?.message?.includes('configuration-not-found')) {
-      throw new Error('Firebase Authentication is not enabled for project "nass-lasu-website" in the Firebase Console. Please enable Authentication in Firebase Console -> Authentication -> Get Started.');
-    }
-    throw error;
-  } finally {
-    isSigningIn = false;
-  }
-};
-
-export const getAccessToken = async (): Promise<string | null> => {
-  return cachedAccessToken;
-};
-
-export const logout = async () => {
-  const currentAuth = getFirebaseAuth();
-  if (currentAuth) {
-    await currentAuth.signOut();
-  }
-  cachedAccessToken = null;
-};
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const analytics = getAnalytics(app);
+// Keep any other exports you already have here, like export const db = getFirestore(app);
+  
+  
