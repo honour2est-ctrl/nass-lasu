@@ -4,7 +4,7 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 // PUT YOUR GEMINI API KEY HERE:
-const GEMINI_API_KEY = "PASTE_YOUR_API_KEY_HERE"; 
+const GEMINI_API_KEY = "AIzaSyAHQdhqjSDgC2Gim6E4iyPo5pVg9Ylay0U"; 
 
 type Message = { role: 'user' | 'model'; parts: { text: string }[]; groundingChunks?: any[] };
 
