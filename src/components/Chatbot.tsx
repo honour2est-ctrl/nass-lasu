@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
 export function Chatbot() {
+  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'model', parts: [{ text: 'Hello! I am the Digital Secretariat Hub Assistant. How can I help you today?' }] }
+    { role: 'model', parts: [{ text: 'Hello! I am your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?' }] }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,32 +62,64 @@ export function Chatbot() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 text-white p-4 rounded-lg shadow-xl">
-      <div className="flex-1 overflow-y-auto space-y-4 p-2">
-        {messages.map((msg, index) => (
-          <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] p-3 rounded-lg ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-yellow-400'}`}>
-              {msg.parts[0].text}
-            </div>
-          </div>
-        ))}
-        {loading && <div className="text-slate-400 italic">Secretariat Assistant is typing...</div>}
-      </div>
-      <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about the constitution, sittings, or offices..."
-          className="flex-1 bg-slate-800 border border-slate-700 rounded p-2 text-white focus:outline-none focus:border-blue-500"
-        />
-        <button type="submit" className="bg-blue-600 px-4 py-2 rounded text-white font-semibold hover:bg-blue-500 transition-colors">
-          Send
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Toggle Button */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-yellow-400 text-slate-900 p-4 rounded-full shadow-2xl hover:bg-yellow-300 transition-all flex items-center justify-center font-bold text-lg border-2 border-slate-900"
+          title="Open Secretariat Assistant"
+        >
+          💬 NASS AI
         </button>
-      </form>
+      )}
+
+      {/* Floating Chat Window */}
+      {isOpen && (
+        <div className="w-80 md:w-96 h-[500px] bg-slate-900 text-white border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-xl">
+          {/* Header */}
+          <div className="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
+            <div>
+              <h3 className="font-bold text-yellow-400">NASS-LASU Assistant</h3>
+              <p className="text-xs text-slate-400">Secretariat Digital Hub</p>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-slate-400 hover:text-white text-xl font-bold px-2 py-1 rounded"
+            >
+              &times;
+            </button>
+          </div>
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto space-y-3 p-3">
+            {messages.map((msg, index) => (
+              <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] p-3 rounded-xl text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-yellow-300 border border-slate-700'}`}>
+                  {msg.parts[0].text}
+                </div>
+              </div>
+            ))}
+            {loading && <div className="text-slate-400 text-xs italic p-1">Secretariat Assistant is typing...</div>}
+          </div>
+
+          {/* Input Form */}
+          <form onSubmit={handleSendMessage} className="p-3 bg-slate-800 border-t border-slate-700 flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask a constitutional question..."
+              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400"
+            />
+            <button type="submit" className="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-300 transition-colors">
+              Send
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
 
-// Export both ways to prevent any import mismatches across the app
 export default Chatbot;
