@@ -14,6 +14,7 @@ import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/fire
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
 import { useToast } from './components/Toast';
+import { sortByOrder } from './adminSections';
 
 const escapeRegExp = (string: string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -89,6 +90,9 @@ export default function App() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
   const [executivesData, setExecutivesData] = useState<any[]>(staticExecs);
+  const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
+  const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
+  const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
   const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
   const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
   const [studentBrandsData, setStudentBrandsData] = useState<any[]>(staticBrands);
@@ -124,7 +128,7 @@ export default function App() {
     // Fetch data from Firebase
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
       if (!snap.empty) {
-        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       }
     }, (error) => {
       console.warn("Firestore listener warning (studentBrands):", error.message);
@@ -132,7 +136,7 @@ export default function App() {
     
     const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
       if (!snap.empty) {
-        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       }
     }, (error) => {
       console.warn("Firestore listener warning (executives):", error.message);
@@ -140,7 +144,7 @@ export default function App() {
 
     const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
       if (!snap.empty) {
-        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       }
     }, (error) => {
       console.warn("Firestore listener warning (ssrcMembers):", error.message);
@@ -148,7 +152,7 @@ export default function App() {
 
     const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
       if (!snap.empty) {
-        setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       }
     }, (error) => {
       console.warn("Firestore listener warning (announcements):", error.message);
@@ -170,7 +174,7 @@ export default function App() {
             images: cleanImages
           };
         });
-        setEventsData(fetchedEvents);
+        setEventsData(fetchedEvents.sort(sortByOrder));
       } else {
         setEventsData(INITIAL_EVENTS_DATA);
       }
@@ -180,7 +184,7 @@ export default function App() {
 
     const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
       if (!snap.empty) {
-        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       } else {
         setVaultItemsData([]);
       }
@@ -198,6 +202,29 @@ export default function App() {
       console.warn("Firestore listener warning (legislative_documents):", error.message);
     });
 
+    const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
+      setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => {
+      console.warn("Firestore listener warning (corePillars):", error.message);
+    });
+
+    const unsubHallOfFame = onSnapshot(collection(db, 'hallOfFame'), (snap) => {
+      setHallOfFameData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => {
+      console.warn("Firestore listener warning (hallOfFame):", error.message);
+    });
+
+    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
+      const map: Record<string, string> = {};
+      snap.docs.forEach(doc => {
+        const d = doc.data();
+        if (d.contentKey) map[d.contentKey] = d.value || '';
+      });
+      setSiteContentMap(map);
+    }, (error) => {
+      console.warn("Firestore listener warning (siteContent):", error.message);
+    });
+
     return () => {
       unsubBrands();
       unsubExecs();
@@ -206,6 +233,9 @@ export default function App() {
       unsubEvents();
       unsubVaultItems();
       unsubLegislativeDocs();
+      unsubCorePillars();
+      unsubHallOfFame();
+      unsubSiteContent();
     };
   }, []);
 
@@ -434,12 +464,12 @@ export default function App() {
                   <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
                 </h1>
                 <p className="text-yellow-400 font-mono tracking-[0.3em] text-[10px] md:text-xs font-semibold uppercase mt-4">
-                  Initiative Of A Digitalized Secretariat
+                  {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
                 </p>
               </div>
               
               <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                Powering the next generation of science students through immediate access, transparency, and digital excellence.
+                {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -494,11 +524,15 @@ export default function App() {
                 <ul className="space-y-4 text-slate-400">
                   <li className="bg-black/20 p-6 rounded-2xl border border-white/5">
                     <strong className="text-yellow-400 font-bold text-lg block mb-2">The Executive Arm</strong>
-                    Led by the <strong className="text-white">Science Students’ Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students’ Executive Council (DSEC).
+                    {siteContentMap.executive_arm_text ? renderWithBold(siteContentMap.executive_arm_text) : (
+                      <>Led by the <strong className="text-white">Science Students' Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students' Executive Council (DSEC).</>
+                    )}
                   </li>
                   <li className="bg-black/20 p-6 rounded-2xl border border-white/5">
                     <strong className="text-yellow-400 font-bold text-lg block mb-2">The Legislative Arm</strong>
-                    Headed by the <strong className="text-white">Science Students’ Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.
+                    {siteContentMap.legislative_arm_text ? renderWithBold(siteContentMap.legislative_arm_text) : (
+                      <>Headed by the <strong className="text-white">Science Students' Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.</>
+                    )}
                   </li>
                 </ul>
               </div>
@@ -511,11 +545,11 @@ export default function App() {
               CORE PILLARS
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
-              {[
+              {(corePillarsData.length > 0 ? corePillarsData : [
                 { icon: '🗳️', title: "E-Voting", desc: "Secure digital ballot system for faculty elections." },
                 { icon: '📚', title: "PDF Vault", desc: "Instant access to academic past questions & materials." },
                 { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." }
-              ].map((F, i) => (
+              ]).map((F, i) => (
                 <div key={i} className="bg-white/5 border border-white/10 p-5 md:p-6 rounded-2xl backdrop-blur-xl hover:border-yellow-400/50 transition-all hover:-translate-y-1">
                   <div className="text-yellow-400 text-2xl md:text-3xl mb-4">{F.icon}</div>
                   <h3 className="text-xs font-bold uppercase mb-2 tracking-wide text-white">{F.title}</h3>
@@ -571,18 +605,18 @@ export default function App() {
                           <div className={`inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md ${isGolden ? 'bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]'}`}>
                             {ex.office}
                           </div>
-                          <h4 className="text-xl font-bold text-white tracking-tight mb-1">
+                          <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
                             {ex.nickname ? (
                               <div className="flex flex-col gap-1">
                                 <span className={`text-3xl font-extrabold uppercase font-space-grotesk ${isGolden ? 'text-yellow-400' : 'text-blue-300'}`}>'{ex.nickname}'</span>
-                                <span className="text-base font-normal text-slate-200">{ex.name}</span>
+                                <span className="text-base font-normal text-yellow-200">{ex.name}</span>
                               </div>
                             ) : (
                               ex.name
                             )}
                           </h4>
                           <div className="mt-3 flex items-center justify-between">
-                            <p className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">{ex.department}</p>
+                            <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
                             <span className={`inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors ${isGolden ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900' : 'bg-blue-900/60 text-blue-300 border border-blue-600/50 group-hover:bg-blue-500 group-hover:text-white'}`}>
                               Read More <ArrowRight size={10} />
                             </span>
@@ -1040,65 +1074,63 @@ export default function App() {
               </p>
             </div>
             <div className="flex justify-center mb-8">
-              <div className="w-full max-w-4xl flex flex-col items-center bg-white/5 backdrop-blur-xl border border-yellow-400/50 rounded-3xl overflow-hidden group shadow-[0_0_40px_rgba(250,204,21,0.1)] p-8 lg:p-12 mt-4">
-                
-                {/* Hall Of Fame Photocard */}
-                <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
-                  <img src="/zechariah.jpg" alt="Zechariah Oresanya" className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                    <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                      Hall Of Fame
-                    </div>
-                    <h4 className="text-xl font-bold text-white tracking-tight mb-1">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'Zechariah'</span>
-                        <span className="text-base font-normal text-slate-200">Zechariah Oresanya</span>
+              <div className="w-full max-w-4xl flex flex-col gap-8">
+                {(hallOfFameData.filter(h => h.cardType !== 'Honoree').length > 0
+                  ? hallOfFameData.filter(h => h.cardType !== 'Honoree')
+                  : [{ name: 'Zechariah Oresanya', nickname: 'Zechariah', position: '30th NASS LASU PRESIDENT', subtitle: '[1ST PRESIDENT WITH FIRST CLASS HONOURS]', tagline: 'Researcher | Chemist | Education Advocate | Student Leader', imageUrl: '/zechariah.jpg', bio: "Zechariah Oresanya is a Nigerian researcher, educator, and chemistry graduate of Lagos State University (LASU). He earned a Bachelor of Science in Chemistry with a high grade point average and distinguished himself as a visionary student leader, serving as the **30th President of the Nigerian Association of Science Students (NASS)** at Lagos State University.\n\nPassionate about education and knowledge sharing, Zechariah has impacted the lives of over **5,000 students** by teaching a wide range of science courses. His teaching philosophy encourages students to take bold and daring steps, fostering not only academic excellence but also a mindset of innovation, creativity, and lifelong learning.\n\nAs a leader, Zechariah is committed to excellence and refuses to settle for mediocrity. He believes that effective leadership is built on collaboration, empowering individuals, and creating environments where every team member is valued. He champions diversity and inclusion, recognizing them as essential drivers of innovation and sustainable success.\n\nBeyond the classroom, Zechariah's work in chemistry spans multiple research domains, reflecting his unwavering dedication to advancing scientific knowledge and addressing real-world challenges. His curiosity, resilience, and passion for discovery continue to shape his contributions to research and academia.\n\nThrough his leadership, research, and educational impact, Zechariah Oresanya remains committed to inspiring others to embrace transformative journeys, pursue excellence, and make meaningful contributions to science and society." }]
+                ).map((honoree, hIdx) => (
+                  <div key={honoree.id || hIdx} className="w-full flex flex-col items-center bg-white/5 backdrop-blur-xl border border-yellow-400/50 rounded-3xl overflow-hidden group shadow-[0_0_40px_rgba(250,204,21,0.1)] p-8 lg:p-12 mt-4">
+                    {/* Hall Of Fame Photocard */}
+                    <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
+                      <img src={honoree.imageUrl || '/zechariah.jpg'} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
+                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                          Hall Of Fame
+                        </div>
+                        <h4 className="text-xl font-bold text-white tracking-tight mb-1">
+                          <div className="flex flex-col gap-1">
+                            {honoree.nickname && <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{honoree.nickname}'</span>}
+                            <span className="text-base font-normal text-slate-200">{honoree.name}</span>
+                          </div>
+                        </h4>
                       </div>
-                    </h4>
-                  </div>
-                </div>
+                    </div>
 
-                <div className="w-full relative z-20 flex flex-col items-center text-center mt-2">
-                  
-                  <h3 className="text-lg md:text-xl text-yellow-400 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
-                    <span className="tracking-widest">30th NASS LASU PRESIDENT</span>
-                    <span className="text-white text-sm md:text-base opacity-90">[1ST PRESIDENT WITH FIRST CLASS HONOURS]</span>
-                  </h3>
-                  
-                  <div className="text-slate-300 text-sm leading-relaxed space-y-4 max-w-3xl mb-4">
-                    <p className="text-yellow-400/80 font-semibold tracking-wider uppercase text-xs md:text-sm">
-                      Researcher | Chemist | Education Advocate | Student Leader
-                    </p>
-                    <p>
-                      Zechariah Oresanya is a Nigerian researcher, educator, and chemistry graduate of Lagos State University (LASU). He earned a Bachelor of Science in Chemistry with a high grade point average and distinguished himself as a visionary student leader, serving as the <strong className="text-white">30th President of the Nigerian Association of Science Students (NASS)</strong> at Lagos State University.
-                    </p>
-                    <p>
-                      Passionate about education and knowledge sharing, Zechariah has impacted the lives of over <strong className="text-white">5,000 students</strong> by teaching a wide range of science courses. His teaching philosophy encourages students to take bold and daring steps, fostering not only academic excellence but also a mindset of innovation, creativity, and lifelong learning.
-                    </p>
-                    <p>
-                      As a leader, Zechariah is committed to excellence and refuses to settle for mediocrity. He believes that effective leadership is built on collaboration, empowering individuals, and creating environments where every team member is valued. He champions diversity and inclusion, recognizing them as essential drivers of innovation and sustainable success.
-                    </p>
-                    <p>
-                      Beyond the classroom, Zechariah's work in chemistry spans multiple research domains, reflecting his unwavering dedication to advancing scientific knowledge and addressing real-world challenges. His curiosity, resilience, and passion for discovery continue to shape his contributions to research and academia.
-                    </p>
-                    <p>
-                      Through his leadership, research, and educational impact, Zechariah Oresanya remains committed to inspiring others to embrace transformative journeys, pursue excellence, and make meaningful contributions to science and society.
-                    </p>
+                    <div className="w-full relative z-20 flex flex-col items-center text-center mt-2">
+                      <h3 className="text-lg md:text-xl text-yellow-400 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
+                        <span className="tracking-widest">{honoree.position}</span>
+                        {honoree.subtitle && <span className="text-white text-sm md:text-base opacity-90">{honoree.subtitle}</span>}
+                      </h3>
+                      
+                      <div className="text-slate-300 text-sm leading-relaxed space-y-4 max-w-3xl mb-4">
+                        {honoree.tagline && (
+                          <p className="text-yellow-400/80 font-semibold tracking-wider uppercase text-xs md:text-sm">
+                            {honoree.tagline}
+                          </p>
+                        )}
+                        {honoree.bio && renderWithBold(honoree.bio)}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            <div className="flex justify-center">
-              <div className="max-w-md p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-yellow-400/30 text-center relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl transition-colors" />
-                <div className="text-yellow-400/50 text-4xl font-serif mb-4">"</div>
-                <h3 className="text-lg font-bold text-white mb-1">Comr. Adebayo Daniel</h3>
-                <p className="text-[10px] text-yellow-400 uppercase font-bold tracking-tighter mb-4">35th President, 2024/2025</p>
-                <p className="text-xs text-slate-300 italic mb-6 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">Established the foundation for the Digital Secretariat and unified the faculty under one voice.</p>
-                <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
-              </div>
+            <div className="flex flex-wrap justify-center gap-6">
+              {(hallOfFameData.filter(h => h.cardType === 'Honoree').length > 0
+                ? hallOfFameData.filter(h => h.cardType === 'Honoree')
+                : [{ name: 'Comr. Adebayo Daniel', position: '35th President, 2024/2025', quote: 'Established the foundation for the Digital Secretariat and unified the faculty under one voice.' }]
+              ).map((h, hIdx) => (
+                <div key={h.id || hIdx} className="max-w-md p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-yellow-400/30 text-center relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl transition-colors" />
+                  <div className="text-yellow-400/50 text-4xl font-serif mb-4">"</div>
+                  <h3 className="text-lg font-bold text-white mb-1">{h.name}</h3>
+                  <p className="text-[10px] text-yellow-400 uppercase font-bold tracking-tighter mb-4">{h.position}</p>
+                  <p className="text-xs text-slate-300 italic mb-6 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">{h.quote}</p>
+                  <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -1275,34 +1307,34 @@ export default function App() {
                 
                 <div className="space-y-6 text-slate-300 leading-relaxed text-sm md:text-base">
                   <p>
-                    The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.
+                    {siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities."}
                   </p>
                   <p>
-                    As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.
+                    {siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student."}
                   </p>
                   
                   <div className="mt-8 p-6 bg-slate-900/50 rounded-2xl border border-white/5 text-left w-full mx-auto max-w-2xl">
                     <p className="text-yellow-400 font-bold mb-4 text-center sm:text-left">For all official correspondence, inquiries, requests, or submissions to the Association, kindly contact:</p>
                     
                     <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-6 mb-6">
-                      <a href="tel:+2348141693252" className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
+                      <a href={`tel:${siteContentMap.secretariat_phone || '+2348141693252'}`} className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400 transition-colors">
                           <PhoneCall size={18} />
                         </div>
-                        <span className="font-bold tracking-wider">+234 814 169 3252</span>
+                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
                       </a>
                       
-                      <a href="mailto:nasslasu@gmail.com" className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
+                      <a href={`mailto:${siteContentMap.secretariat_email || 'nasslasu@gmail.com'}`} className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400 transition-colors">
                           <MessageSquare size={18} />
                         </div>
-                        <span className="font-bold tracking-wider">nasslasu@gmail.com</span>
+                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'nasslasu@gmail.com'}</span>
                       </a>
                     </div>
                     
                     <div className="pt-6 border-t border-white/10 text-center sm:text-left">
-                      <p className="text-white font-bold text-lg">Comr. Onovwiome Honourable Onome</p>
-                      <p className="text-yellow-400/80 text-sm font-semibold tracking-widest uppercase mt-1">36th NASS LASU General Secretary</p>
+                      <p className="text-white font-bold text-lg">{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
+                      <p className="text-yellow-400/80 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
                     </div>
                   </div>
                 </div>
@@ -1539,7 +1571,7 @@ export default function App() {
                     <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
                       {selectedExecutive.office}
                     </div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight">
+                    <h3 className="text-2xl font-bold text-yellow-400 tracking-tight">
                       {selectedExecutive.name}
                     </h3>
                     {selectedExecutive.nickname && (
@@ -1548,11 +1580,11 @@ export default function App() {
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4 text-sm text-slate-400 font-semibold uppercase tracking-widest">
+                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-200/80 font-semibold uppercase tracking-widest">
                     <span className="w-2 h-2 rounded-full bg-yellow-400" />
                     {selectedExecutive.department}
                   </div>
-                  <div className="text-slate-300 leading-relaxed text-sm bg-white/5 p-4 rounded-xl border border-white/5 whitespace-pre-wrap">
+                  <div className="text-yellow-100 leading-relaxed text-sm bg-white/5 p-4 rounded-xl border border-white/5 whitespace-pre-wrap">
                     {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary) : "No profile summary available."}
                   </div>
                 </div>

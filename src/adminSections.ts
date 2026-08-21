@@ -66,6 +66,23 @@ const DEPARTMENT_OPTIONS = [
 const LEVEL_OPTIONS = ['100 Level', '200 Level', '300 Level', '400 Level'];
 const SEMESTER_OPTIONS = ['First Semester', 'Second Semester'];
 
+// A stable content key is used in code (see App.tsx) to look up specific
+// blocks by meaning, independent of the human-readable label. Pick the key
+// that matches the spot on the site you want this text to control.
+export const RECOGNIZED_CONTENT_KEYS = [
+  'hero_tagline',
+  'hero_subtitle',
+  'executive_arm_text',
+  'legislative_arm_text',
+  'footer_tagline',
+  'secretariat_description_1',
+  'secretariat_description_2',
+  'secretariat_phone',
+  'secretariat_email',
+  'secretariat_signatory_name',
+  'secretariat_signatory_title',
+];
+
 // ----------------------------------------------------------------------------
 // Built-in sections — mirrors what the site currently reads from Firestore
 // ----------------------------------------------------------------------------
@@ -172,7 +189,68 @@ export const BUILT_IN_SECTIONS: AdminSection[] = [
       { key: 'content', label: 'Content', type: 'richtext', required: true },
     ],
   },
+  {
+    key: 'hallOfFame',
+    label: 'Hall of Fame',
+    collection: 'hallOfFame',
+    titleField: 'name',
+    subtitleField: 'position',
+    fields: [
+      { key: 'name', label: 'Full Name', type: 'text', required: true },
+      { key: 'nickname', label: 'Nickname', type: 'text' },
+      { key: 'position', label: 'Position / Title', type: 'text', required: true, placeholder: 'e.g. 30th NASS LASU President' },
+      { key: 'subtitle', label: 'Subtitle', type: 'text', placeholder: 'e.g. [1st President with First Class Honours]' },
+      { key: 'tagline', label: 'Tagline', type: 'text', placeholder: 'e.g. Researcher | Chemist | Education Advocate' },
+      { key: 'bio', label: 'Full Biography (for featured card)', type: 'richtext' },
+      { key: 'quote', label: 'Short Quote (for honoree card)', type: 'textarea' },
+      { key: 'cardType', label: 'Card Style', type: 'select', options: ['Featured', 'Honoree'] },
+      { key: 'imageUrl', label: 'Photo', type: 'image' },
+    ],
+  },
+  {
+    key: 'corePillars',
+    label: 'Core Pillars',
+    collection: 'corePillars',
+    titleField: 'title',
+    subtitleField: 'desc',
+    fields: [
+      { key: 'icon', label: 'Icon (emoji)', type: 'text', placeholder: '🗳️' },
+      { key: 'title', label: 'Title', type: 'text', required: true },
+      { key: 'desc', label: 'Description', type: 'textarea', required: true },
+    ],
+  },
+  {
+    key: 'siteContent',
+    label: 'Page Text & Content',
+    collection: 'siteContent',
+    titleField: 'label',
+    subtitleField: 'value',
+    fields: [
+      { key: 'contentKey', label: 'Which part of the site', type: 'select', options: RECOGNIZED_CONTENT_KEYS, required: true },
+      { key: 'label', label: 'Content Block Name (for your reference)', type: 'text', required: true, placeholder: 'e.g. Hero Tagline' },
+      { key: 'value', label: 'Text', type: 'richtext', required: true },
+    ],
+  },
 ];
+// admins can arrange items by typing a number (lower = shown first). This is
+// applied centrally rather than added to each section by hand.
+// ----------------------------------------------------------------------------
+export const withOrderField = (section: AdminSection): AdminSection => {
+  if (section.fields.some((f) => f.key === 'order')) return section;
+  return {
+    ...section,
+    fields: [
+      ...section.fields,
+      { key: 'order', label: 'Display Order (lower shows first)', type: 'number' },
+    ],
+  };
+};
+
+export const sortByOrder = (a: any, b: any): number => {
+  const ao = typeof a?.order === 'number' ? a.order : 0;
+  const bo = typeof b?.order === 'number' ? b.order : 0;
+  return ao - bo;
+};
 
 // ----------------------------------------------------------------------------
 // Blank "new item" builder — every field gets a sensible empty default so the

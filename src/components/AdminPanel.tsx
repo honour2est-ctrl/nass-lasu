@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
-import { AdminField, AdminSection, BUILT_IN_SECTIONS, blankItemFor } from '../adminSections';
+import { AdminField, AdminSection, BUILT_IN_SECTIONS, blankItemFor, withOrderField, sortByOrder } from '../adminSections';
 import { isAuthorizedAdmin } from '../adminAuth';
 
 // ============================================================================
@@ -360,7 +360,7 @@ export const AdminPanel = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showNewSection, setShowNewSection] = useState(false);
 
-  const allSections = useMemo(() => [...BUILT_IN_SECTIONS, ...customSections], [customSections]);
+  const allSections = useMemo(() => [...BUILT_IN_SECTIONS, ...customSections].map(withOrderField), [customSections]);
   const activeSection = useMemo(() => allSections.find((s) => s.key === activeSectionKey) || allSections[0], [allSections, activeSectionKey]);
 
   // --- Auth ---
@@ -455,9 +455,8 @@ export const AdminPanel = () => {
   }, [user, authorized]);
 
   const filteredData = useMemo(() => {
-    if (!search.trim()) return data;
-    const q = search.toLowerCase();
-    return data.filter((item) => Object.values(item).some((v) => typeof v === 'string' && v.toLowerCase().includes(q)));
+    const base = !search.trim() ? data : data.filter((item) => Object.values(item).some((v) => typeof v === 'string' && v.toLowerCase().includes(search.toLowerCase())));
+    return [...base].sort(sortByOrder);
   }, [data, search]);
 
   // --- CRUD ---
