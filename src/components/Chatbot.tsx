@@ -3,6 +3,9 @@ import { Send, Bot, User as UserIcon, X, Loader2, MapPin } from 'lucide-react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
+// PUT YOUR GEMINI API KEY HERE:
+const GEMINI_API_KEY = "PASTE_YOUR_API_KEY_HERE"; 
+
 type Message = { role: 'user' | 'model'; parts: { text: string }[]; groundingChunks?: any[] };
 
 export const Chatbot = () => {
@@ -44,27 +47,48 @@ export const Chatbot = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', parts: [{ text: input.trim() }] };
+    const userText = input.trim();
+    const userMessage: Message = { role: 'user', parts: [{ text: userText }] };
+    
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      // 1. Format the conversation history for Gemini
+      const chatHistory = messages.slice(1).map(m => ({
+        role: m.role,
+        parts: m.parts
+      }));
+      
+      // 2. Add the new user message
+      chatHistory.push({ role: 'user', parts: [{ text: userText }] });
+
+      // 3. Make a direct call to the Google Gemini API
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMessage].map(m => ({ role: m.role, parts: m.parts })), knowledgeContext: knowledgeBase })
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: `You are the official NASS LASU Secretariat Assistant. You must answer questions based ONLY on this official knowledge base provided by the executive council:\n\n${knowledgeBase}` }]
+          },
+          contents: chatHistory
+        })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to generate response');
+        throw new Error(data.error?.message || 'Failed to generate response');
       }
 
-      const data = await response.json();
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: data.text }], groundingChunks: data.groundingChunks }]);
+      // Extract the text from the AI's response
+      const aiResponseText = data.candidates[0].content.parts[0].text;
+
+      setMessages(prev => [...prev, { role: 'model', parts: [{ text: aiResponseText }] }]);
     } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: 'Sorry, I encountered an error. Please try again later.' }] }]);
+      console.error("Chatbot Error:", error);
+      setMessages(prev => [...prev, { role: 'model', parts: [{ text: 'Sorry, I encountered an error. Please make sure the API key is correct and try again.' }] }]);
     } finally {
       setIsLoading(false);
     }
