@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 // Keep any other imports you already have here, like firestore!
 
 const firebaseConfig = {
@@ -17,5 +18,16 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const analytics = getAnalytics(app);
 // Keep any other exports you already have here, like export const db = getFirestore(app);
-  
+ export const db = getFirestore(app);
+
+const provider = new GoogleAuthProvider();
+
+export const googleSignIn = () => signInWithPopup(auth, provider);
+
+export const logout = () => signOut(auth);
+
+export const getAccessToken = async () => {
+  const user = auth.currentUser;
+  return user ? await user.getIdToken() : null;
+}; 
   
