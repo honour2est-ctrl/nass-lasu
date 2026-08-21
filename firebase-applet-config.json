@@ -1,12 +1,17 @@
-{
-  "projectId": "elegant-canto-457016-u0",
-  "appId": "1:1020658680028:web:6a03a5ca756907fd357419",
-  "apiKey": "AIzaSyDCka78W9QDqHEGWsVpCXYz_EBulNmw3ZE",
-  "authDomain": "elegant-canto-457016-u0.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-nasslasuwebsite-94156695-ed1c-46e9-9f35-77e72878465f",
-  "storageBucket": "elegant-canto-457016-u0.firebasestorage.app",
-  "messagingSenderId": "1020658680028",
-  "measurementId": "",
-  "oAuthClientId": "1020658680028-p1ep3p2okr1dpr1r5f5tqg5m4rjkvtr1.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
-}
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAHQdhqjSDgC2Gim6E4iyPo5pVg9Ylay0U",
+  authDomain: "nass-lasu-website.firebaseapp.com",
+  projectId: "nass-lasu-website",
+  storageBucket: "nass-lasu-website.firebasestorage.app",
+  messagingSenderId: "266888871449",
+  appId: "1:266888871449:web:ba6f07ef1926d137ec7488",
+  measurementId: "G-H48ECFXWPQ"
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const analytics = getAnalytics(app);
