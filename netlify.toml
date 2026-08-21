@@ -6,11 +6,13 @@
 [functions]
   node_bundler = "esbuild"
 
+# Send API calls to the serverless function that replaces server.ts's /api/chat
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"
   status = 200
 
+# Everything else is a client-side React route -> always serve index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
