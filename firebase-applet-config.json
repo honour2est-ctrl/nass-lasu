@@ -1,17 +1,9 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAHQdhqjSDgC2Gim6E4iyPo5pVg9Ylay0U",
-  authDomain: "nass-lasu-website.firebaseapp.com",
-  projectId: "nass-lasu-website",
-  storageBucket: "nass-lasu-website.firebasestorage.app",
-  messagingSenderId: "266888871449",
-  appId: "1:266888871449:web:ba6f07ef1926d137ec7488",
-  measurementId: "G-H48ECFXWPQ"
-};
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const analytics = getAnalytics(app);
+{
+  "projectId": "nass-lasu-website",
+  "appId": "1:266888871449:web:ba6f07ef1926d137ec7488",
+  "apiKey": "AIzaSyAHQdhqjSDgC2Gim6E4iyPo5pVg9Ylay0U",
+  "authDomain": "nass-lasu-website.firebaseapp.com",
+  "storageBucket": "nass-lasu-website.firebasestorage.app",
+  "messagingSenderId": "266888871449",
+  "measurementId": "G-H48ECFXWPQ"
+}
