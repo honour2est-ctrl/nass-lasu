@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from '../lib/firebase';
-import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut, 
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from 'firebase/auth';
 import { useToast } from './Toast';
-import { X } from 'lucide-react';
+import { X, Mail, Key, ShieldAlert } from 'lucide-react';
 
 export const SecretariatFeedback = () => {
   const [needsAuth, setNeedsAuth] = useState(true);
@@ -12,13 +18,43 @@ export const SecretariatFeedback = () => {
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [showAdminPortal, setShowAdminPortal] = useState(false);
   
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [formId, setFormId] = useState('');
+  
   const { addToast } = useToast();
+
+  // Authorized Admin Emails
+  const ALLOWED_ADMIN_EMAILS = [
+    'honour2est@gmail.com', 
+    'ekopeters@gmail.com'
+  ];
+  const GOOGLE_ADMIN_EMAIL = 'honour2est@gmail.com';
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
+        
+        if (!ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
+          setNeedsAuth(true); // Let AdminGate handle the full signout
+        } else if (isGoogleProvider && currentUser.email !== GOOGLE_ADMIN_EMAIL) {
+          setNeedsAuth(true);
+        } else {
+          setNeedsAuth(false);
+          setError(null);
+        }
+      } else {
+        setNeedsAuth(true);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFeedbackLoading(true);
     
-    // Simulate sending feedback
     setTimeout(() => {
       setFeedbackLoading(false);
       addToast('Feedback submitted successfully! Thank you.', 'success');
@@ -26,18 +62,42 @@ export const SecretariatFeedback = () => {
     }, 1000);
   };
 
-  const handleLogin = async () => {
+  const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      if (result.user) {
-        setNeedsAuth(false);
+      
+      const isGoogleProvider = result.user.providerData.some(p => p.providerId === 'google.com');
+      
+      if (!ALLOWED_ADMIN_EMAILS.includes(result.user.email || '')) {
+        await signOut(auth);
+        throw new Error(`Access denied for ${result.user.email}.`);
+      }
+      if (isGoogleProvider && result.user.email !== GOOGLE_ADMIN_EMAIL) {
+        await signOut(auth);
+        throw new Error('Google Sign-In restricted. Please use Email and Password.');
       }
     } catch (err: any) {
-      console.error('Login failed:', err);
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Google Sign-In failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      if (!ALLOWED_ADMIN_EMAILS.includes(result.user.email || '')) {
+        await signOut(auth);
+        throw new Error(`Access denied. Not an authorized admin.`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -50,19 +110,15 @@ export const SecretariatFeedback = () => {
     setFormId('');
   };
 
-  const [formId, setFormId] = useState('');
-
   const handleViewResponses = async () => {
     if (!formId) return;
     setLoading(true);
     setError(null);
     
     try {
-      // Use native Firebase token fetch
       const token = await auth.currentUser?.getIdToken();
       if (!token) throw new Error("Not authenticated. Please sign in again.");
 
-      // Fetch responses
       const res = await fetch(`https://forms.googleapis.com/v1/forms/${formId}/responses`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -82,7 +138,6 @@ export const SecretariatFeedback = () => {
 
   return (
     <div className="space-y-12 relative">
-      {/* Public Feedback Form (Always visible) */}
       <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto relative z-10">
         <h3 className="text-2xl font-bold text-white mb-2 space-grotesk">Send Feedback to Secretariat</h3>
         <p className="text-slate-400 text-sm mb-6">Have an idea, complaint, or general feedback for the student representative council? Let us know below.</p>
@@ -101,7 +156,6 @@ export const SecretariatFeedback = () => {
         </form>
       </div>
 
-      {/* Secret Tiny Dot Trigger in bottom-left corner */}
       <button 
         onClick={() => setShowAdminPortal(true)}
         className="fixed bottom-2 left-2 w-3 h-3 bg-white/5 hover:bg-yellow-400/50 rounded-full z-50 cursor-pointer transition-colors"
@@ -109,25 +163,31 @@ export const SecretariatFeedback = () => {
         aria-label="Open Admin Feedback Portal"
       />
 
-      {/* The Admin Portal (Hidden until secret dot is clicked) */}
       {showAdminPortal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 max-w-2xl w-full relative shadow-2xl">
             <button
               onClick={() => setShowAdminPortal(false)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer z-50"
             >
               <X size={20} />
             </button>
 
             {needsAuth ? (
-              <div className="text-center max-w-md mx-auto py-8">
-                <h3 className="text-2xl font-bold text-white mb-4 space-grotesk">Admin Feedback Portal</h3>
-                <p className="text-slate-400 text-sm mb-8">Sign in with an authorized Google account to view direct feedback submissions via Google Forms.</p>
+              <div className="text-center max-w-md mx-auto py-4">
+                <h3 className="text-2xl font-bold text-white mb-4 space-grotesk">Feedback Portal</h3>
+                <p className="text-slate-400 text-sm mb-6">Sign in to view direct feedback submissions via Google Forms.</p>
+                
+                {error && (
+                  <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-xl flex items-center justify-center gap-2">
+                    <ShieldAlert size={16} /> {error}
+                  </div>
+                )}
+
                 <button 
-                  onClick={handleLogin}
+                  onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="flex items-center justify-center w-full gap-3 bg-white text-black font-bold py-3.5 px-4 rounded-xl hover:bg-slate-100 transition-all text-xs uppercase tracking-wider shadow-lg cursor-pointer disabled:opacity-50"
+                  className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3.5 px-4 rounded-xl transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-3 shadow-lg cursor-pointer mb-6 disabled:opacity-50"
                 >
                   {loading ? 'Signing in...' : (
                     <>
@@ -142,7 +202,52 @@ export const SecretariatFeedback = () => {
                     </>
                   )}
                 </button>
-                {error && <p className="text-red-400 text-xs mt-4 bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</p>}
+
+                <div className="relative flex py-2 items-center mb-6">
+                  <div className="flex-grow border-t border-white/10"></div>
+                  <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-widest">Or sign in with email</span>
+                  <div className="flex-grow border-t border-white/10"></div>
+                </div>
+
+                <form onSubmit={handleEmailLogin} className="space-y-4 text-left">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3.5 text-slate-500" size={16} />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="admin@nasslasu.com"
+                        className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Password</label>
+                    <div className="relative">
+                      <Key className="absolute left-3 top-3.5 text-slate-500" size={16} />
+                      <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold py-3.5 rounded-xl transition-all text-xs uppercase tracking-wider shadow-lg cursor-pointer mt-2 disabled:opacity-50"
+                  >
+                    {loading ? 'Signing in...' : 'Sign In with Email'}
+                  </button>
+                </form>
               </div>
             ) : (
               <div>
