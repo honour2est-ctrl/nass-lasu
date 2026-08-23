@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { auth, googleSignIn, logout } from '../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { Lock, LogOut, ShieldAlert, X } from 'lucide-react';
 
 export function AdminGate({ children }: { children: React.ReactNode }) {
@@ -10,6 +10,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  // Add your official admin email here
   const ALLOWED_ADMIN_EMAILS = [
     'nasslasu@gmail.com', 
   ];
@@ -19,7 +20,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         if (ALLOWED_ADMIN_EMAILS.length > 0 && !ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
           setError(`Access denied for ${currentUser.email}. Not an authorized admin.`);
-          logout();
+          signOut(auth);
           setUser(null);
         } else {
           setUser(currentUser);
@@ -38,7 +39,8 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     setError('');
     setSubmitting(true);
     try {
-      await googleSignIn();
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (err: any) {
       setError('Google Sign-In failed. Please try again.');
     } finally {
@@ -47,7 +49,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await signOut(auth);
   };
 
   if (loading) {
@@ -61,7 +63,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
           <span className="text-xs text-slate-300">Logged in admin: <strong className="text-yellow-400">{user.email}</strong></span>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             <LogOut size={14} /> Logout
           </button>
