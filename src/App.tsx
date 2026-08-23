@@ -123,10 +123,8 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    // Instantly end initial loading skeleton
     setIsLoadingData(false);
 
-    // Fetch data from Firebase
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
       if (!snap.empty) {
         setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
@@ -250,7 +248,6 @@ export default function App() {
 
     let downloadUrl: string | null = null;
 
-    // 1. Check legislativeDocsData collection from Firestore
     const legMatch = legislativeDocsData.find(item => {
       const typeStr = (item.type || item.docType || item.title || item.name || '').toLowerCase();
       return isConstitution ? typeStr.includes('constitution') : (typeStr.includes('standing') || typeStr.includes('order'));
@@ -259,7 +256,6 @@ export default function App() {
       downloadUrl = legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link;
     }
 
-    // 2. Check vaultItemsData for matching document
     if (!downloadUrl) {
       const vaultMatch = vaultItemsData.find(item => {
         const titleStr = (item.title || item.name || item.department || '').toLowerCase();
@@ -270,7 +266,6 @@ export default function App() {
       }
     }
 
-    // 3. Search Firebase Storage directly if storage is available
     if (!downloadUrl && storage) {
       const candidatePaths = isConstitution ? [
         'documents/NASS_LASU_CONSTITUTION.pdf',
@@ -298,9 +293,7 @@ export default function App() {
             downloadUrl = url;
             break;
           }
-        } catch (e) {
-          // continue checking
-        }
+        } catch (e) {}
       }
 
       if (!downloadUrl) {
@@ -315,9 +308,7 @@ export default function App() {
               break;
             }
           }
-        } catch (e) {
-          // ignore error
-        }
+        } catch (e) {}
       }
     }
 
@@ -355,7 +346,6 @@ export default function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show button when scrolled past ~80vh (hero section height approx)
       if (window.scrollY > window.innerHeight * 0.8) {
         setShowBackToTop(true);
       } else {
@@ -401,10 +391,8 @@ export default function App() {
         style={{ scaleX: scrollYProgress }}
       />
       
-      {/* Content wrapper to sit above background z-0 */}
       <div className="relative z-10 selection:bg-yellow-400 selection:text-slate-900">
         
-        {/* Navigation */}
         <nav className="fixed top-0 w-full z-50 h-16 border-b border-white/10 bg-white/5 backdrop-blur-md px-3 md:px-8 flex items-center justify-between">
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
@@ -456,7 +444,6 @@ export default function App() {
 
         <main className="flex flex-col gap-32 pb-32 pt-24">
           
-          {/* Hero Section */}
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               <div className="space-y-4">
@@ -499,7 +486,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* About Section */}
           <section id="about" className="px-4 max-w-5xl mx-auto w-full">
             <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight text-center">
               ABOUT NASS-LASU
@@ -540,7 +526,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Digitalized Secretariat */}
           <section id="digitalized" className="px-4 max-w-7xl mx-auto w-full">
             <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
               CORE PILLARS
@@ -560,7 +545,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Executives */}
           <section id="executives" className="px-4 max-w-7xl mx-auto w-full">
             <div className="flex items-end justify-between mb-8">
               <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
@@ -628,7 +612,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* SSRC */}
           <section id="ssrc" className="px-4 max-w-7xl mx-auto w-full">
             <h2 className="font-space-grotesk text-2xl md:text-4xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
               SCIENCE STUDENT REPRESENTATIVE COUNCIL<br />
@@ -701,13 +684,11 @@ export default function App() {
             </div>
           </section>
 
-          {/* Departments */}
           <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
             <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight text-center">
               DEPARTMENTS
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Biological Science */}
               <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:border-yellow-400/30 transition-all">
                 <h3 className="font-space-grotesk text-xl font-bold text-yellow-400 uppercase tracking-widest mb-6">A. Biological Science</h3>
                 <ul className="space-y-4">
@@ -727,7 +708,6 @@ export default function App() {
                 </ul>
               </div>
 
-              {/* Chemical Science */}
               <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:border-yellow-400/30 transition-all">
                 <h3 className="font-space-grotesk text-xl font-bold text-yellow-400 uppercase tracking-widest mb-6">B. Chemical Science</h3>
                 <ul className="space-y-4">
@@ -742,7 +722,6 @@ export default function App() {
                 </ul>
               </div>
 
-              {/* Physical Science */}
               <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:border-yellow-400/30 transition-all">
                 <h3 className="font-space-grotesk text-xl font-bold text-yellow-400 uppercase tracking-widest mb-6">C. Physical Science</h3>
                 <ul className="space-y-4">
@@ -760,7 +739,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* E-Voting Section Placeholder */}
           <section id="e-voting" className="px-4 max-w-4xl mx-auto w-full my-20">
             <div className="text-center mb-10">
               <div className="text-yellow-400 text-4xl mb-4">🗳️</div>
@@ -785,7 +763,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Academic Vault */}
           <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
             <div className="text-center mb-10">
               <div className="text-yellow-400 text-4xl mb-4">📚</div>
@@ -807,7 +784,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Level Filter Toggles */}
               <div className="flex flex-wrap justify-center gap-2 mb-8">
                 {['All Levels', '100 Level', '200 Level', '300 Level', '400 Level'].map((level) => {
                   const isActive = level === 'All Levels' ? vaultLevelFilter === null : vaultLevelFilter === level;
@@ -1007,7 +983,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* NASS LASU ONLINE MARKETPLACE */}
           <section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
             <div className="text-center mb-10">
               <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
@@ -1061,7 +1036,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Hall of Fame */}
           <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full relative">
             <div className="text-center mb-10">
               <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
@@ -1078,7 +1052,6 @@ export default function App() {
                   : [{ name: 'Zechariah Oresanya', nickname: 'Zechariah', position: '30th NASS LASU PRESIDENT', subtitle: '[1ST PRESIDENT WITH FIRST CLASS HONOURS]', tagline: 'Researcher | Chemist | Education Advocate | Student Leader', imageUrl: '/zechariah.jpg', bio: "Zechariah Oresanya is a Nigerian researcher, educator, and chemistry graduate of Lagos State University (LASU). He earned a Bachelor of Science in Chemistry with a high grade point average and distinguished himself as a visionary student leader, serving as the **30th President of the Nigerian Association of Science Students (NASS)** at Lagos State University.\n\nPassionate about education and knowledge sharing, Zechariah has impacted the lives of over **5,000 students** by teaching a wide range of science courses. His teaching philosophy encourages students to take bold and daring steps, fostering not only academic excellence but also a mindset of innovation, creativity, and lifelong learning.\n\nAs a leader, Zechariah is committed to excellence and refuses to settle for mediocrity. He believes that effective leadership is built on collaboration, empowering individuals, and creating environments where every team member is valued. He champions diversity and inclusion, recognizing them as essential drivers of innovation and sustainable success.\n\nBeyond the classroom, Zechariah's work in chemistry spans multiple research domains, reflecting his unwavering dedication to advancing scientific knowledge and addressing real-world challenges. His curiosity, resilience, and passion for discovery continue to shape his contributions to research and academia.\n\nThrough his leadership, research, and educational impact, Zechariah Oresanya remains committed to inspiring others to embrace transformative journeys, pursue excellence, and make meaningful contributions to science and society." }]
                 ).map((honoree, hIdx) => (
                   <div key={honoree.id || hIdx} className="w-full flex flex-col items-center bg-white/5 backdrop-blur-xl border border-yellow-400/50 rounded-3xl overflow-hidden group shadow-[0_0_40px_rgba(250,204,21,0.1)] p-8 lg:p-12 mt-4">
-                    {/* Hall Of Fame Photocard */}
                     <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
                       <img src={honoree.imageUrl || '/zechariah.jpg'} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
@@ -1132,7 +1105,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Events Gallery */}
           <section id="events" className="px-4 max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
               <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
@@ -1224,7 +1196,6 @@ export default function App() {
             <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
           </section>
 
-          {/* Directory & Calendar Split */}
           <section className="px-4 max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-6">
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8">
               <h3 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-6 flex items-center gap-2">
@@ -1272,17 +1243,14 @@ export default function App() {
             </div>
           </section>
 
-          {/* Faculty Hotline & Emergency Squad Section */}
           <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <EmergencyHotline />
           </section>
 
-          {/* The Secretariat Section */}
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <div className="p-8 md:p-12 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl relative overflow-hidden group hover:border-yellow-400/30 transition-all flex flex-col gap-10 items-center">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              {/* Logo Section - Top Center */}
               <div className="relative z-10 w-full flex justify-center items-center shrink-0">
                 <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full p-2 bg-gradient-to-br from-yellow-400/30 to-yellow-600/10 backdrop-blur-sm border border-yellow-400/20 shadow-[0_0_40px_rgba(250,204,21,0.15)] group-hover:shadow-[0_0_60px_rgba(250,204,21,0.25)] transition-all duration-500">
                   <img 
@@ -1342,7 +1310,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Marquee */}
           <footer className="h-16 mt-8 border-y border-white/10 bg-black/40 backdrop-blur-md flex items-center overflow-hidden">
             <div className="flex items-center gap-12 whitespace-nowrap px-8 text-[11px] font-bold tracking-widest text-slate-400 animate-[marquee_30s_linear_infinite]">
               {[...Array(6)].map((_, i) => (
@@ -1363,7 +1330,6 @@ export default function App() {
             </AdminGate>
           </section>
 
-          {/* Footer - Secretariat Forms */}
           <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
             <SecretariatFeedback />
             
@@ -1383,7 +1349,6 @@ export default function App() {
 
       <Chatbot />
 
-      {/* RSVP Modal */}
       <AnimatePresence>
         {isRsvpOpen && (
           <motion.div
@@ -1440,7 +1405,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Quick Actions Menu */}
       <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-4">
         <AnimatePresence>
           {isQuickActionsOpen && (
@@ -1536,7 +1500,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* Executive Profile Modal */}
       <AnimatePresence>
         {selectedExecutive && (
           <motion.div
@@ -1594,7 +1557,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Back to Top Button */}
       {showBackToTop && (
         <button
           onClick={scrollToTop}
