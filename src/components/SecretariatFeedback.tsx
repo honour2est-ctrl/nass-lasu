@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { googleSignIn, getAccessToken, logout } from '../lib/firebase';
+import { auth } from '../lib/firebase';
+import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { useToast } from './Toast';
 import { X } from 'lucide-react';
 
@@ -29,8 +30,9 @@ export const SecretariatFeedback = () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await googleSignIn();
-      if (result) {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
         setNeedsAuth(false);
       }
     } catch (err: any) {
@@ -41,6 +43,13 @@ export const SecretariatFeedback = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut(auth);
+    setNeedsAuth(true);
+    setResponses([]);
+    setFormId('');
+  };
+
   const [formId, setFormId] = useState('');
 
   const handleViewResponses = async () => {
@@ -49,8 +58,9 @@ export const SecretariatFeedback = () => {
     setError(null);
     
     try {
-      const token = await getAccessToken();
-      if (!token) throw new Error("Not authenticated");
+      // Use native Firebase token fetch
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error("Not authenticated. Please sign in again.");
 
       // Fetch responses
       const res = await fetch(`https://forms.googleapis.com/v1/forms/${formId}/responses`, {
@@ -138,7 +148,7 @@ export const SecretariatFeedback = () => {
               <div>
                 <div className="flex justify-between items-center mb-8">
                   <h3 className="text-2xl font-bold text-yellow-400 space-grotesk">Secretariat Form Responses</h3>
-                  <button onClick={logout} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white bg-white/5 px-4 py-2 rounded-full border border-white/10 transition-colors">Sign Out</button>
+                  <button onClick={handleSignOut} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white bg-white/5 px-4 py-2 rounded-full border border-white/10 transition-colors">Sign Out</button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 mb-8">
