@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../lib/firebase';
+import { auth } from '../lib/firebase'; 
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { Lock, LogOut, ShieldAlert, X } from 'lucide-react';
 
@@ -20,7 +20,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         if (ALLOWED_ADMIN_EMAILS.length > 0 && !ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
           setError(`Access denied for ${currentUser.email}. Not an authorized admin.`);
-          signOut(auth);
+          signOut(auth); 
           setUser(null);
         } else {
           setUser(currentUser);
@@ -40,7 +40,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     setSubmitting(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider); 
     } catch (err: any) {
       setError('Google Sign-In failed. Please try again.');
     } finally {
@@ -49,7 +49,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await signOut(auth); 
   };
 
   if (loading) {
@@ -73,14 +73,16 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Render the secret dot and the secure login modal
   return (
-    <div className="text-center py-4">
-      <button
+    <>
+      {/* Secret Tiny Dot Trigger in bottom-right corner */}
+      <button 
         onClick={() => setShowLoginModal(true)}
-        className="text-[10px] text-slate-600 hover:text-slate-400 uppercase tracking-widest transition-colors cursor-pointer"
-      >
-        Admin Portal
-      </button>
+        className="fixed bottom-2 right-2 w-3 h-3 bg-white/5 hover:bg-yellow-400/50 rounded-full z-[100] cursor-pointer transition-colors"
+        title="Main Admin"
+        aria-label="Open Main Admin Portal"
+      />
 
       {showLoginModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
@@ -120,6 +122,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
