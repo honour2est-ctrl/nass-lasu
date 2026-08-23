@@ -5,6 +5,7 @@ import { CursorTrail } from './components/CursorTrail';
 import { Chatbot } from './components/Chatbot';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
+import { AdminGate } from './components/AdminGate';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
@@ -1355,9 +1356,11 @@ export default function App() {
             </div>
           </footer>
 
-          {/* Admin Panel */}
+          {/* Admin Panel (Protected by AdminGate) */}
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <AdminPanel />
+            <AdminGate>
+              <AdminPanel />
+            </AdminGate>
           </section>
 
           {/* Footer - Secretariat Forms */}
