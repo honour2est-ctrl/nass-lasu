@@ -1045,64 +1045,68 @@ export default function App() {
                 "A Legacy Remembered, The Present Preserved, Future Scientific Leaders Inspired."
               </p>
             </div>
-            <div className="flex justify-center mb-8">
-              <div className="w-full max-w-4xl flex flex-col gap-8">
-                {(hallOfFameData.filter(h => h.cardType !== 'Honoree').length > 0
-                  ? hallOfFameData.filter(h => h.cardType !== 'Honoree')
-                  : [{ name: 'Zechariah Oresanya', nickname: 'Zechariah', position: '30th NASS LASU PRESIDENT', subtitle: '[1ST PRESIDENT WITH FIRST CLASS HONOURS]', tagline: 'Researcher | Chemist | Education Advocate | Student Leader', imageUrl: '/zechariah.jpg', bio: "Zechariah Oresanya is a Nigerian researcher, educator, and chemistry graduate of Lagos State University (LASU). He earned a Bachelor of Science in Chemistry with a high grade point average and distinguished himself as a visionary student leader, serving as the **30th President of the Nigerian Association of Science Students (NASS)** at Lagos State University.\n\nPassionate about education and knowledge sharing, Zechariah has impacted the lives of over **5,000 students** by teaching a wide range of science courses. His teaching philosophy encourages students to take bold and daring steps, fostering not only academic excellence but also a mindset of innovation, creativity, and lifelong learning.\n\nAs a leader, Zechariah is committed to excellence and refuses to settle for mediocrity. He believes that effective leadership is built on collaboration, empowering individuals, and creating environments where every team member is valued. He champions diversity and inclusion, recognizing them as essential drivers of innovation and sustainable success.\n\nBeyond the classroom, Zechariah's work in chemistry spans multiple research domains, reflecting his unwavering dedication to advancing scientific knowledge and addressing real-world challenges. His curiosity, resilience, and passion for discovery continue to shape his contributions to research and academia.\n\nThrough his leadership, research, and educational impact, Zechariah Oresanya remains committed to inspiring others to embrace transformative journeys, pursue excellence, and make meaningful contributions to science and society." }]
-                ).map((honoree, hIdx) => (
-                  <div key={honoree.id || hIdx} className="w-full flex flex-col items-center bg-white/5 backdrop-blur-xl border border-yellow-400/50 rounded-3xl overflow-hidden group shadow-[0_0_40px_rgba(250,204,21,0.1)] p-8 lg:p-12 mt-4">
-                    <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
-                      <img src={honoree.imageUrl || '/zechariah.jpg'} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
-                      <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                          Hall Of Fame
-                        </div>
-                        <h4 className="text-xl font-bold text-white tracking-tight mb-1">
-                          <div className="flex flex-col gap-1">
-                            {honoree.nickname && <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{honoree.nickname}'</span>}
-                            <span className="text-base font-normal text-slate-200">{honoree.name}</span>
-                          </div>
-                        </h4>
-                      </div>
-                    </div>
 
-                    <div className="w-full relative z-20 flex flex-col items-center text-center mt-2">
-                      <h3 className="text-lg md:text-xl text-yellow-400 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
-                        <span className="tracking-widest">{honoree.position}</span>
-                        {honoree.subtitle && <span className="text-white text-sm md:text-base opacity-90">{honoree.subtitle}</span>}
-                      </h3>
-                      
-                      <div className="text-slate-300 text-sm leading-relaxed space-y-4 max-w-3xl mb-4">
-                        {honoree.tagline && (
-                          <p className="text-yellow-400/80 font-semibold tracking-wider uppercase text-xs md:text-sm">
-                            {honoree.tagline}
-                          </p>
-                        )}
-                        {honoree.bio && renderWithBold(honoree.bio)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            {hallOfFameData.length === 0 ? (
+              <div className="text-center py-16 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl max-w-4xl mx-auto">
+                <div className="text-4xl mb-4 opacity-50">🏆</div>
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Profiles will be updated soon.</p>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex justify-center mb-8">
+                  <div className="w-full max-w-4xl flex flex-col gap-8">
+                    {hallOfFameData.filter(h => h.cardType !== 'Honoree').map((honoree, hIdx) => (
+                      <div key={honoree.id || hIdx} className="w-full flex flex-col items-center bg-white/5 backdrop-blur-xl border border-yellow-400/50 rounded-3xl overflow-hidden group shadow-[0_0_40px_rgba(250,204,21,0.1)] p-8 lg:p-12 mt-4">
+                        <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
+                          <img src={honoree.imageUrl} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+                          <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
+                            <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                              Hall Of Fame
+                            </div>
+                            <h4 className="text-xl font-bold text-white tracking-tight mb-1">
+                              <div className="flex flex-col gap-1">
+                                {honoree.nickname && <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{honoree.nickname}'</span>}
+                                <span className="text-base font-normal text-slate-200">{honoree.name}</span>
+                              </div>
+                            </h4>
+                          </div>
+                        </div>
 
-            <div className="flex flex-wrap justify-center gap-6">
-              {(hallOfFameData.filter(h => h.cardType === 'Honoree').length > 0
-                ? hallOfFameData.filter(h => h.cardType === 'Honoree')
-                : [{ name: 'Comr. Adebayo Daniel', position: '35th President, 2024/2025', quote: 'Established the foundation for the Digital Secretariat and unified the faculty under one voice.' }]
-              ).map((h, hIdx) => (
-                <div key={h.id || hIdx} className="max-w-md p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-yellow-400/30 text-center relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl transition-colors" />
-                  <div className="text-yellow-400/50 text-4xl font-serif mb-4">"</div>
-                  <h3 className="text-lg font-bold text-white mb-1">{h.name}</h3>
-                  <p className="text-[10px] text-yellow-400 uppercase font-bold tracking-tighter mb-4">{h.position}</p>
-                  <p className="text-xs text-slate-300 italic mb-6 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">{h.quote}</p>
-                  <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
+                        <div className="w-full relative z-20 flex flex-col items-center text-center mt-2">
+                          <h3 className="text-lg md:text-xl text-yellow-400 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
+                            <span className="tracking-widest">{honoree.position}</span>
+                            {honoree.subtitle && <span className="text-white text-sm md:text-base opacity-90">{honoree.subtitle}</span>}
+                          </h3>
+                          
+                          <div className="text-slate-300 text-sm leading-relaxed space-y-4 max-w-3xl mb-4">
+                            {honoree.tagline && (
+                              <p className="text-yellow-400/80 font-semibold tracking-wider uppercase text-xs md:text-sm">
+                                {honoree.tagline}
+                              </p>
+                            )}
+                            {honoree.bio && renderWithBold(honoree.bio)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="flex flex-wrap justify-center gap-6">
+                  {hallOfFameData.filter(h => h.cardType === 'Honoree').map((h, hIdx) => (
+                    <div key={h.id || hIdx} className="max-w-md p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-yellow-400/30 text-center relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl transition-colors" />
+                      <div className="text-yellow-400/50 text-4xl font-serif mb-4">"</div>
+                      <h3 className="text-lg font-bold text-white mb-1">{h.name}</h3>
+                      <p className="text-[10px] text-yellow-400 uppercase font-bold tracking-tighter mb-4">{h.position}</p>
+                      <p className="text-xs text-slate-300 italic mb-6 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">{h.quote}</p>
+                      <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </section>
 
           <section id="events" className="px-4 max-w-7xl mx-auto w-full">
