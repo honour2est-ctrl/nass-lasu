@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../lib/firebase'; 
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { Lock, LogOut, ShieldAlert, X } from 'lucide-react';
+import { 
+  onAuthStateChanged, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut, 
+  signInWithEmailAndPassword 
+} from 'firebase/auth';
+import { Lock, LogOut, ShieldAlert, X, Mail, Key } from 'lucide-react';
 
 export function AdminGate({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -9,10 +15,15 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  // State for email and password inputs
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  // Add your official admin email here
+  // Add all authorized admin emails here (for both Google and Email/Password users)
   const ALLOWED_ADMIN_EMAILS = [
     'nasslasu@gmail.com', 
+    // Add other authorized emails here if you want other users to sign in with email/password
   ];
 
   useEffect(() => {
@@ -48,6 +59,19 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setError('Invalid email or password. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleLogout = async () => {
     await signOut(auth); 
   };
@@ -73,7 +97,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Render the secret dot and the secure login modal
   return (
     <>
       {/* Secret Tiny Dot Trigger in bottom-right corner */}
@@ -106,10 +129,11 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               </div>
             )}
 
+            {/* Google Sign-In Option */}
             <button
               onClick={handleGoogleLogin}
               disabled={submitting}
-              className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3.5 rounded-xl transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-3 shadow-lg cursor-pointer"
+              className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3.5 rounded-xl transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-3 shadow-lg cursor-pointer mb-6"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -119,6 +143,53 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               </svg>
               {submitting ? 'Authenticating...' : 'Sign in with Google'}
             </button>
+
+            <div className="relative flex py-2 items-center mb-6">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-widest">Or sign in with email</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            {/* Email / Password Sign-In Form */}
+            <form onSubmit={handleEmailLogin} className="space-y-4 text-left">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3.5 text-slate-500" size={16} />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@nasslasu.com"
+                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Password</label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-3.5 text-slate-500" size={16} />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold py-3.5 rounded-xl transition-all text-xs uppercase tracking-wider shadow-lg cursor-pointer mt-2 disabled:opacity-50"
+              >
+                {submitting ? 'Signing in...' : 'Sign In with Email'}
+              </button>
+            </form>
           </div>
         </div>
       )}
