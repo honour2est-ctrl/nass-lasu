@@ -10,7 +10,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Add your official admin email here
   const ALLOWED_ADMIN_EMAILS = [
     'nasslasu@gmail.com', 
   ];
@@ -25,7 +24,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
         } else {
           setUser(currentUser);
           setError('');
-          setShowLoginModal(false); // Close modal automatically upon successful login
+          setShowLoginModal(false);
         }
       } else {
         setUser(null);
@@ -52,10 +51,9 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   };
 
   if (loading) {
-    return null; // Keep it invisible while checking authentication status
+    return null;
   }
 
-  // If LOGGED IN, show the Admin Panel and a secure Logout bar at the top
   if (user) {
     return (
       <div>
@@ -63,7 +61,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
           <span className="text-xs text-slate-300">Logged in admin: <strong className="text-yellow-400">{user.email}</strong></span>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             <LogOut size={14} /> Logout
           </button>
@@ -73,10 +71,8 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If NOT logged in, render NOTHING on the homepage except a tiny, hidden-in-plain-sight link
   return (
     <div className="text-center py-4">
-      {/* Discreet Admin Portal Button */}
       <button
         onClick={() => setShowLoginModal(true)}
         className="text-[10px] text-slate-600 hover:text-slate-400 uppercase tracking-widest transition-colors cursor-pointer"
@@ -84,7 +80,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
         Admin Portal
       </button>
 
-      {/* Secure Hidden Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 max-w-md w-full relative shadow-2xl text-center">
