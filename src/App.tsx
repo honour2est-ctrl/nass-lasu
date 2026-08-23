@@ -1256,11 +1256,11 @@ export default function App() {
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative z-10 w-full flex justify-center items-center shrink-0">
-                <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full p-2 bg-gradient-to-br from-yellow-400/30 to-yellow-600/10 backdrop-blur-sm border border-yellow-400/20 shadow-[0_0_40px_rgba(250,204,21,0.15)] group-hover:shadow-[0_0_60px_rgba(250,204,21,0.25)] transition-all duration-500">
+                <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center p-3 bg-gradient-to-br from-yellow-400/30 to-yellow-600/10 backdrop-blur-sm border border-yellow-400/20 shadow-[0_0_40px_rgba(250,204,21,0.15)] group-hover:shadow-[0_0_60px_rgba(250,204,21,0.25)] transition-all duration-500">
                   <img 
                     src="/secretariat_logo.png" 
                     alt="The Secretariat Logo" 
-                    className="w-full h-full object-contain rounded-full drop-shadow-2xl"
+                    className="w-full h-full object-cover rounded-full drop-shadow-2xl"
                   />
                   <div className="absolute inset-0 rounded-full bg-yellow-400/10 animate-pulse mix-blend-overlay"></div>
                 </div>
