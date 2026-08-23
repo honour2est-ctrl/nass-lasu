@@ -16,22 +16,31 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   
-  // State for email and password inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Add all authorized admin emails here (for both Google and Email/Password users)
+  // Authorized Admin Emails
   const ALLOWED_ADMIN_EMAILS = [
-    'nasslasu@gmail.com', 
-    // Add other authorized emails here if you want other users to sign in with email/password
+    'honour2est@gmail.com', 
+    'ekopeters@gmail.com'
   ];
+  
+  // Only this email is allowed to use Google Sign-In
+  const GOOGLE_ADMIN_EMAIL = 'honour2est@gmail.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        if (ALLOWED_ADMIN_EMAILS.length > 0 && !ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
+        // Check if the user signed in via Google
+        const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
+
+        if (!ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
           setError(`Access denied for ${currentUser.email}. Not an authorized admin.`);
           signOut(auth); 
+          setUser(null);
+        } else if (isGoogleProvider && currentUser.email !== GOOGLE_ADMIN_EMAIL) {
+          setError('Google Sign-In is restricted. Please use Email and Password.');
+          signOut(auth);
           setUser(null);
         } else {
           setUser(currentUser);
@@ -99,7 +108,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {/* Secret Tiny Dot Trigger in bottom-right corner */}
       <button 
         onClick={() => setShowLoginModal(true)}
         className="fixed bottom-2 right-2 w-3 h-3 bg-white/5 hover:bg-yellow-400/50 rounded-full z-[100] cursor-pointer transition-colors"
@@ -129,7 +137,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               </div>
             )}
 
-            {/* Google Sign-In Option */}
             <button
               onClick={handleGoogleLogin}
               disabled={submitting}
@@ -150,7 +157,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               <div className="flex-grow border-t border-white/10"></div>
             </div>
 
-            {/* Email / Password Sign-In Form */}
             <form onSubmit={handleEmailLogin} className="space-y-4 text-left">
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Email Address</label>
