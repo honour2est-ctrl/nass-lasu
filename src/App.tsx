@@ -1261,9 +1261,6 @@ export default function App() {
                     src="/secretariat_logo.png" 
                     alt="The Secretariat Logo" 
                     className="w-full h-full object-contain rounded-full drop-shadow-2xl"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/nass_logo.jpg';
-                    }}
                   />
                   <div className="absolute inset-0 rounded-full bg-yellow-400/10 animate-pulse mix-blend-overlay"></div>
                 </div>
