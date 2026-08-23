@@ -3,9 +3,9 @@ import { motion, AnimatePresence, useScroll } from 'motion/react';
 import { BackgroundEngine } from './components/BackgroundEngine';
 import { CursorTrail } from './components/CursorTrail';
 import { Chatbot } from './components/Chatbot';
+import { AdminGate } from './components/AdminGate';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
-import { AdminGate } from './components/AdminGate';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
@@ -1323,7 +1323,6 @@ export default function App() {
             </div>
           </footer>
 
-          {/* Admin Panel (Protected by AdminGate) */}
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
               <AdminPanel />
