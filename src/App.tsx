@@ -1314,10 +1314,7 @@ export default function App() {
             <div className="flex items-center gap-12 whitespace-nowrap px-8 text-[11px] font-bold tracking-widest text-slate-400 animate-[marquee_30s_linear_infinite]">
               {[...Array(6)].map((_, i) => (
                 <React.Fragment key={i}>
-                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-yellow-400 rounded-full"></div> SPONSOR: PEPSI NIGERIA</span>
-                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-yellow-400 rounded-full"></div> BRAND: TECH-FLOW SOLUTIONS</span>
-                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-yellow-400 rounded-full"></div> PARTNER: LASU ACADEMIC BOARD</span>
-                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-yellow-400 rounded-full"></div> POWERED BY: NASS 36TH ADMIN</span>
+                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-yellow-400 rounded-full"></div> POWERED BY THE DIGITALIZED AND INNOVATIVE SECRETARIAT. GET PREMIUM VISIBILITY FOR YOUR BUSINESS BY ADVERTISING ON THE WEBSITE, SEND A MESSAGE TO 08141693252 OR HONOUR2EST@GMAIL.COM (30% DISCOUNT FOR NASS LASU STUDENTS)</span>
                 </React.Fragment>
               ))}
             </div>
