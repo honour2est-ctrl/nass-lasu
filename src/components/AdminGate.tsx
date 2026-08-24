@@ -19,27 +19,23 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Authorized Admin Emails
+  // Authorized Admin & Google Sign-In Emails
   const ALLOWED_ADMIN_EMAILS = [
     'honour2est@gmail.com', 
     'ekopeters@gmail.com'
   ];
-  
-  // Only this email is allowed to use Google Sign-In
-  const GOOGLE_ADMIN_EMAIL = 'honour2est@gmail.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // Check if the user signed in via Google
         const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
 
         if (!ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
           setError(`Access denied for ${currentUser.email}. Not an authorized admin.`);
           signOut(auth); 
           setUser(null);
-        } else if (isGoogleProvider && currentUser.email !== GOOGLE_ADMIN_EMAIL) {
-          setError('Google Sign-In is restricted. Please use Email and Password.');
+        } else if (isGoogleProvider && !ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
+          setError('Google Sign-In is restricted to authorized admins.');
           signOut(auth);
           setUser(null);
         } else {
