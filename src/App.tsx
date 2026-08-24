@@ -67,6 +67,8 @@ const INITIAL_EVENTS_DATA = [
   }
 ];
 
+const DEFAULT_MARQUEE = "Powered By The Digitalized And Innovative Secretariat. Get premium visibility for your business by advertising on the website, send a message to 08141693252 or honour2est@gmail.com (30% discount for Nass Lasu Students)";
+
 export default function App() {
   const { addToast } = useToast();
   const { scrollYProgress } = useScroll();
@@ -382,8 +384,10 @@ export default function App() {
     }
   };
 
+  const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
+
   return (
-    <div className="relative min-h-screen font-sans text-slate-200">
+    <div className="relative min-h-screen font-sans text-slate-200 pb-16">
       <BackgroundEngine />
       <CursorTrail />
       <motion.div
@@ -442,7 +446,7 @@ export default function App() {
           </div>
         </nav>
 
-        <main className="flex flex-col gap-32 pb-32 pt-24">
+        <main className="flex flex-col gap-32 pb-16 pt-24">
           
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
@@ -1258,9 +1262,16 @@ export default function App() {
               <div className="relative z-10 w-full flex justify-center items-center shrink-0">
                 <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center p-2 bg-slate-900 border-2 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.2)] overflow-hidden">
                   <img 
-                    src="/secretariat_logo.png" 
+                    referrerPolicy="no-referrer"
+                    src={siteContentMap.secretariat_logo_url || "/secretariat_logo.png"} 
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('/nass_logo.jpg')) {
+                        target.src = '/nass_logo.jpg';
+                      }
+                    }}
                     alt="The Secretariat Logo" 
-                    className="w-full h-full object-contain scale-110"
+                    className="w-full h-full object-contain scale-105"
                   />
                 </div>
               </div>
@@ -1290,11 +1301,11 @@ export default function App() {
                         <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
                       </a>
                       
-                      <a href={`mailto:${siteContentMap.secretariat_email || 'nasslasu@gmail.com'}`} className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
+                      <a href={`mailto:${siteContentMap.secretariat_email || 'honour2est@gmail.com'}`} className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400 transition-colors">
                           <MessageSquare size={18} />
                         </div>
-                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'nasslasu@gmail.com'}</span>
+                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'honour2est@gmail.com'}</span>
                       </a>
                     </div>
                     
@@ -1309,16 +1320,6 @@ export default function App() {
               <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
             </div>
           </section>
-
-          <footer className="h-16 mt-8 border-y border-white/10 bg-black/40 backdrop-blur-md flex items-center overflow-hidden">
-            <div className="flex items-center gap-12 whitespace-nowrap px-8 text-[11px] font-bold tracking-widest text-slate-400 animate-[marquee_30s_linear_infinite]">
-              {[...Array(6)].map((_, i) => (
-                <React.Fragment key={i}>
-                  <span className="flex items-center gap-2"><div className="w-1 h-1 bg-yellow-400 rounded-full"></div> POWERED BY THE DIGITALIZED AND INNOVATIVE SECRETARIAT. GET PREMIUM VISIBILITY FOR YOUR BUSINESS BY ADVERTISING ON THE WEBSITE, SEND A MESSAGE TO 08141693252 OR HONOUR2EST@GMAIL.COM (30% DISCOUNT FOR NASS LASU STUDENTS)</span>
-                </React.Fragment>
-              ))}
-            </div>
-          </footer>
 
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
@@ -1342,6 +1343,18 @@ export default function App() {
 
         </main>
       </div>
+
+      {/* Sticky Bottom Persistent Marquee */}
+      <aside aria-label="Announcement ticker" className="fixed bottom-0 left-0 right-0 z-40 h-11 border-t border-yellow-400/30 bg-slate-950/95 backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)]">
+        <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider text-slate-200 animate-[marquee_28s_linear_infinite]">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 shrink-0">
+              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse shrink-0" />
+              <span>{activeMarqueeText}</span>
+            </div>
+          ))}
+        </div>
+      </aside>
 
       <Chatbot />
 
@@ -1401,7 +1414,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-4">
+      <div className="fixed bottom-14 left-6 z-50 flex flex-col items-start gap-4">
         <AnimatePresence>
           {isQuickActionsOpen && (
             <motion.div
