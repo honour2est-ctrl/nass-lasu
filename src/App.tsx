@@ -246,7 +246,7 @@ export default function App() {
     const defaultFileName = isConstitution ? 'NASS_LASU_CONSTITUTION.pdf' : 'NASS_LASU_STANDING_ORDERS.docx';
     
     setDownloadingDocType(docType);
-    addToast(`Searching backend for ${docName}...`, 'info');
+    addToast(`Downloading ${docName}... Please wait a bit`, 'info');
 
     let downloadUrl: string | null = null;
 
