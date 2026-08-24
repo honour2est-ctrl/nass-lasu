@@ -243,7 +243,7 @@ export default function App() {
   const handleDownloadDocument = async (docType: 'constitution' | 'standing_orders') => {
     const isConstitution = docType === 'constitution';
     const docName = isConstitution ? 'NASS LASU Constitution' : 'NASS LASU Standing Orders';
-    const defaultFileName = isConstitution ? 'NASS_LASU_CONSTITUTION.pdf' : 'NASS_LASU_STANDING_ORDERS.pdf';
+    const defaultFileName = isConstitution ? 'NASS_LASU_CONSTITUTION.pdf' : 'NASS_LASU_STANDING_ORDERS.docx';
     
     setDownloadingDocType(docType);
     addToast(`Searching backend for ${docName}...`, 'info');
@@ -278,13 +278,15 @@ export default function App() {
         'constitution.pdf',
         'NASS_LASU_CONSTITUTION.pdf'
       ] : [
+        'documents/NASS_LASU_STANDING_ORDERS.docx',
+        'documents/NASS_LASU_STANDING_ORDERS.doc',
         'documents/NASS_LASU_STANDING_ORDERS.pdf',
-        'documents/nass_lasu_standing_orders.pdf',
-        'documents/standing_orders.pdf',
-        'documents/Nass_Lasu_Standing_Orders.pdf',
-        'nass_lasu_standing_orders.pdf',
-        'standing_orders.pdf',
-        'NASS_LASU_STANDING_ORDERS.pdf'
+        'documents/nass_lasu_standing_orders.docx',
+        'documents/standing_orders.docx',
+        'documents/Nass_Lasu_Standing_Orders.docx',
+        'nass_lasu_standing_orders.docx',
+        'standing_orders.docx',
+        'NASS_LASU_STANDING_ORDERS.docx'
       ];
 
       for (const path of candidatePaths) {
