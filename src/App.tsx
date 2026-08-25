@@ -215,15 +215,30 @@ export default function App() {
       console.warn("Firestore listener warning (hallOfFame):", error.message);
     });
 
-    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
-      const map: Record<string, string> = {};
-      snap.docs.forEach(doc => {
+    const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
+      const map = { ...existingMap };
+      snap.docs.forEach((doc: any) => {
         const d = doc.data();
-        if (d.contentKey) map[d.contentKey] = d.value || '';
+        const key = d.contentKey || doc.id;
+        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || '');
+        if (key) map[key] = val;
       });
-      setSiteContentMap(map);
+      return map;
+    };
+
+    let combinedMap: Record<string, string> = {};
+    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
+      combinedMap = updateMapFromSnap(snap, combinedMap);
+      setSiteContentMap({ ...combinedMap });
     }, (error) => {
       console.warn("Firestore listener warning (siteContent):", error.message);
+    });
+
+    const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
+      combinedMap = updateMapFromSnap(snap, combinedMap);
+      setSiteContentMap({ ...combinedMap });
+    }, (error) => {
+      console.warn("Firestore listener warning (site_content):", error.message);
     });
 
     return () => {
@@ -237,6 +252,7 @@ export default function App() {
       unsubCorePillars();
       unsubHallOfFame();
       unsubSiteContent();
+      unsubSiteContentAlt();
     };
   }, []);
 
