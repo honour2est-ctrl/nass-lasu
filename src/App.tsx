@@ -335,14 +335,31 @@ export default function App() {
     setDownloadingDocType(null);
 
     if (downloadUrl) {
-      addToast(`Downloading ${docName}...`, 'info');
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = defaultFileName; // Forces direct download instead of opening in a new tab
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      addToast(`Successfully downloaded ${docName}!`, 'success');
+      try {
+        // Fetching as a blob and setting object URL forces true browser file download instead of previewing
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = defaultFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+        
+        addToast(`Successfully downloaded ${docName}!`, 'success');
+      } catch (err) {
+        // Fallback method using direct anchor assignment if network restrictions apply
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = defaultFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        addToast(`Successfully downloaded ${docName}!`, 'success');
+      }
     } else {
       addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
     }
