@@ -335,22 +335,16 @@ export default function App() {
     setDownloadingDocType(null);
 
     if (downloadUrl) {
-      addToast(`Downloading ${docName} to your device...`, 'info');
-      try {
-        const res = await fetch(downloadUrl);
-        const blob = await res.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = defaultFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-        addToast(`Successfully downloaded ${docName}!`, 'success');
-      } catch (err) {
-        addToast(`Could not complete secure download. Please try again.`, 'error');
-      }
+      addToast(`Downloading ${docName}...`, 'info');
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = defaultFileName;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      addToast(`Successfully triggered download for ${docName}!`, 'success');
     } else {
       addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
     }
