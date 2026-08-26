@@ -349,15 +349,7 @@ export default function App() {
         window.URL.revokeObjectURL(blobUrl);
         addToast(`Successfully downloaded ${docName}!`, 'success');
       } catch (err) {
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = defaultFileName;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        addToast(`Opened ${docName} download link!`, 'success');
+        addToast(`Could not complete secure download. Please try again.`, 'error');
       }
     } else {
       addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
