@@ -338,13 +338,11 @@ export default function App() {
       addToast(`Downloading ${docName}...`, 'info');
       const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = defaultFileName;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
+      a.download = defaultFileName; // Forces direct download instead of opening in a new tab
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      addToast(`Successfully triggered download for ${docName}!`, 'success');
+      addToast(`Successfully downloaded ${docName}!`, 'success');
     } else {
       addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
     }
