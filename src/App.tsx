@@ -10,7 +10,7 @@ import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { executivesData as staticExecs, ssrcData as staticSsrc, studentBrandsData as staticBrands } from './data';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, Vote, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -336,7 +336,6 @@ export default function App() {
 
     if (downloadUrl) {
       try {
-        // Fetching as a blob and setting object URL forces true browser file download instead of previewing
         const response = await fetch(downloadUrl);
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
@@ -351,7 +350,6 @@ export default function App() {
         
         addToast(`Successfully downloaded ${docName}!`, 'success');
       } catch (err) {
-        // Fallback method using direct anchor assignment if network restrictions apply
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = defaultFileName;
@@ -555,9 +553,9 @@ export default function App() {
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
               {(corePillarsData.length > 0 ? corePillarsData : [
-                { icon: '🗳️', title: "E-Voting", desc: "Secure digital ballot system for faculty elections." },
                 { icon: '📚', title: "PDF Vault", desc: "Instant access to academic past questions & materials." },
-                { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." }
+                { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." },
+                { icon: '🛍️', title: "Marketplace", desc: "Showcasing student-owned brands and campus businesses." }
               ]).map((F, i) => (
                 <div key={i} className="bg-white/5 border border-white/10 p-5 md:p-6 rounded-2xl backdrop-blur-xl hover:border-yellow-400/50 transition-all hover:-translate-y-1">
                   <div className="text-yellow-400 text-2xl md:text-3xl mb-4">{F.icon}</div>
@@ -758,30 +756,6 @@ export default function App() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
-          </section>
-
-          <section id="e-voting" className="px-4 max-w-4xl mx-auto w-full my-20">
-            <div className="text-center mb-10">
-              <div className="text-yellow-400 text-4xl mb-4">🗳️</div>
-              <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight mb-2">
-                E-VOTING PORTAL
-              </h2>
-              <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-8">Secure digital ballot system</p>
-              
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/5 to-transparent pointer-events-none" />
-                <div className="relative z-10">
-                  <Vote className="w-16 h-16 text-slate-500 mx-auto mb-6 opacity-50" />
-                  <h3 className="text-2xl font-bold text-white mb-4">Elections Currently Closed</h3>
-                  <p className="text-slate-400 mb-8 max-w-lg mx-auto">
-                    The faculty e-voting system is currently inactive. Announcements will be made when the next election cycle begins.
-                  </p>
-                  <button disabled className="px-8 py-3 rounded-xl bg-slate-800 text-slate-500 font-bold uppercase tracking-widest cursor-not-allowed border border-white/5">
-                    Login to Vote
-                  </button>
-                </div>
               </div>
             </div>
           </section>
@@ -1478,18 +1452,6 @@ export default function App() {
                   <BookOpen size={18} className="text-slate-900" />
                 </div>
                 <span className="text-xs uppercase tracking-wider font-extrabold">Academic Vault</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('e-voting')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Vote size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">E-Voting</span>
               </button>
               <button 
                 onClick={() => {
