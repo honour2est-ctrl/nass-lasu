@@ -21,23 +21,23 @@ const escapeRegExp = (string: string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
-const highlightText = (text: string, query: string) => {
+const highlightText = (text: string, query: string, isDarkMode: boolean) => {
   if (!query.trim()) return text;
   const escapedQuery = escapeRegExp(query);
   const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
   return parts.map((part, i) => 
     part.toLowerCase() === query.toLowerCase() 
-      ? <span key={i} className="bg-yellow-400/30 text-yellow-300 rounded-sm px-0.5">{part}</span>
+      ? <span key={i} className={`rounded-sm px-0.5 ${isDarkMode ? 'bg-yellow-400/30 text-yellow-300' : 'bg-yellow-500/30 text-yellow-800 font-bold'}`}>{part}</span>
       : part
   );
 };
 
-const renderWithBold = (text: string) => {
+const renderWithBold = (text: string, isDarkMode: boolean) => {
   if (!text) return null;
   const parts = text.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
+      return <strong key={i} className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
     }
     return <span key={i}>{part}</span>;
   });
@@ -85,6 +85,7 @@ export default function App() {
     }
   };
 
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [vaultSearchQuery, setVaultSearchQuery] = useState('');
   const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
@@ -404,7 +405,7 @@ export default function App() {
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
 
   return (
-    <div className="relative min-h-screen font-sans text-slate-200 pb-16">
+    <div className={`relative min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
       <BackgroundEngine />
       <CursorTrail />
       <motion.div
@@ -414,15 +415,16 @@ export default function App() {
       
       <div className="relative z-10 selection:bg-yellow-400 selection:text-slate-900">
         
-        <nav className="fixed top-0 w-full z-50 h-16 border-b border-white/10 bg-white/5 backdrop-blur-md px-3 md:px-8 flex items-center justify-between">
+        <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
               <img referrerPolicy="no-referrer" src="/nass_logo.jpg" alt="NASS Logo" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-yellow-400/50" />
               <div>
-                <h1 className="text-xs md:text-sm font-bold tracking-tighter text-white font-space-grotesk uppercase">NASS LASU</h1>
-                <p className="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest font-semibold leading-tight">36th Administration</p>
+                <h1 className={`text-xs md:text-sm font-bold tracking-tighter font-space-grotesk uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>NASS LASU</h1>
+                <p className={`text-[9px] md:text-[10px] uppercase tracking-widest font-semibold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>36th Administration</p>
               </div>
             </div>
+            
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
               <a 
                 href="#executives" 
@@ -459,6 +461,20 @@ export default function App() {
                 <Siren size={14} className="text-slate-900 animate-pulse" />
                 <span className="hidden lg:inline">Hotline</span>
               </a>
+
+              {/* Theme Toggle Button */}
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 ${
+                  isDarkMode 
+                    ? 'bg-white/10 border-white/20 text-yellow-400 hover:bg-white/20' 
+                    : 'bg-slate-200 border-slate-300 text-amber-600 hover:bg-slate-300'
+                }`}
+                aria-label="Toggle Theme"
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isDarkMode ? '☀️' : '🌙'}
+              </button>
             </div>
           </div>
         </nav>
@@ -468,16 +484,16 @@ export default function App() {
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               <div className="space-y-4">
-                <h1 className="font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] bg-gradient-to-r from-white via-white to-yellow-400 bg-clip-text text-transparent uppercase">
+                <h1 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] bg-gradient-to-r ${isDarkMode ? 'from-white via-white to-yellow-400' : 'from-slate-900 via-slate-800 to-yellow-600'} bg-clip-text text-transparent uppercase`}>
                   NIGERIAN ASSOCIATION OF SCIENCE STUDENTS<br />
                   <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
                 </h1>
-                <p className="text-yellow-400 font-mono tracking-[0.3em] text-[10px] md:text-xs font-semibold uppercase mt-4">
+                <p className="text-yellow-500 font-mono tracking-[0.3em] text-[10px] md:text-xs font-semibold uppercase mt-4">
                   {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
                 </p>
               </div>
               
-              <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                 {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
               </p>
 
@@ -508,38 +524,38 @@ export default function App() {
           </section>
 
           <section id="about" className="px-4 max-w-5xl mx-auto w-full">
-            <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight text-center">
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
               ABOUT NASS-LASU
             </h2>
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl">
-              <div className="prose prose-invert max-w-none text-slate-300 space-y-6">
+            <div className={`border rounded-3xl p-8 md:p-12 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
+              <div className="prose max-w-none space-y-6">
                 <p className="text-lg leading-relaxed">
-                  The <strong className="text-white">Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-400 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
+                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
                 </p>
-                <div className="h-px w-full bg-white/10 my-8" />
+                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
                 <p className="leading-relaxed">
                   The association represents students across three main academic branches:
                 </p>
-                <ul className="list-disc pl-6 space-y-2 text-slate-400 marker:text-yellow-400">
-                  <li><strong className="text-white">Biological Science:</strong> Biochemistry, Botany, Fisheries and Aquatic Biology, Microbiology, SLT, Zoology and Environment Biology</li>
-                  <li><strong className="text-white">Chemical Science:</strong> Chemistry</li>
-                  <li><strong className="text-white">Physical Science:</strong> Physics, Mathematics</li>
+                <ul className={`list-disc pl-6 space-y-2 marker:text-yellow-500 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Biological Science:</strong> Biochemistry, Botany, Fisheries and Aquatic Biology, Microbiology, SLT, Zoology and Environment Biology</li>
+                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Chemical Science:</strong> Chemistry</li>
+                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Physical Science:</strong> Physics, Mathematics</li>
                 </ul>
-                <div className="h-px w-full bg-white/10 my-8" />
+                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
                 <p className="leading-relaxed">
                   NASS-LASU is structured like a formal micro-government, governed by a strict constitution with distinct branches of power:
                 </p>
-                <ul className="space-y-4 text-slate-400">
-                  <li className="bg-black/20 p-6 rounded-2xl border border-white/5">
-                    <strong className="text-yellow-400 font-bold text-lg block mb-2">The Executive Arm</strong>
-                    {siteContentMap.executive_arm_text ? renderWithBold(siteContentMap.executive_arm_text) : (
-                      <>Led by the <strong className="text-white">Science Students' Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students' Executive Council (DSEC).</>
+                <ul className="space-y-4">
+                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Executive Arm</strong>
+                    {siteContentMap.executive_arm_text ? renderWithBold(siteContentMap.executive_arm_text, isDarkMode) : (
+                      <>Led by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students' Executive Council (DSEC).</>
                     )}
                   </li>
-                  <li className="bg-black/20 p-6 rounded-2xl border border-white/5">
-                    <strong className="text-yellow-400 font-bold text-lg block mb-2">The Legislative Arm</strong>
-                    {siteContentMap.legislative_arm_text ? renderWithBold(siteContentMap.legislative_arm_text) : (
-                      <>Headed by the <strong className="text-white">Science Students' Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.</>
+                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Legislative Arm</strong>
+                    {siteContentMap.legislative_arm_text ? renderWithBold(siteContentMap.legislative_arm_text, isDarkMode) : (
+                      <>Headed by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.</>
                     )}
                   </li>
                 </ul>
@@ -548,7 +564,7 @@ export default function App() {
           </section>
 
           <section id="digitalized" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
               CORE PILLARS
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
@@ -557,10 +573,10 @@ export default function App() {
                 { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." },
                 { icon: '🛍️', title: "Marketplace", desc: "Showcasing student-owned brands and campus businesses." }
               ]).map((F, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 p-5 md:p-6 rounded-2xl backdrop-blur-xl hover:border-yellow-400/50 transition-all hover:-translate-y-1">
-                  <div className="text-yellow-400 text-2xl md:text-3xl mb-4">{F.icon}</div>
-                  <h3 className="text-xs font-bold uppercase mb-2 tracking-wide text-white">{F.title}</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">{F.desc}</p>
+                <div key={i} className={`border p-5 md:p-6 rounded-2xl backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <div className="text-yellow-500 text-2xl md:text-3xl mb-4">{F.icon}</div>
+                  <h3 className={`text-xs font-bold uppercase mb-2 tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{F.title}</h3>
+                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{F.desc}</p>
                 </div>
               ))}
             </div>
@@ -568,21 +584,21 @@ export default function App() {
 
           <section id="executives" className="px-4 max-w-7xl mx-auto w-full">
             <div className="flex items-end justify-between mb-8">
-              <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 TOP EXECUTIVES
               </h2>
-              <span className="text-[10px] text-yellow-400 underline cursor-pointer font-bold tracking-widest uppercase">View All</span>
+              <span className="text-[10px] text-yellow-500 underline cursor-pointer font-bold tracking-widest uppercase">View All</span>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {isLoadingData ? (
                 Array.from({ length: 6 }).map((_, idx) => (
-                  <div key={idx} className="rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden animate-pulse">
+                  <div key={idx} className={`rounded-3xl border overflow-hidden animate-pulse ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
                     <div className="aspect-[4/5] relative">
                       <div className="absolute bottom-6 left-6 right-6 z-20 space-y-3">
-                        <div className="h-5 w-24 bg-yellow-400/20 rounded"></div>
-                        <div className="h-8 w-48 bg-white/10 rounded"></div>
-                        <div className="h-4 w-32 bg-white/10 rounded"></div>
+                        <div className={`h-5 w-24 rounded ${isDarkMode ? 'bg-yellow-400/20' : 'bg-yellow-100'}`}></div>
+                        <div className={`h-8 w-48 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
+                        <div className={`h-4 w-32 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
                       </div>
                     </div>
                   </div>
@@ -599,10 +615,10 @@ export default function App() {
                       transition={{ duration: 0.5, delay: idx * 0.1 }}
                       key={ex.id} 
                       onClick={() => setSelectedExecutive(ex)}
-                      className={`group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all cursor-pointer ${borderClasses} hover:scale-[1.02]`}
+                      className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer ${borderClasses} ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
                     >
                       <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
                         <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute bottom-6 left-6 right-6 z-20">
                           <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
@@ -612,7 +628,7 @@ export default function App() {
                             {ex.nickname ? (
                               <div className="flex flex-col gap-1">
                                 <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
-                                <span className="text-base font-normal text-yellow-400">{ex.name}</span>
+                                <span className="text-base font-normal text-yellow-200">{ex.name}</span>
                               </div>
                             ) : (
                               ex.name
@@ -634,19 +650,19 @@ export default function App() {
           </section>
 
           <section id="ssrc" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className="font-space-grotesk text-2xl md:text-4xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
+            <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
               SCIENCE STUDENT REPRESENTATIVE COUNCIL<br />
-              <span className="text-xl md:text-2xl text-slate-400 block mt-2">(36th Legislative Council)</span>
+              <span className={`text-xl md:text-2xl block mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>(36th Legislative Council)</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {isLoadingData ? (
                 Array.from({ length: 8 }).map((_, idx) => (
-                  <div key={idx} className="rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden animate-pulse">
+                  <div key={idx} className={`rounded-3xl border overflow-hidden animate-pulse ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
                     <div className="aspect-[4/5] relative">
                       <div className="absolute bottom-6 left-6 right-6 z-20 space-y-3">
-                        <div className="h-5 w-24 bg-yellow-400/20 rounded"></div>
-                        <div className="h-6 w-32 bg-white/10 rounded"></div>
-                        <div className="h-3 w-20 bg-white/10 rounded"></div>
+                        <div className={`h-5 w-24 rounded ${isDarkMode ? 'bg-yellow-400/20' : 'bg-yellow-100'}`}></div>
+                        <div className={`h-6 w-32 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
+                        <div className={`h-3 w-20 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
                       </div>
                     </div>
                   </div>
@@ -659,17 +675,17 @@ export default function App() {
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.5, delay: idx * 0.1 }}
                     key={mem.id} 
-                    className="group relative rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden hover:border-yellow-400/50 transition-all cursor-pointer"
+                    className={`group relative rounded-3xl border overflow-hidden transition-all cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}
                   >
                     <div className="aspect-[4/5] overflow-hidden relative">
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent z-10 opacity-90" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
                       <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
                         <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
                           {mem.duty}
                         </div>
                         <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
-                        <p className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">{mem.department}</p>
+                        <p className="text-[11px] text-slate-300 uppercase tracking-widest font-semibold">{mem.department}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -677,18 +693,18 @@ export default function App() {
               )}
             </div>
 
-            <div className="mt-12 p-8 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(250,204,21,0.05)]">
+            <div className={`mt-12 p-8 border rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
               <div>
-                <h3 className="font-space-grotesk text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <h3 className={`font-space-grotesk text-xl font-bold mb-2 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                   <span>Legislative Documents</span>
                 </h3>
-                <p className="text-sm text-slate-400">Download the official constitution and standing orders of NASS LASU directly to your device.</p>
+                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Download the official constitution and standing orders of NASS LASU directly to your device.</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                 <button 
                   onClick={() => handleDownloadDocument('constitution')}
                   disabled={downloadingDocType === 'constitution'}
-                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow.md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   <Download size={16} className={downloadingDocType === 'constitution' ? 'animate-bounce' : ''} />
                   <span>{downloadingDocType === 'constitution' ? 'Downloading...' : 'NASS LASU CONSTITUTION'}</span>
@@ -706,78 +722,48 @@ export default function App() {
           </section>
 
           <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight text-center">
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
               DEPARTMENTS
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:border-yellow-400/30 transition-all">
-                <h3 className="font-space-grotesk text-xl font-bold text-yellow-400 uppercase tracking-widest mb-6">A. Biological Science</h3>
-                <ul className="space-y-4">
-                  {[
-                    "Department of Biochemistry",
-                    "Department of Botany",
-                    "Department of Fisheries and Aquatic Biology",
-                    "Department of Microbiology",
-                    "Department of Science Laboratory Technology",
-                    "Department of Zoology and Environment Biology"
-                  ].map((dept, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-400/50 mt-2 shrink-0" />
-                      <span className="text-sm text-slate-300 font-medium">{dept}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:border-yellow-400/30 transition-all">
-                <h3 className="font-space-grotesk text-xl font-bold text-yellow-400 uppercase tracking-widest mb-6">B. Chemical Science</h3>
-                <ul className="space-y-4">
-                  {[
-                    "Department of Chemistry"
-                  ].map((dept, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-400/50 mt-2 shrink-0" />
-                      <span className="text-sm text-slate-300 font-medium">{dept}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:border-yellow-400/30 transition-all">
-                <h3 className="font-space-grotesk text-xl font-bold text-yellow-400 uppercase tracking-widest mb-6">C. Physical Science</h3>
-                <ul className="space-y-4">
-                  {[
-                    "Department of Physics",
-                    "Department of Mathematics"
-                  ].map((dept, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-400/50 mt-2 shrink-0" />
-                      <span className="text-sm text-slate-300 font-medium">{dept}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {[
+                { title: "A. Biological Science", items: ["Department of Biochemistry", "Department of Botany", "Department of Fisheries and Aquatic Biology", "Department of Microbiology", "Department of Science Laboratory Technology", "Department of Zoology and Environment Biology"] },
+                { title: "B. Chemical Science", items: ["Department of Chemistry"] },
+                { title: "C. Physical Science", items: ["Department of Physics", "Department of Mathematics"] }
+              ].map((branch, idx) => (
+                <div key={idx} className={`border rounded-3xl p-8 backdrop-blur-xl transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <h3 className="font-space-grotesk text-xl font-bold text-yellow-500 uppercase tracking-widest mb-6">{branch.title}</h3>
+                  <ul className="space-y-4">
+                    {branch.items.map((dept, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mt-2 shrink-0" />
+                        <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dept}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </section>
 
           <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
             <div className="text-center mb-10">
-              <div className="text-yellow-400 text-4xl mb-4">📚</div>
-              <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight mb-2">
+              <div className="text-yellow-500 text-4xl mb-4">📚</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
                 ACADEMIC VAULT
               </h2>
-              <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-8">Secure access to past questions & syllabi</p>
+              <p className={`text-xs uppercase tracking-widest font-bold mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Secure access to past questions & syllabi</p>
               
               <div className="relative max-w-md mx-auto mb-6">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-slate-400" />
+                  <Search className={`h-5 w-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
                 </div>
                 <input
                   type="text"
                   placeholder="Search by department or year..."
                   value={vaultSearchQuery}
                   onChange={(e) => setVaultSearchQuery(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-3.5 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-xl text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400/50 transition-all text-sm"
+                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
                 />
               </div>
 
@@ -791,7 +777,7 @@ export default function App() {
                       className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors border ${
                         isActive 
                           ? 'bg-yellow-400 text-slate-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
-                          : 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200'
+                          : isDarkMode ? 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200' : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
                       }`}
                     >
                       {level}
@@ -803,8 +789,8 @@ export default function App() {
             
             {lastViewedResources.length > 0 && !vaultSearchQuery && (
               <div className="mb-8 space-y-3">
-                <h3 className="text-sm font-bold text-yellow-400 uppercase tracking-widest px-1">Recently Viewed</h3>
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 space-y-2">
+                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
+                <div className={`border rounded-2xl p-4 space-y-2 backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
                   {lastViewedResources.map((item, index) => (
                     <motion.div 
                       key={`recent-${item.id}-${index}`}
@@ -812,14 +798,14 @@ export default function App() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: "-10%" }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
-                      className="flex justify-between items-center py-2.5 px-3 rounded-lg bg-slate-900/50 border border-white/5 hover:border-yellow-400/30 transition-colors group/item"
+                      className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
                     >
-                      <div className="flex items-center gap-3 text-slate-300">
+                      <div className="flex items-center gap-3">
                         <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                          <span className="text-yellow-400 text-sm">📄</span>
+                          <span className="text-yellow-500 text-sm">📄</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-medium text-white">{item.title || 'Past Questions'}</span>
+                          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title || 'Past Questions'}</span>
                           <div className="flex items-center gap-2">
                             <span className="text-[9px] text-slate-400 font-mono">{item.year || ''} Session</span>
                             {item.department && <span className="text-[9px] text-slate-500 font-mono hidden sm:inline-block truncate max-w-[150px]">{item.department}</span>}
@@ -831,7 +817,7 @@ export default function App() {
                           </div>
                         </div>
                       </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className="text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 transition-colors border border-white/10 hover:border-yellow-400 inline-block">
+                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-200 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                         View Material
                       </a>
                     </motion.div>
@@ -870,18 +856,18 @@ export default function App() {
                 }
 
                 return (
-                  <details key={i} className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex justify-between items-center p-5 cursor-pointer hover:bg-white/5 transition-colors">
-                      <span className="font-bold text-sm tracking-wide text-white">{highlightText(`${dept} Resources`, vaultSearchQuery)}</span>
-                      <span className="text-yellow-400 text-sm group-open:rotate-180 transition-transform">▼</span>
+                  <details key={i} className={`group border rounded-2xl overflow-hidden backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
+                      <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
+                      <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
                     </summary>
-                    <div className="p-4 pt-0 border-t border-white/5 space-y-3 mt-4">
+                    <div className={`p-4 pt-0 border-t space-y-3 mt-4 ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
                       {deptItems.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-10 text-center space-y-3 bg-slate-900/30 rounded-xl border border-white/5">
-                          <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2">
+                        <div className={`flex flex-col items-center justify-center py-10 text-center space-y-3 rounded-xl border ${isDarkMode ? 'bg-slate-900/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
                             <BookOpen className="w-5 h-5 text-slate-500" />
                           </div>
-                          <p className="text-slate-300 font-medium text-sm">No resources uploaded yet</p>
+                          <p className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No resources uploaded yet</p>
                           <p className="text-slate-500 text-xs max-w-[250px] leading-relaxed">
                             Check back later. The academic team is currently gathering materials for this department.
                           </p>
@@ -892,21 +878,21 @@ export default function App() {
                           if (levelItems.length === 0) return null;
 
                           return (
-                            <details key={level} className="group/level bg-slate-800/30 rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border border-white/5">
-                              <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-white/5 transition-colors group/summary">
+                            <details key={level} className={`group/level rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border ${isDarkMode ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                              <summary className={`flex justify-between items-center p-4 cursor-pointer transition-colors group/summary ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
                                 <div className="flex items-center gap-3">
-                                  <span className="font-semibold text-xs tracking-wide text-slate-200">{level}</span>
+                                  <span className={`font-semibold text-xs tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{level}</span>
                                 </div>
-                                <span className="text-yellow-400/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
+                                <span className="text-yellow-500/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
                               </summary>
-                              <div className="p-4 pt-0 space-y-4 border-t border-white/5 mt-2">
+                              <div className={`p-4 pt-0 space-y-4 border-t mt-2 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
                                 {['First Semester', 'Second Semester'].map(semester => {
                                   const semesterItems = levelItems.filter(item => item.semester === semester);
                                   if (semesterItems.length === 0) return null;
 
                                   return (
                                     <div key={semester} className="space-y-2">
-                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-400/80 ml-1">{semester}</h4>
+                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
                                       <div className="space-y-2">
                                         {semesterItems.map((item, index) => (
                                           <motion.div 
@@ -915,16 +901,16 @@ export default function App() {
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, margin: "-10%" }}
                                             transition={{ delay: index * 0.05, duration: 0.3 }}
-                                            className="flex justify-between items-center py-2.5 px-3 rounded-lg bg-slate-900/50 border border-white/5 hover:border-yellow-400/30 transition-colors group/item"
+                                            className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
                                           >
-                                            <div className="flex items-center gap-3 text-slate-300">
+                                            <div className="flex items-center gap-3">
                                               <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                                                <span className="text-yellow-400 text-sm">📄</span>
+                                                <span className="text-yellow-500 text-sm">📄</span>
                                               </div>
                                               <div className="flex flex-col">
-                                                <span className="text-[11px] font-medium text-white">{highlightText(item.title || 'Past Questions', vaultSearchQuery)}</span>
+                                                <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{highlightText(item.title || 'Past Questions', vaultSearchQuery, isDarkMode)}</span>
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery)}</span>
+                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery, isDarkMode)}</span>
                                                   {(item.viewCount !== undefined) && (
                                                     <span className="flex items-center gap-1 text-[9px] text-slate-500 font-mono" title={`${item.viewCount} views`}>
                                                       <Eye size={10} /> {item.viewCount}
@@ -938,7 +924,7 @@ export default function App() {
                                                 </div>
                                               </div>
                                             </div>
-                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className="text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 transition-colors border border-white/10 hover:border-yellow-400 inline-block">
+                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                                               View Material
                                             </a>
                                           </motion.div>
@@ -973,7 +959,7 @@ export default function App() {
                 const years = [2021, 2022];
                 return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
               }) && (
-                <div className="text-center py-8 text-slate-400 text-sm bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
+                <div className={`text-center py-8 text-sm border rounded-2xl backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
                   No past questions found matching "{vaultSearchQuery}"
                 </div>
               )}
@@ -982,18 +968,18 @@ export default function App() {
 
           <section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
             <div className="text-center mb-10">
-              <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 NASS LASU ONLINE MARKETPLACE
               </h2>
-              <p className="text-sm md:text-base text-slate-400 leading-relaxed max-w-3xl mx-auto">
+              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                 NASS LASU is committed to empowering student-owned businesses by providing visibility and promotional opportunities through the faculty website. By showcasing student brands, products, and services on this platform, we aim to increase their reach, enhance brand awareness, and drive sales. This initiative reflects our dedication to fostering innovation, entrepreneurship, and economic growth within the student community, ensuring that student entrepreneurs have the support they need to thrive.
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {studentBrandsData.map((brand) => (
-                <div key={brand.id} className="group relative rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden hover:border-yellow-400/50 transition-all flex flex-col">
+                <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="aspect-[4/3] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
                     <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
                       {brand.productImageUrl && (
@@ -1011,13 +997,13 @@ export default function App() {
                     </div>
                   </div>
                   <div className="p-6 flex flex-col flex-1">
-                    <p className="text-sm text-slate-400 mb-4 leading-relaxed line-clamp-3">{brand.description}</p>
+                    <p className={`text-sm mb-4 leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{brand.description}</p>
                     {brand.price && (
-                      <p className="text-sm font-bold text-white mb-4">Price: <span className="text-yellow-400 font-mono">{brand.price}</span></p>
+                      <p className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Price: <span className="text-yellow-500 font-mono">{brand.price}</span></p>
                     )}
                     <div className="mt-auto space-y-3">
                       {brand.website && (
-                        <a href={brand.website} target="_blank" rel="noopener noreferrer" className="block w-full text-center py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold text-slate-300 transition-colors">
+                        <a href={brand.website} target="_blank" rel="noopener noreferrer" className={`block w-full text-center py-2 border rounded-xl text-sm font-bold transition-colors ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'}`}>
                           Visit Website
                         </a>
                       )}
@@ -1035,27 +1021,27 @@ export default function App() {
 
           <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full relative">
             <div className="text-center mb-10">
-              <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 HALL OF FAME
               </h2>
-              <p className="text-sm md:text-base text-slate-400 italic tracking-wide max-w-2xl mx-auto">
+              <p className={`text-sm md:text-base italic tracking-wide max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                 "A Legacy Remembered, The Present Preserved, Future Scientific Leaders Inspired."
               </p>
             </div>
 
             {hallOfFameData.length === 0 ? (
-              <div className="text-center py-16 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl max-w-4xl mx-auto">
+              <div className={`text-center py-16 border rounded-3xl backdrop-blur-xl max-w-4xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
                 <div className="text-4xl mb-4 opacity-50">🏆</div>
-                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Profiles will be updated soon.</p>
+                <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Profiles will be updated soon.</p>
               </div>
             ) : (
               <>
                 <div className="flex justify-center mb-8">
                   <div className="w-full max-w-4xl flex flex-col gap-8">
                     {hallOfFameData.filter(h => h.cardType !== 'Honoree').map((honoree, hIdx) => (
-                      <div key={honoree.id || hIdx} className="w-full flex flex-col items-center bg-white/5 backdrop-blur-xl border border-yellow-400/50 rounded-3xl overflow-hidden group shadow-[0_0_40px_rgba(250,204,21,0.1)] p-8 lg:p-12 mt-4">
+                      <div key={honoree.id || hIdx} className={`w-full flex flex-col items-center border rounded-3xl overflow-hidden group p-8 lg:p-12 mt-4 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-yellow-400/50 shadow-[0_0_40px_rgba(250,204,21,0.1)]' : 'bg-white border-yellow-500 shadow-xl'}`}>
                         <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10 opacity-90" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
                           <img src={honoree.imageUrl} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
                           <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
                             <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
@@ -1071,18 +1057,18 @@ export default function App() {
                         </div>
 
                         <div className="w-full relative z-20 flex flex-col items-center text-center mt-2">
-                          <h3 className="text-lg md:text-xl text-yellow-400 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
+                          <h3 className="text-lg md:text-xl text-yellow-500 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
                             <span className="tracking-widest">{honoree.position}</span>
-                            {honoree.subtitle && <span className="text-white text-sm md:text-base opacity-90">{honoree.subtitle}</span>}
+                            {honoree.subtitle && <span className={`text-sm md:text-base opacity-90 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{honoree.subtitle}</span>}
                           </h3>
                           
-                          <div className="text-slate-300 text-sm leading-relaxed space-y-4 max-w-3xl mb-4">
+                          <div className={`text-sm leading-relaxed space-y-4 max-w-3xl mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
                             {honoree.tagline && (
-                              <p className="text-yellow-400/80 font-semibold tracking-wider uppercase text-xs md:text-sm">
+                              <p className="text-yellow-500/85 font-semibold tracking-wider uppercase text-xs md:text-sm">
                                 {honoree.tagline}
                               </p>
                             )}
-                            {honoree.bio && renderWithBold(honoree.bio)}
+                            {honoree.bio && renderWithBold(honoree.bio, isDarkMode)}
                           </div>
                         </div>
                       </div>
@@ -1092,13 +1078,13 @@ export default function App() {
 
                 <div className="flex flex-wrap justify-center gap-6">
                   {hallOfFameData.filter(h => h.cardType === 'Honoree').map((h, hIdx) => (
-                    <div key={h.id || hIdx} className="max-w-md p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-yellow-400/30 text-center relative overflow-hidden group">
+                    <div key={h.id || hIdx} className={`max-w-md p-8 rounded-3xl border text-center relative overflow-hidden group backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-yellow-400/30' : 'bg-white border-yellow-500 shadow-md'}`}>
                       <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl transition-colors" />
-                      <div className="text-yellow-400/50 text-4xl font-serif mb-4">"</div>
-                      <h3 className="text-lg font-bold text-white mb-1">{h.name}</h3>
-                      <p className="text-[10px] text-yellow-400 uppercase font-bold tracking-tighter mb-4">{h.position}</p>
-                      <p className="text-xs text-slate-300 italic mb-6 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">{h.quote}</p>
-                      <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
+                      <div className="text-yellow-500/50 text-4xl font-serif mb-4">"</div>
+                      <h3 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{h.name}</h3>
+                      <p className="text-[10px] text-yellow-500 uppercase font-bold tracking-tighter mb-4">{h.position}</p>
+                      <p className={`text-xs italic mb-6 leading-relaxed p-4 rounded-xl border ${isDarkMode ? 'text-slate-300 bg-white/5 border-white/5' : 'text-slate-600 bg-slate-50 border-slate-200'}`}>{h.quote}</p>
+                      <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-500 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
                     </div>
                   ))}
                 </div>
@@ -1108,12 +1094,12 @@ export default function App() {
 
           <section id="events" className="px-4 max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-              <h2 className="font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-white to-yellow-400 bg-clip-text text-transparent uppercase tracking-tight">
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 EVENTS GALLERY
               </h2>
               <button 
                 onClick={() => setIsRsvpOpen(true)}
-                className="px-6 py-3 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 rounded-full text-sm font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(250,204,21,0.2)] hover:shadow-[0_0_25px_rgba(250,204,21,0.4)] whitespace-nowrap self-start md:self-auto"
+                className="px-6 py-3 border border-yellow-400/50 text-yellow-500 hover:bg-yellow-400 hover:text-slate-900 rounded-full text-sm font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(250,204,21,0.2)] hover:shadow-[0_0_25px_rgba(250,204,21,0.4)] whitespace-nowrap self-start md:self-auto cursor-pointer"
               >
                 RSVP for Events
               </button>
@@ -1121,7 +1107,7 @@ export default function App() {
             <div className="relative group/scroll">
               <button
                 onClick={() => scrollEvents('left')}
-                className="absolute left-2 md:-left-6 top-1/2 -translate-y-1/2 z-40 bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-900 text-white p-2 md:p-3 rounded-full border border-white/20 transition-all opacity-100 md:opacity-0 group-hover/scroll:opacity-100 shadow-xl flex items-center justify-center pointer-events-auto"
+                className={`absolute left-2 md:-left-6 top-1/2 -translate-y-1/2 z-40 p-2 md:p-3 rounded-full border transition-all opacity-100 md:opacity-0 group-hover/scroll:opacity-100 shadow-xl flex items-center justify-center pointer-events-auto ${isDarkMode ? 'bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-900 text-white border-white/20' : 'bg-white/90 hover:bg-yellow-400 hover:text-slate-900 text-slate-800 border-slate-300'}`}
                 aria-label="Scroll left"
               >
                 <ChevronLeft size={24} className="w-5 h-5 md:w-6 md:h-6" />
@@ -1129,7 +1115,7 @@ export default function App() {
               
               <button
                 onClick={() => scrollEvents('right')}
-                className="absolute right-2 md:-right-6 top-1/2 -translate-y-1/2 z-40 bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-900 text-white p-2 md:p-3 rounded-full border border-white/20 transition-all opacity-100 md:opacity-0 group-hover/scroll:opacity-100 shadow-xl flex items-center justify-center pointer-events-auto"
+                className={`absolute right-2 md:-right-6 top-1/2 -translate-y-1/2 z-40 p-2 md:p-3 rounded-full border transition-all opacity-100 md:opacity-0 group-hover/scroll:opacity-100 shadow-xl flex items-center justify-center pointer-events-auto ${isDarkMode ? 'bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-900 text-white border-white/20' : 'bg-white/90 hover:bg-yellow-400 hover:text-slate-900 text-slate-800 border-slate-300'}`}
                 aria-label="Scroll right"
               >
                 <ChevronRight size={24} className="w-5 h-5 md:w-6 md:h-6" />
@@ -1148,7 +1134,7 @@ export default function App() {
                   const shouldRenderSlideshow = imagesArray.length > 0;
 
                   return (
-                  <div key={event.id} className="w-[85vw] sm:w-[320px] flex-none aspect-[4/5] relative rounded-2xl overflow-hidden group snap-center border border-white/10 hover:border-yellow-400/50 transition-all p-1 bg-white/5 backdrop-blur-xl">
+                  <div key={event.id} className={`w-[85vw] sm:w-[320px] flex-none aspect-[4/5] relative rounded-2xl overflow-hidden group snap-center border transition-all p-1 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="w-full h-full rounded-xl overflow-hidden relative">
                     <div className="absolute inset-0 bg-slate-900 animate-pulse" />
                     {shouldRenderSlideshow ? (
@@ -1166,7 +1152,7 @@ export default function App() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90 pointer-events-none z-20" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-90 pointer-events-none z-20" />
                     <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 z-30">
                       <div>
                         <span className="text-[9px] bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 px-2 py-0.5 rounded font-bold uppercase tracking-widest mb-1.5 inline-block">{event.category}</span>
@@ -1198,41 +1184,41 @@ export default function App() {
           </section>
 
           <section className="px-4 max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-6">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8">
+            <div className={`backdrop-blur-xl border rounded-2xl p-6 md:p-8 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`}>
               <h3 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-6 flex items-center gap-2">
-                <UserIcon size={16} className="text-yellow-400" /> Faculty Directory
+                <UserIcon size={16} className="text-yellow-500" /> Faculty Directory
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-yellow-400/30 transition-colors">
-                  <div className="w-12 h-12 rounded-full border border-yellow-400/50 bg-slate-800 flex-shrink-0" />
+                <div className={`flex items-center gap-4 p-4 rounded-2xl border transition-colors ${isDarkMode ? 'bg-white/5 border-white/15 hover:border-yellow-400/30 text-white' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-900'}`}>
+                  <div className={`w-12 h-12 rounded-full border border-yellow-500/50 flex-shrink-0 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
                   <div>
-                    <h4 className="text-sm font-bold text-white tracking-tight">Prof. A.O. Akinkurolere</h4>
-                    <p className="text-[10px] font-bold uppercase tracking-tighter text-yellow-400">Dean of Science</p>
+                    <h4 className="text-sm font-bold tracking-tight">Prof. A.O. Akinkurolere</h4>
+                    <p className="text-[10px] font-bold uppercase tracking-tighter text-yellow-500">Dean of Science</p>
                   </div>
                 </div>
-                <div className="p-5 border-l border-yellow-400 bg-gradient-to-r from-yellow-400/5 to-transparent rounded-r-2xl">
-                  <p className="text-[11px] text-slate-300 leading-relaxed italic">"Welcome to a new era of digital efficiency and transparent administration in the Faculty of Science."</p>
+                <div className="p-5 border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-400/10 to-transparent rounded-r-2xl">
+                  <p className={`text-[11px] leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>"Welcome to a new era of digital efficiency and transparent administration in the Faculty of Science."</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-yellow-400/10 to-transparent border border-yellow-400/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-yellow-400/10 to-transparent border border-yellow-400/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-lg">
               <div className="relative z-10">
                 {announcementsData.length > 0 ? (
                   <>
                     <span className="bg-yellow-400 text-slate-900 px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-4 inline-block">{announcementsData[0].tag}</span>
-                    <h3 className="text-xl font-bold leading-tight mb-2 text-white font-space-grotesk tracking-tight" dangerouslySetInnerHTML={{ __html: announcementsData[0].title.replace('\n', '<br/>') }} />
-                    <p className="text-[11px] text-slate-300 mb-6 w-3/4 leading-relaxed">{announcementsData[0].description}</p>
+                    <h3 className={`text-xl font-bold leading-tight mb-2 font-space-grotesk tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`} dangerouslySetInnerHTML={{ __html: announcementsData[0].title.replace('\n', '<br/>') }} />
+                    <p className={`text-[11px] mb-6 w-3/4 leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{announcementsData[0].description}</p>
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-[11px] font-bold bg-black/20 p-3 rounded-xl border border-white/5">
-                        <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                        <span className="w-20 text-slate-400 tracking-widest">{announcementsData[0].event1Date}</span>
-                        <span className="text-white">{announcementsData[0].event1Text}</span>
+                      <div className={`flex items-center gap-3 text-[11px] font-bold p-3 rounded-xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-white' : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'}`}>
+                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                        <span className="w-20 text-yellow-500 tracking-widest">{announcementsData[0].event1Date}</span>
+                        <span>{announcementsData[0].event1Text}</span>
                       </div>
-                      <div className="flex items-center gap-3 text-[11px] font-bold bg-black/20 p-3 rounded-xl border border-white/5 opacity-70">
-                        <div className="w-2 h-2 rounded-full bg-slate-600" />
-                        <span className="w-20 text-slate-500 tracking-widest">{announcementsData[0].event2Date}</span>
-                        <span className="text-slate-400">{announcementsData[0].event2Text}</span>
+                      <div className={`flex items-center gap-3 text-[11px] font-bold p-3 rounded-xl border opacity-70 ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-white/50 border-slate-200 text-slate-600'}`}>
+                        <div className="w-2 h-2 rounded-full bg-slate-500" />
+                        <span className="w-20 tracking-widest">{announcementsData[0].event2Date}</span>
+                        <span>{announcementsData[0].event2Text}</span>
                       </div>
                     </div>
                   </>
@@ -1249,11 +1235,11 @@ export default function App() {
           </section>
 
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <div className="p-8 md:p-12 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl relative overflow-hidden group hover:border-yellow-400/30 transition-all flex flex-col gap-10 items-center">
+            <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-10 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative z-10 w-full flex justify-center items-center shrink-0">
-                <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center p-2 bg-slate-900 border-2 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.2)] overflow-hidden">
+                <div className={`relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center p-2 border-2 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.2)] overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
                   <img 
                     referrerPolicy="no-referrer"
                     src={siteContentMap.secretariat_logo_url || "https://i.postimg.cc/Pp0q2xW3"} 
@@ -1270,12 +1256,12 @@ export default function App() {
               </div>
 
               <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
-                <h2 className="font-space-grotesk text-3xl md:text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
-                  <span className="text-yellow-400 text-4xl">🏛️</span> The Secretariat
+                <h2 className={`font-space-grotesk text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  <span className="text-yellow-500 text-4xl">🏛️</span> The Secretariat
                 </h2>
-                <p className="text-yellow-400/80 font-bold uppercase tracking-widest text-sm mb-6">Faculty of Science</p>
+                <p className="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-6">Faculty of Science</p>
                 
-                <div className="space-y-6 text-slate-300 leading-relaxed text-sm md:text-base">
+                <div className={`space-y-6 leading-relaxed text-sm md:text-base ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                   <p>
                     {siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities."}
                   </p>
@@ -1283,28 +1269,28 @@ export default function App() {
                     {siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student."}
                   </p>
                   
-                  <div className="mt-8 p-6 bg-slate-900/50 rounded-2xl border border-white/5 text-left w-full mx-auto max-w-2xl">
-                    <p className="text-yellow-400 font-bold mb-4 text-center sm:text-left">For all official correspondence, inquiries, requests, or submissions to the Association, kindly contact:</p>
+                  <div className={`mt-8 p-6 rounded-2xl border text-left w-full mx-auto max-w-2xl ${isDarkMode ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                    <p className="text-yellow-500 font-bold mb-4 text-center sm:text-left">For all official correspondence, inquiries, requests, or submissions to the Association, kindly contact:</p>
                     
                     <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-6 mb-6">
-                      <a href={`tel:${siteContentMap.secretariat_phone || '+2348141693252'}`} className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
-                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400 transition-colors">
+                      <a href={`tel:${siteContentMap.secretariat_phone || '+2348141693252'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
                           <PhoneCall size={18} />
                         </div>
                         <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
                       </a>
                       
-                      <a href={`mailto:${siteContentMap.secretariat_email || 'honour2est@gmail.com'}`} className="flex items-center gap-3 text-white hover:text-yellow-400 transition-colors group/link w-fit">
-                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400 transition-colors">
+                      <a href={`mailto:${siteContentMap.secretariat_email || 'honour2est@gmail.com'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
                           <MessageSquare size={18} />
                         </div>
                         <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'honour2est@gmail.com'}</span>
                       </a>
                     </div>
                     
-                    <div className="pt-6 border-t border-white/10 text-center sm:text-left">
-                      <p className="text-white font-bold text-lg">{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
-                      <p className="text-yellow-400/80 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
+                    <div className={`pt-6 border-t text-center sm:text-left ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+                      <p className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
+                      <p className="text-yellow-500 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
                     </div>
                   </div>
                 </div>
@@ -1325,12 +1311,12 @@ export default function App() {
             
             <div className="mt-16 pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
               <div className="flex gap-6 mb-2">
-                <a href="#" className="hover:text-yellow-400 transition-colors">X (Twitter)</a>
-                <a href="#" className="hover:text-yellow-400 transition-colors">LinkedIn</a>
-                <a href="#" className="hover:text-yellow-400 transition-colors">Instagram</a>
+                <a href="#" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
+                <a href="#" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
+                <a href="#" className="hover:text-yellow-500 transition-colors">Instagram</a>
               </div>
               <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
-              <p className="text-yellow-400/80 mt-1">Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.</p>
+              <p className="text-yellow-500 mt-1">Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.</p>
             </div>
           </section>
 
@@ -1338,11 +1324,11 @@ export default function App() {
       </div>
 
       {/* Sticky Bottom Persistent Marquee */}
-      <aside aria-label="Announcement ticker" className="fixed bottom-0 left-0 right-0 z-40 h-11 border-t border-yellow-400/30 bg-slate-950/95 backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)]">
-        <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider text-slate-200 animate-[marquee_28s_linear_infinite]">
+      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
+        <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 shrink-0">
-              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse shrink-0" />
+              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shrink-0" />
               <span>{activeMarqueeText}</span>
             </div>
           ))}
@@ -1357,22 +1343,22 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-md w-full relative shadow-2xl"
+              className={`border rounded-3xl p-6 md:p-8 max-w-md w-full relative shadow-2xl ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
             >
               <button
                 onClick={() => setIsRsvpOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors"
+                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
               
-              <div className="text-yellow-400 text-3xl mb-4">🎟️</div>
+              <div className="text-yellow-500 text-3xl mb-4">🎟️</div>
               <h3 className="text-2xl font-bold mb-2">RSVP for Events</h3>
               <p className="text-slate-400 text-sm mb-6">Register your attendance for upcoming faculty events. An email confirmation will be sent to you.</p>
               
@@ -1383,22 +1369,22 @@ export default function App() {
               }}>
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Select Event</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 appearance-none text-white">
-                    <option value="science-week" className="bg-slate-900">Science Week 2024</option>
-                    <option value="inauguration" className="bg-slate-900">Inauguration Event</option>
-                    <option value="tech-fair" className="bg-slate-900">Tech Fair & Exhibition</option>
+                  <select className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 appearance-none ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
+                    <option value="science-week" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Science Week 2024</option>
+                    <option value="inauguration" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Inauguration Event</option>
+                    <option value="tech-fair" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Tech Fair & Exhibition</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Full Name</label>
-                  <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 text-white placeholder-slate-500" placeholder="e.g. John Doe" />
+                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. John Doe" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Matric Number</label>
-                  <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 text-white placeholder-slate-500" placeholder="e.g. 18/555... " />
+                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. 18/555... " />
                 </div>
                 
-                <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest py-4 rounded-xl transition-colors mt-4 text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)]">
+                <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest py-4 rounded-xl transition-colors mt-4 text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] cursor-pointer">
                   Confirm Attendance
                 </button>
               </form>
@@ -1422,7 +1408,7 @@ export default function App() {
                   document.getElementById('hotline')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold"
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
               >
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <Siren size={18} className="text-slate-900 animate-pulse" />
@@ -1434,7 +1420,7 @@ export default function App() {
                   document.getElementById('brands')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold"
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
               >
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <ShoppingBag size={18} className="text-slate-900" />
@@ -1446,7 +1432,7 @@ export default function App() {
                   document.getElementById('vault')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold"
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
               >
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <BookOpen size={18} className="text-slate-900" />
@@ -1458,7 +1444,7 @@ export default function App() {
                   document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold"
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
               >
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <Navigation size={18} className="text-slate-900" />
@@ -1470,7 +1456,7 @@ export default function App() {
                   document.getElementById('feedback')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold"
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
               >
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <MessageSquare size={18} className="text-slate-900" />
@@ -1483,7 +1469,7 @@ export default function App() {
 
         <button
           onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-          className="p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50"
+          className="p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50 cursor-pointer"
           aria-label="Quick Actions"
         >
           {isQuickActionsOpen ? <X size={24} /> : <Menu size={24} />}
@@ -1504,11 +1490,11 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-slate-900 border border-white/10 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+              className={`border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
             >
               <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
                 <div className="relative aspect-[3/2] w-full shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
                   <img 
                     src={selectedExecutive.imageUrl || undefined} 
                     alt={selectedExecutive.name} 
@@ -1516,7 +1502,7 @@ export default function App() {
                   />
                   <button
                     onClick={() => setSelectedExecutive(null)}
-                    className="absolute top-4 right-4 z-20 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors"
+                    className="absolute top-4 right-4 z-20 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors cursor-pointer"
                   >
                     <X size={20} />
                   </button>
@@ -1533,12 +1519,12 @@ export default function App() {
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-200/80 font-semibold uppercase tracking-widest">
-                    <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-500 font-semibold uppercase tracking-widest">
+                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
                     {selectedExecutive.department}
                   </div>
-                  <div className="text-yellow-100 leading-relaxed text-sm bg-white/5 p-4 rounded-xl border border-white/5 whitespace-pre-wrap">
-                    {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary) : "No profile summary available."}
+                  <div className={`leading-relaxed text-sm p-4 rounded-xl border whitespace-pre-wrap ${isDarkMode ? 'text-yellow-100 bg-white/5 border-white/5' : 'text-slate-700 bg-slate-50 border-slate-200'}`}>
+                    {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary, isDarkMode) : "No profile summary available."}
                   </div>
                 </div>
               </div>
@@ -1550,7 +1536,7 @@ export default function App() {
       {showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center"
+          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
           aria-label="Back to top"
         >
           <ArrowUp size={24} />
