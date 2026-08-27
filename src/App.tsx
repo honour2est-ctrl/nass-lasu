@@ -10,7 +10,7 @@ import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { executivesData as staticExecs, ssrcData as staticSsrc, studentBrandsData as staticBrands } from './data';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -462,18 +462,18 @@ export default function App() {
                 <span className="hidden lg:inline">Hotline</span>
               </a>
 
-              {/* Theme Toggle Button */}
+              {/* Crescent Moon Theme Toggle Button */}
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 ${
+                className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 cursor-pointer ${
                   isDarkMode 
                     ? 'bg-white/10 border-white/20 text-yellow-400 hover:bg-white/20' 
-                    : 'bg-slate-200 border-slate-300 text-amber-600 hover:bg-slate-300'
+                    : 'bg-slate-200 border-slate-300 text-slate-800 hover:bg-slate-300'
                 }`}
                 aria-label="Toggle Theme"
                 title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
-                {isDarkMode ? '☀️' : '🌙'}
+                {isDarkMode ? '🌙' : '☀️'}
               </button>
             </div>
           </div>
@@ -1287,8 +1287,21 @@ export default function App() {
                         <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'honour2est@gmail.com'}</span>
                       </a>
                     </div>
+
+                    {/* WhatsApp Button under Secretariat */}
+                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-center sm:justify-start">
+                      <a 
+                        href="https://wa.me/2348141693252?text=Hello%20Secretariat%2C%20I%20am%20reaching%20out%20from%20the%20NASS%20LASU%20website." 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        <MessageCircle size={16} />
+                        <span>Chat on WhatsApp (+234 814 169 3252)</span>
+                      </a>
+                    </div>
                     
-                    <div className={`pt-6 border-t text-center sm:text-left ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+                    <div className={`pt-6 border-t text-center sm:text-left mt-4 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
                       <p className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
                       <p className="text-yellow-500 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
                     </div>
@@ -1308,6 +1321,22 @@ export default function App() {
 
           <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
             <SecretariatFeedback />
+            
+            {/* WhatsApp Button under Secretariat Feedback */}
+            <div className="mt-8 flex flex-col items-center justify-center text-center space-y-3 bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto">
+              <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                For quick responses, send a message using the button below.
+              </p>
+              <a 
+                href="https://wa.me/2348141693252?text=Hello%20Secretariat%2C%20I%20have%20an%20urgent%20inquiry%20from%20the%20feedback%20portal." 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <MessageCircle size={18} />
+                <span>Quick Chat on WhatsApp</span>
+              </a>
+            </div>
             
             <div className="mt-16 pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
               <div className="flex gap-6 mb-2">
