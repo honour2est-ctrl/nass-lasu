@@ -67,7 +67,7 @@ const INITIAL_EVENTS_DATA = [
   }
 ];
 
-const DEFAULT_MARQUEE = "Powered By The Digitalized And Innovative Secretariat. Get premium visibility for your business by advertising on the website, send a message to 08141693252 or honour2est@gmail.com (30% discount for Nass Lasu Students)";
+const DEFAULT_MARQUEE = "Powered By The Digitalized And Innovative Secretariat. Get premium visibility for your business by advertising on the website, send a message to 08141693252 or nasslasu@gmail.com (30% discount for Nass Lasu Students)";
 
 export default function App() {
   const { addToast } = useToast();
@@ -1280,11 +1280,11 @@ export default function App() {
                         <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
                       </a>
                       
-                      <a href={`mailto:${siteContentMap.secretariat_email || 'honour2est@gmail.com'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
+                      <a href="mailto:nasslasu@gmail.com" className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
                           <MessageSquare size={18} />
                         </div>
-                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'honour2est@gmail.com'}</span>
+                        <span className="font-bold tracking-wider">nasslasu@gmail.com</span>
                       </a>
                     </div>
 
@@ -1323,7 +1323,7 @@ export default function App() {
             <SecretariatFeedback />
             
             {/* WhatsApp Button under Secretariat Feedback */}
-            <div className="mt-8 flex flex-col items-center justify-center text-center space-y-3 bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto">
+            <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 For quick responses, send a message using the button below.
               </p>
