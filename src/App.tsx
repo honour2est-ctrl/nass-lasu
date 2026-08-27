@@ -221,7 +221,7 @@ export default function App() {
       snap.docs.forEach((doc: any) => {
         const d = doc.data();
         const key = d.contentKey || doc.id;
-        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || '');
+        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || d.imageUrl || d.name || d.bio || '');
         if (key) map[key] = val;
       });
       return map;
@@ -1190,6 +1190,7 @@ export default function App() {
             <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
           </section>
 
+          {/* DYNAMIC FACULTY DIRECTORY & DEAN SECTION */}
           <section className="px-4 max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-6">
             <div className={`backdrop-blur-xl border rounded-2xl p-6 md:p-8 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`}>
               <h3 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-6 flex items-center gap-2">
@@ -1197,14 +1198,21 @@ export default function App() {
               </h3>
               <div className="space-y-4">
                 <div className={`flex items-center gap-4 p-4 rounded-2xl border transition-colors ${isDarkMode ? 'bg-white/5 border-white/15 hover:border-yellow-400/30 text-white' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-900'}`}>
-                  <div className={`w-12 h-12 rounded-full border border-yellow-500/50 flex-shrink-0 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                  <img 
+                    referrerPolicy="no-referrer"
+                    src={siteContentMap.faculty_dean_imageUrl || "/nass_logo.jpg"} 
+                    alt={siteContentMap.faculty_dean_name || "Prof. A.O. Akinkurolere"} 
+                    className={`w-14 h-14 rounded-full object-cover border-2 border-yellow-500/50 flex-shrink-0 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`} 
+                  />
                   <div>
-                    <h4 className="text-sm font-bold tracking-tight">Prof. A.O. Akinkurolere</h4>
-                    <p className="text-[10px] font-bold uppercase tracking-tighter text-yellow-500">Dean of Science</p>
+                    <h4 className="text-sm font-bold tracking-tight">{siteContentMap.faculty_dean_name || "Prof. A.O. Akinkurolere"}</h4>
+                    <p className="text-[10px] font-bold uppercase tracking-tighter text-yellow-500">{siteContentMap.faculty_dean_title || "Dean of Science"}</p>
                   </div>
                 </div>
                 <div className="p-5 border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-400/10 to-transparent rounded-r-2xl">
-                  <p className={`text-[11px] leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>"Welcome to a new era of digital efficiency and transparent administration in the Faculty of Science."</p>
+                  <p className={`text-[11px] leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                    "{siteContentMap.faculty_dean_bio || "Welcome to a new era of digital efficiency and transparent administration in the Faculty of Science."}"
+                  </p>
                 </div>
               </div>
             </div>
@@ -1234,6 +1242,92 @@ export default function App() {
                 )}
               </div>
               <div className="absolute -right-10 -bottom-10 text-9xl opacity-5">📅</div>
+            </div>
+          </section>
+
+          {/* REAL-LIFE FACULTY OF SCIENCE & CAMPUS NAVIGATION MAP SECTION */}
+          <section id="map" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-10">
+              <div className="text-yellow-500 text-4xl mb-4">📍</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
+                FACULTY & CAMPUS MAP GUIDE
+              </h2>
+              <p className={`text-xs uppercase tracking-widest font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Real-life directions and verified locations for freshers & students at LASU Main Campus (Ojo)
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Left Column: Key Locations Directory */}
+              <div className={`lg:col-span-1 border rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between space-y-4 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`}>
+                <div>
+                  <h3 className={`font-space-grotesk text-lg font-bold mb-4 uppercase tracking-wide flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <MapPin size={18} className="text-yellow-500" /> Key Campus Landmarks
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      {
+                        title: "LASU Main Gate (Ojo)",
+                        desc: "Primary entrance on the Badagry Expressway. Board campus shuttles here straight to the Science complex.",
+                        query: "Lagos State University Main Gate Ojo"
+                      },
+                      {
+                        title: "Faculty of Science Complex",
+                        desc: "The central academic quadrangle housing departmental lecture rooms and laboratories.",
+                        query: "Faculty of Science Lagos State University Ojo"
+                      },
+                      {
+                        title: "Babatunde Raji Fashola Senate House",
+                        desc: "Central administrative building located within the core campus zone.",
+                        query: "LASU Senate House Ojo"
+                      },
+                      {
+                        title: "NASS LASU Secretariat",
+                        desc: "Official student administrative hub for records, student correspondence, and inquiries.",
+                        query: "Faculty of Science Lagos State University Ojo"
+                      }
+                    ].map((loc, idx) => (
+                      <div key={idx} className={`p-3.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-900/60 border-white/5 hover:border-yellow-400/40 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}>
+                        <h4 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>{loc.title}</h4>
+                        <p className="text-[11px] leading-relaxed mb-2">{loc.desc}</p>
+                        <a 
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.query)}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-yellow-500 hover:underline uppercase tracking-tight"
+                        >
+                          <span>Get Directions</span> <ExternalLink size={10} />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10 text-center">
+                  <a 
+                    href="https://www.google.com/maps/place/Lagos+State+University,+Ojo/@6.4687,3.2045,15z" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Navigation size={14} /> Open Full Google Map
+                  </a>
+                </div>
+              </div>
+
+              {/* Right Column: Embedded Map View */}
+              <div className={`lg:col-span-2 border rounded-3xl overflow-hidden backdrop-blur-xl relative aspect-[16/10] lg:aspect-auto shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+                <iframe 
+                  title="LASU Faculty of Science Map"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.123456789!2d3.2045!3d6.4687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b844b20757d59%3A0x6b7724128537b8b2!2sLagos%20State%20University!5e0!3m2!1sen!2sng!4v1710000000000!5m2!1sen!2sng" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0, minHeight: '400px' }} 
+                  allowFullScreen={true} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
             </div>
           </section>
 
