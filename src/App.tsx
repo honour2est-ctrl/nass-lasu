@@ -717,6 +717,12 @@ export default function App() {
           <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
             <div className="text-center mb-10">
               <div className="text-yellow-500 text-4xl mb-4">📚</div>
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office Of The 36th Vice President (Dami PR)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
                 ACADEMIC VAULT
               </h2>
@@ -1053,6 +1059,14 @@ export default function App() {
           </section>
 
           <section id="events" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-10">
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office Of The 36th Social Director (Comr. Big Mike)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
+            </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 EVENTS GALLERY
@@ -1122,7 +1136,7 @@ export default function App() {
                         <button 
                           onClick={(e) => {
                             e.preventDefault();
-                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
+                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./' ) || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
                             setSelectedEventGallery({
                               title: event.title,
                               images: validImages
@@ -1286,14 +1300,22 @@ export default function App() {
           </section>
 
           {/* FACULTY HOTLINE & EMERGENCY SECTION WITH WHATSAPP CHAT BUTTON */}
-          <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8">
+          <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-4">
+            <div className="text-center">
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office of The 36th Welfare Director (Comrade Awe Oba)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
+            </div>
             <EmergencyHotline />
             <div className={`mt-6 p-6 rounded-3xl border text-center backdrop-blur-xl shadow-lg max-w-3xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 For quick responses, chat with us on WhatsApp or call any of the numbers displayed above.
               </p>
               <a 
-                href="https://wa.me/2347074351819?text=Hello%20NASS%20LASU%20Emergency%20Hotline%2C%20I%20am%20reaching%20out%20from%20the%20website." 
+                href="https://wa.me/2347074351819?text=Hello%20NASS%20LASU%20Welfare%20Office%2C%20I%20am%20reaching%20out%20from%20the%20website." 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
