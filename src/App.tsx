@@ -91,7 +91,6 @@ export default function App() {
   const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(true);
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
   const [executivesData, setExecutivesData] = useState<any[]>([...staticExecs].sort(sortByOrder));
   const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
@@ -126,8 +125,6 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    setIsLoadingData(false);
-
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
       if (!snap.empty) {
         setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
@@ -598,61 +595,43 @@ export default function App() {
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {isLoadingData ? (
-                Array.from({ length: 6 }).map((_, idx) => (
-                  <div key={idx} className={`rounded-3xl border overflow-hidden animate-pulse ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-                    <div className="aspect-[4/5] relative">
-                      <div className="absolute bottom-6 left-6 right-6 z-20 space-y-3">
-                        <div className={`h-5 w-24 rounded ${isDarkMode ? 'bg-yellow-400/20' : 'bg-yellow-100'}`}></div>
-                        <div className={`h-8 w-48 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
-                        <div className={`h-4 w-32 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
+              {executivesData.map((ex, idx) => {
+                const borderClasses = "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]";
+                
+                return (
+                  <div 
+                    key={ex.id} 
+                    onClick={() => setSelectedExecutive(ex)}
+                    className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer ${borderClasses} ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
+                  >
+                    <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
+                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      <div className="absolute bottom-6 left-6 right-6 z-20">
+                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                          {ex.office}
+                        </div>
+                        <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
+                          {ex.nickname ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
+                              <span className="text-base font-normal text-yellow-200">{ex.name}</span>
+                            </div>
+                          ) : (
+                            ex.name
+                          )}
+                        </h4>
+                        <div className="mt-3 flex items-center justify-between">
+                          <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
+                          <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
+                            Read More <ArrowRight size={10} />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                executivesData.map((ex, idx) => {
-                  const borderClasses = "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]";
-                  
-                  return (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      key={ex.id} 
-                      onClick={() => setSelectedExecutive(ex)}
-                      className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer ${borderClasses} ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
-                    >
-                      <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                        <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                        <div className="absolute bottom-6 left-6 right-6 z-20">
-                          <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                            {ex.office}
-                          </div>
-                          <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
-                            {ex.nickname ? (
-                              <div className="flex flex-col gap-1">
-                                <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
-                                <span className="text-base font-normal text-yellow-200">{ex.name}</span>
-                              </div>
-                            ) : (
-                              ex.name
-                            )}
-                          </h4>
-                          <div className="mt-3 flex items-center justify-between">
-                            <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
-                            <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
-                              Read More <ArrowRight size={10} />
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })
-              )}
+                );
+              })}
             </div>
           </section>
 
@@ -662,42 +641,24 @@ export default function App() {
               <span className={`text-xl md:text-2xl block mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>(36th Legislative Council)</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {isLoadingData ? (
-                Array.from({ length: 8 }).map((_, idx) => (
-                  <div key={idx} className={`rounded-3xl border overflow-hidden animate-pulse ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-                    <div className="aspect-[4/5] relative">
-                      <div className="absolute bottom-6 left-6 right-6 z-20 space-y-3">
-                        <div className={`h-5 w-24 rounded ${isDarkMode ? 'bg-yellow-400/20' : 'bg-yellow-100'}`}></div>
-                        <div className={`h-6 w-32 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
-                        <div className={`h-3 w-20 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`}></div>
+              {ssrcMembersData.map((mem) => (
+                <div 
+                  key={mem.id} 
+                  className={`group relative rounded-3xl border overflow-hidden transition-all cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}
+                >
+                  <div className="aspect-[4/5] overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
+                    <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                    <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
+                      <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
+                        {mem.duty}
                       </div>
+                      <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
+                      <p className="text-[11px] text-slate-300 uppercase tracking-widest font-semibold">{mem.department}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                ssrcMembersData.map((mem, idx) => (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.5, delay: idx * 0.1 }}
-                    key={mem.id} 
-                    className={`group relative rounded-3xl border overflow-hidden transition-all cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}
-                  >
-                    <div className="aspect-[4/5] overflow-hidden relative">
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
-                      <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                      <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                        <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                          {mem.duty}
-                        </div>
-                        <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
-                        <p className="text-[11px] text-slate-300 uppercase tracking-widest font-semibold">{mem.department}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
 
             <div className={`mt-12 p-8 border rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
@@ -799,12 +760,8 @@ export default function App() {
                 <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
                 <div className={`border rounded-2xl p-4 space-y-2 backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
                   {lastViewedResources.map((item, index) => (
-                    <motion.div 
+                    <div 
                       key={`recent-${item.id}-${index}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-10%" }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
                       className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
                     >
                       <div className="flex items-center gap-3">
@@ -827,7 +784,7 @@ export default function App() {
                       <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-200 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                         View Material
                       </a>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -902,12 +859,8 @@ export default function App() {
                                       <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
                                       <div className="space-y-2">
                                         {semesterItems.map((item, index) => (
-                                          <motion.div 
+                                          <div 
                                             key={item.id} 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            viewport={{ once: true, margin: "-10%" }}
-                                            transition={{ delay: index * 0.05, duration: 0.3 }}
                                             className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
                                           >
                                             <div className="flex items-center gap-3">
@@ -934,7 +887,7 @@ export default function App() {
                                             <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                                               View Material
                                             </a>
-                                          </motion.div>
+                                          </div>
                                         ))}
                                       </div>
                                     </div>
@@ -987,11 +940,11 @@ export default function App() {
                 <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="aspect-[4/3] overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
                     <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
                       {brand.productImageUrl && (
                         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/20 shrink-0 shadow-lg">
-                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" />
+                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                       )}
                       <div>
@@ -1049,7 +1002,7 @@ export default function App() {
                       <div key={honoree.id || hIdx} className={`w-full flex flex-col items-center border rounded-3xl overflow-hidden group p-8 lg:p-12 mt-4 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-yellow-400/50 shadow-[0_0_40px_rgba(250,204,21,0.1)]' : 'bg-white border-yellow-500 shadow-xl'}`}>
                         <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                          <img src={honoree.imageUrl} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+                          <img src={honoree.imageUrl} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                           <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
                             <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
                               Hall Of Fame
@@ -1143,7 +1096,6 @@ export default function App() {
                   return (
                   <div key={event.id} className={`w-[85vw] sm:w-[320px] flex-none aspect-[4/5] relative rounded-2xl overflow-hidden group snap-center border transition-all p-1 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="w-full h-full rounded-xl overflow-hidden relative">
-                    <div className="absolute inset-0 bg-slate-900 animate-pulse" />
                     {shouldRenderSlideshow ? (
                       <ImageSlideshow 
                         images={imagesArray} 
@@ -1157,6 +1109,7 @@ export default function App() {
                         src={(event.image || '').trim().startsWith('http') || (event.image || '').trim().startsWith('/') ? (event.image || '').trim() : encodeURI((event.image || '').replace(/['"]/g, '').trim())} 
                         alt={event.title} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        loading="lazy"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-90 pointer-events-none z-20" />
@@ -1203,6 +1156,7 @@ export default function App() {
                     src={siteContentMap.faculty_dean_imageUrl || "/nass_logo.jpg"} 
                     alt={siteContentMap.faculty_dean_name || "Prof. A.O. Akinkurolere"} 
                     className={`w-14 h-14 rounded-full object-cover border-2 border-yellow-500/50 flex-shrink-0 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`} 
+                    loading="lazy"
                   />
                   <div>
                     <h4 className="text-sm font-bold tracking-tight">{siteContentMap.faculty_dean_name || "Prof. A.O. Akinkurolere"}</h4>
@@ -1319,7 +1273,7 @@ export default function App() {
               <div className={`lg:col-span-2 border rounded-3xl overflow-hidden backdrop-blur-xl relative aspect-[16/10] lg:aspect-auto shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
                 <iframe 
                   title="LASU Faculty of Science Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.123456789!2d3.2045!3d6.4687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b844b20757d59%3A0x6b7724128537b8b2!2sLagos%20State%20University!5e0!3m2!1sen!2sng!4v1710000000000!5m2!1sen!2sng" 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.123456789!2d3.2045!3d6.4687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b844b20757d59%3A0x6b7724128537b8b2!2sLagos+State+University!5e0!3m2!1sen!2sng!4v1710000000000!5m2!1sen!2sng" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0, minHeight: '400px' }} 
@@ -1367,6 +1321,7 @@ export default function App() {
                     }}
                     alt="The Secretariat Logo" 
                     className="w-full h-full object-contain scale-105"
+                    loading="lazy"
                   />
                 </div>
               </div>
@@ -1644,6 +1599,7 @@ export default function App() {
                     src={selectedExecutive.imageUrl || undefined} 
                     alt={selectedExecutive.name} 
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                   <button
                     onClick={() => setSelectedExecutive(null)}
@@ -1713,7 +1669,7 @@ export default function App() {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(250, 204, 21, 0.5);
+          background: rgba(250, 200, 21, 0.5);
         }
       `}</style>
     </div>
