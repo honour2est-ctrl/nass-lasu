@@ -9,7 +9,6 @@ import { AdminPanel } from './components/AdminPanel';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { executivesData as staticExecs, ssrcData as staticSsrc, studentBrandsData as staticBrands } from './data';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
@@ -92,14 +91,14 @@ export default function App() {
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
-  const [executivesData, setExecutivesData] = useState<any[]>([...staticExecs].sort(sortByOrder));
+  const [executivesData, setExecutivesData] = useState<any[]>([]);
   const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
   const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
   const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
   const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
   const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
-  const [studentBrandsData, setStudentBrandsData] = useState<any[]>(staticBrands);
-  const [ssrcMembersData, setSsrcMembersData] = useState<any[]>(staticSsrc);
+  const [studentBrandsData, setStudentBrandsData] = useState<any[]>([]);
+  const [ssrcMembersData, setSsrcMembersData] = useState<any[]>([]);
   const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
   const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
   const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
@@ -128,6 +127,8 @@ export default function App() {
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
       if (!snap.empty) {
         setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setStudentBrandsData([]);
       }
     }, (error) => {
       console.warn("Firestore listener warning (studentBrands):", error.message);
@@ -136,6 +137,8 @@ export default function App() {
     const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
       if (!snap.empty) {
         setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setExecutivesData([]);
       }
     }, (error) => {
       console.warn("Firestore listener warning (executives):", error.message);
@@ -144,6 +147,8 @@ export default function App() {
     const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
       if (!snap.empty) {
         setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setSsrcMembersData([]);
       }
     }, (error) => {
       console.warn("Firestore listener warning (ssrcMembers):", error.message);
@@ -787,7 +792,7 @@ export default function App() {
                           </div>
                         </div>
                       </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-200 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                         View Material
                       </a>
                     </div>
@@ -1136,7 +1141,7 @@ export default function App() {
                         <button 
                           onClick={(e) => {
                             e.preventDefault();
-                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./' ) || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
+                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
                             setSelectedEventGallery({
                               title: event.title,
                               images: validImages
