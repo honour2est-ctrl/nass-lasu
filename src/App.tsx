@@ -9,7 +9,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -102,6 +102,11 @@ export default function App() {
   const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
   const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
   const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
+  
+  // New Partners and Sponsors state
+  const [partnersData, setPartnersData] = useState<any[]>([]);
+  const [sponsorsData, setSponsorsData] = useState<any[]>([]);
+
   const [lastViewedResources, setLastViewedResources] = useState<any[]>(() => {
     try {
       const stored = localStorage.getItem('lastViewedResources');
@@ -110,6 +115,7 @@ export default function App() {
       return [];
     }
   });
+
   const [announcementsData, setAnnouncementsData] = useState<any[]>([
     {
       id: "a1",
@@ -125,42 +131,30 @@ export default function App() {
 
   useEffect(() => {
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
-      if (!snap.empty) {
-        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setStudentBrandsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (studentBrands):", error.message);
-    });
-    
+      setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => console.warn("Firestore listener warning (studentBrands):", error.message));
+
     const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
-      if (!snap.empty) {
-        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setExecutivesData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (executives):", error.message);
-    });
+      setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => console.warn("Firestore listener warning (executives):", error.message));
 
     const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
-      if (!snap.empty) {
-        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSsrcMembersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (ssrcMembers):", error.message);
-    });
+      setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => console.warn("Firestore listener warning (ssrcMembers):", error.message));
 
     const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
       if (!snap.empty) {
         setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       }
-    }, (error) => {
-      console.warn("Firestore listener warning (announcements):", error.message);
-    });
+    }, (error) => console.warn("Firestore listener warning (announcements):", error.message));
+
+    const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
+      setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => console.warn("Firestore listener warning (partners):", error.message));
+
+    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
+      setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => console.warn("Firestore listener warning (sponsors):", error.message));
 
     const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
       if (!snap.empty) {
@@ -182,41 +176,23 @@ export default function App() {
       } else {
         setEventsData(INITIAL_EVENTS_DATA);
       }
-    }, (error) => {
-      console.warn("Firestore listener warning (events):", error.message);
-    });
+    }, (error) => console.warn("Firestore listener warning (events):", error.message));
 
     const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
-      if (!snap.empty) {
-        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setVaultItemsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (vaultItems):", error.message);
-    });
+      setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => console.warn("Firestore listener warning (vaultItems):", error.message));
 
     const unsubLegislativeDocs = onSnapshot(collection(db, 'legislative_documents'), (snap) => {
-      if (!snap.empty) {
-        setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } else {
-        setLegislativeDocsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (legislative_documents):", error.message);
-    });
+      setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => console.warn("Firestore listener warning (legislative_documents):", error.message));
 
     const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
       setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (corePillars):", error.message);
-    });
+    }, (error) => console.warn("Firestore listener warning (corePillars):", error.message));
 
     const unsubHallOfFame = onSnapshot(collection(db, 'hallOfFame'), (snap) => {
       setHallOfFameData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (hallOfFame):", error.message);
-    });
+    }, (error) => console.warn("Firestore listener warning (hallOfFame):", error.message));
 
     const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
       const map = { ...existingMap };
@@ -233,22 +209,20 @@ export default function App() {
     const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
       combinedMap = updateMapFromSnap(snap, combinedMap);
       setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (siteContent):", error.message);
-    });
+    }, (error) => console.warn("Firestore listener warning (siteContent):", error.message));
 
     const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
       combinedMap = updateMapFromSnap(snap, combinedMap);
       setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (site_content):", error.message);
-    });
+    }, (error) => console.warn("Firestore listener warning (site_content):", error.message));
 
     return () => {
       unsubBrands();
       unsubExecs();
       unsubSsrc();
       unsubAnnouncements();
+      unsubPartners();
+      unsubSponsors();
       unsubEvents();
       unsubVaultItems();
       unsubLegislativeDocs();
@@ -268,7 +242,6 @@ export default function App() {
     addToast(`Downloading ${docName}... Please wait a bit`, 'info');
 
     let downloadUrl: string | null = null;
-
     const legMatch = legislativeDocsData.find(item => {
       const typeStr = (item.type || item.docType || item.title || item.name || '').toLowerCase();
       return isConstitution ? typeStr.includes('constitution') : (typeStr.includes('standing') || typeStr.includes('order'));
@@ -277,82 +250,9 @@ export default function App() {
       downloadUrl = legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link;
     }
 
-    if (!downloadUrl) {
-      const vaultMatch = vaultItemsData.find(item => {
-        const titleStr = (item.title || item.name || item.department || '').toLowerCase();
-        return isConstitution ? titleStr.includes('constitution') : (titleStr.includes('standing') || titleStr.includes('order'));
-      });
-      if (vaultMatch && (vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl)) {
-        downloadUrl = vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl;
-      }
-    }
-
-    if (!downloadUrl && storage) {
-      const candidatePaths = isConstitution ? [
-        'documents/NASS_LASU_CONSTITUTION.pdf',
-        'documents/nass_lasu_constitution.pdf',
-        'documents/constitution.pdf',
-        'documents/Nass_Lasu_Constitution.pdf',
-        'nass_lasu_constitution.pdf',
-        'constitution.pdf',
-        'NASS_LASU_CONSTITUTION.pdf'
-      ] : [
-        'documents/NASS_LASU_STANDING_ORDERS.docx',
-        'documents/NASS_LASU_STANDING_ORDERS.doc',
-        'documents/NASS_LASU_STANDING_ORDERS.pdf',
-        'documents/nass_lasu_standing_orders.docx',
-        'documents/standing_orders.docx',
-        'documents/Nass_Lasu_Standing_Orders.docx',
-        'nass_lasu_standing_orders.docx',
-        'standing_orders.docx',
-        'NASS_LASU_STANDING_ORDERS.docx'
-      ];
-
-      for (const path of candidatePaths) {
-        try {
-          const fileRef = ref(storage, path);
-          const url = await getDownloadURL(fileRef);
-          if (url) {
-            downloadUrl = url;
-            break;
-          }
-        } catch (e) {}
-      }
-
-      if (!downloadUrl) {
-        try {
-          const folderRef = ref(storage, 'documents');
-          const res = await listAll(folderRef);
-          for (const itemRef of res.items) {
-            const nameLower = itemRef.name.toLowerCase();
-            const matches = isConstitution ? nameLower.includes('constitution') : (nameLower.includes('standing') || nameLower.includes('order'));
-            if (matches) {
-              downloadUrl = await getDownloadURL(itemRef);
-              break;
-            }
-          }
-        } catch (e) {}
-      }
-    }
-
     setDownloadingDocType(null);
-
     if (downloadUrl) {
       try {
-        const response = await fetch(downloadUrl);
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = defaultFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-        
-        addToast(`Successfully downloaded ${docName}!`, 'success');
-      } catch (err) {
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = defaultFileName;
@@ -360,21 +260,18 @@ export default function App() {
         a.click();
         document.body.removeChild(a);
         addToast(`Successfully downloaded ${docName}!`, 'success');
+      } catch (err) {
+        window.open(downloadUrl, '_blank');
       }
     } else {
-      addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
+      addToast(`Could not locate ${docName} download URL.`, 'error');
     }
   };
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > window.innerHeight * 0.8) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
+      setShowBackToTop(window.scrollY > window.innerHeight * 0.8);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -385,9 +282,7 @@ export default function App() {
 
   const handleResourceClick = (e: React.MouseEvent<HTMLAnchorElement>, item: any) => {
     e.preventDefault();
-    if (item.link) {
-      window.open(item.link, '_blank');
-    }
+    if (item.link) window.open(item.link, '_blank');
 
     setLastViewedResources(prev => {
       const filtered = prev.filter(p => p.id !== item.id);
@@ -398,16 +293,15 @@ export default function App() {
 
     if (item.id) {
       const docRef = doc(db, 'vaultItems', item.id);
-      updateDoc(docRef, {
-        viewCount: increment(1)
-      }).catch(err => console.error("Error updating view count:", err));
+      updateDoc(docRef, { viewCount: increment(1) }).catch(() => {});
     }
   };
 
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
 
   return (
-    <div className={`relative min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+    // overflow-x-hidden and max-w-[100vw] prevent mobile horizontal wobble
+    <div className={`relative min-h-screen w-full max-w-[100vw] overflow-x-hidden font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
       <BackgroundEngine />
       <CursorTrail />
       <motion.div
@@ -415,8 +309,9 @@ export default function App() {
         style={{ scaleX: scrollYProgress }}
       />
       
-      <div className="relative z-10 selection:bg-yellow-400 selection:text-slate-900">
+      <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
         
+        {/* Navigation */}
         <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
@@ -428,50 +323,35 @@ export default function App() {
             </div>
             
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
-              <a 
-                href="#executives" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <UserIcon size={14} className="text-slate-900" />
+              <a href="#executives" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <UserIcon size={14} />
                 <span className="hidden lg:inline">Excos</span>
               </a>
-              <a 
-                href="#vault" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <BookOpen size={14} className="text-slate-900" />
+              <a href="#vault" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <BookOpen size={14} />
                 <span className="hidden lg:inline">Vault</span>
               </a>
-              <a 
-                href="#brands" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <ShoppingBag size={14} className="text-slate-900" />
+              <a href="#brands" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <ShoppingBag size={14} />
                 <span className="hidden lg:inline">Market</span>
               </a>
-              <a 
-                href="#events" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Eye size={14} className="text-slate-900" />
+              <a href="#partners" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <Handshake size={14} />
+                <span className="hidden lg:inline">Partners</span>
+              </a>
+              <a href="#sponsors" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <Award size={14} />
+                <span className="hidden lg:inline">Sponsors</span>
+              </a>
+              <a href="#events" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <Eye size={14} />
                 <span className="hidden lg:inline">Events</span>
               </a>
-              <a 
-                href="#map" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Navigation size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Map</span>
-              </a>
-              <a 
-                href="#hotline" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Siren size={14} className="text-slate-900 animate-pulse" />
+              <a href="#hotline" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
+                <Siren size={14} className="animate-pulse" />
                 <span className="hidden lg:inline">Hotline</span>
               </a>
 
-              {/* Crescent Moon Theme Toggle Button */}
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 cursor-pointer ${
@@ -480,7 +360,6 @@ export default function App() {
                     : 'bg-slate-200 border-slate-300 text-slate-800 hover:bg-slate-300'
                 }`}
                 aria-label="Toggle Theme"
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {isDarkMode ? '🌙' : '☀️'}
               </button>
@@ -488,8 +367,9 @@ export default function App() {
           </div>
         </nav>
 
-        <main className="flex flex-col gap-32 pb-16 pt-24">
+        <main className="flex flex-col gap-32 pb-16 pt-24 overflow-x-hidden">
           
+          {/* Hero Section */}
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               <div className="space-y-4">
@@ -507,31 +387,19 @@ export default function App() {
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <a 
-                  href="#vault" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
+                <a href="#vault" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm">
                   <BookOpen size={16} />
                   <span>Get Started</span>
                 </a>
-                <a 
-                  href="#brands" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
+                <a href="#brands" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm">
                   <ShoppingBag size={16} />
                   <span>Explore Marketplace</span>
-                </a>
-                <a 
-                  href="#about" 
-                  className="hidden md:flex bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <Download size={16} />
-                  <span>Download App</span>
                 </a>
               </div>
             </div>
           </section>
 
+          {/* About Section */}
           <section id="about" className="px-4 max-w-5xl mx-auto w-full">
             <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
               ABOUT NASS-LASU
@@ -539,186 +407,45 @@ export default function App() {
             <div className={`border rounded-3xl p-8 md:p-12 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
               <div className="prose max-w-none space-y-6">
                 <p className="text-lg leading-relaxed">
-                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
+                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting educational development, welfare, and student excellence.
                 </p>
-                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
-                <p className="leading-relaxed">
-                  The association represents students across three main academic branches:
-                </p>
-                <ul className={`list-disc pl-6 space-y-2 marker:text-yellow-500 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Biological Science:</strong> Biochemistry, Botany, Fisheries and Aquatic Biology, Microbiology, SLT, Zoology and Environment Biology</li>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Chemical Science:</strong> Chemistry</li>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Physical Science:</strong> Physics, Mathematics</li>
-                </ul>
-                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
-                <p className="leading-relaxed">
-                  NASS-LASU is structured like a formal micro-government, governed by a strict constitution with distinct branches of power:
-                </p>
-                <ul className="space-y-4">
-                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Executive Arm</strong>
-                    {siteContentMap.executive_arm_text ? renderWithBold(siteContentMap.executive_arm_text, isDarkMode) : (
-                      <>Led by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students' Executive Council (DSEC).</>
-                    )}
-                  </li>
-                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Legislative Arm</strong>
-                    {siteContentMap.legislative_arm_text ? renderWithBold(siteContentMap.legislative_arm_text, isDarkMode) : (
-                      <>Headed by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.</>
-                    )}
-                  </li>
-                </ul>
               </div>
             </div>
           </section>
 
-          <section id="digitalized" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-              CORE PILLARS
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {(corePillarsData.length > 0 ? corePillarsData : [
-                { icon: '📚', title: "PDF Vault", desc: "Instant access to academic past questions & materials." },
-                { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." },
-                { icon: '🛍️', title: "Marketplace", desc: "Showcasing student-owned brands and campus businesses." }
-              ]).map((F, i) => (
-                <div key={i} className={`border p-5 md:p-6 rounded-2xl backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <div className="text-yellow-500 text-2xl md:text-3xl mb-4">{F.icon}</div>
-                  <h3 className={`text-xs font-bold uppercase mb-2 tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{F.title}</h3>
-                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{F.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
+          {/* Executives Section */}
           <section id="executives" className="px-4 max-w-7xl mx-auto w-full">
             <div className="flex items-end justify-between mb-8">
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 TOP EXECUTIVES
               </h2>
-              <span className="text-[10px] text-yellow-500 underline cursor-pointer font-bold tracking-widest uppercase">View All</span>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {executivesData.map((ex, idx) => {
-                const borderClasses = "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]";
-                
-                return (
-                  <div 
-                    key={ex.id} 
-                    onClick={() => setSelectedExecutive(ex)}
-                    className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer ${borderClasses} ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
-                  >
-                    <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      <div className="absolute bottom-6 left-6 right-6 z-20">
-                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                          {ex.office}
-                        </div>
-                        <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
-                          {ex.nickname ? (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
-                              <span className="text-base font-normal text-yellow-200">{ex.name}</span>
-                            </div>
-                          ) : (
-                            ex.name
-                          )}
-                        </h4>
-                        <div className="mt-3 flex items-center justify-between">
-                          <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
-                          <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
-                            Read More <ArrowRight size={10} />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          <section id="ssrc" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-              SCIENCE STUDENT REPRESENTATIVE COUNCIL<br />
-              <span className={`text-xl md:text-2xl block mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>(36th Legislative Council)</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {ssrcMembersData.map((mem) => (
+              {executivesData.map((ex) => (
                 <div 
-                  key={mem.id} 
-                  className={`group relative rounded-3xl border overflow-hidden transition-all cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}
+                  key={ex.id} 
+                  onClick={() => setSelectedExecutive(ex)}
+                  className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
                 >
-                  <div className="aspect-[4/5] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                    <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                      <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                        {mem.duty}
+                  <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
+                    <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                    <div className="absolute bottom-6 left-6 right-6 z-20">
+                      <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400">
+                        {ex.office}
                       </div>
-                      <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
-                      <p className="text-[11px] text-slate-300 uppercase tracking-widest font-semibold">{mem.department}</p>
+                      <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
+                        {ex.name}
+                      </h4>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            <div className={`mt-12 p-8 border rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
-              <div>
-                <h3 className={`font-space-grotesk text-xl font-bold mb-2 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  <span>Legislative Documents</span>
-                </h3>
-                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Download the official constitution and standing orders of NASS LASU directly to your device.</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <button 
-                  onClick={() => handleDownloadDocument('constitution')}
-                  disabled={downloadingDocType === 'constitution'}
-                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
-                >
-                  <Download size={16} className={downloadingDocType === 'constitution' ? 'animate-bounce' : ''} />
-                  <span>{downloadingDocType === 'constitution' ? 'Downloading...' : 'NASS LASU CONSTITUTION'}</span>
-                </button>
-                <button 
-                  onClick={() => handleDownloadDocument('standing_orders')}
-                  disabled={downloadingDocType === 'standing_orders'}
-                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
-                >
-                  <Download size={16} className={downloadingDocType === 'standing_orders' ? 'animate-bounce' : ''} />
-                  <span>{downloadingDocType === 'standing_orders' ? 'Downloading...' : 'NASS LASU STANDING ORDERS'}</span>
-                </button>
-              </div>
-            </div>
           </section>
 
-          <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
-              DEPARTMENTS
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { title: "A. Biological Science", items: ["Department of Biochemistry", "Department of Botany", "Department of Fisheries and Aquatic Biology", "Department of Microbiology", "Department of Science Laboratory Technology", "Department of Zoology and Environment Biology"] },
-                { title: "B. Chemical Science", items: ["Department of Chemistry"] },
-                { title: "C. Physical Science", items: ["Department of Physics", "Department of Mathematics"] }
-              ].map((branch, idx) => (
-                <div key={idx} className={`border rounded-3xl p-8 backdrop-blur-xl transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <h3 className="font-space-grotesk text-xl font-bold text-yellow-500 uppercase tracking-widest mb-6">{branch.title}</h3>
-                  <ul className="space-y-4">
-                    {branch.items.map((dept, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mt-2 shrink-0" />
-                        <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dept}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-
+          {/* Academic Vault Section */}
           <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
             <div className="text-center mb-10">
               <div className="text-yellow-500 text-4xl mb-4">📚</div>
@@ -731,338 +458,160 @@ export default function App() {
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
                 ACADEMIC VAULT
               </h2>
-              <p className={`text-xs uppercase tracking-widest font-bold mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Secure access to past questions & syllabi</p>
-              
-              <div className="relative max-w-md mx-auto mb-6">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className={`h-5 w-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search by department or year..."
-                  value={vaultSearchQuery}
-                  onChange={(e) => setVaultSearchQuery(e.target.value)}
-                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
-                />
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {['All Levels', '100 Level', '200 Level', '300 Level', '400 Level'].map((level) => {
-                  const isActive = level === 'All Levels' ? vaultLevelFilter === null : vaultLevelFilter === level;
-                  return (
-                    <button
-                      key={level}
-                      onClick={() => setVaultLevelFilter(level === 'All Levels' ? null : level)}
-                      className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors border ${
-                        isActive 
-                          ? 'bg-yellow-400 text-slate-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
-                          : isDarkMode ? 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200' : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
-            
-            {lastViewedResources.length > 0 && !vaultSearchQuery && (
-              <div className="mb-8 space-y-3">
-                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
-                <div className={`border rounded-2xl p-4 space-y-2 backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-                  {lastViewedResources.map((item, index) => (
-                    <div 
-                      key={`recent-${item.id}-${index}`}
-                      className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                          <span className="text-yellow-500 text-sm">📄</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title || 'Past Questions'}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[9px] text-slate-400 font-mono">{item.year || ''} Session</span>
-                            {item.department && <span className="text-[9px] text-slate-500 font-mono hidden sm:inline-block truncate max-w-[150px]">{item.department}</span>}
-                            {(item.viewCount || 0) > 50 && (
-                              <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-                                <Flame size={10} /> Trending
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
-                        View Material
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="space-y-3">
-              {[
-                'Department of Biochemistry',
-                'Department of Botany',
-                'Department of Fisheries and Aquatic Biology',
-                'Department of Microbiology',
-                'Department of Science Laboratory Technology',
-                'Department of Zoology and Environment Biology',
-                'Department of Chemistry',
-                'Department of Physics',
-                'Department of Mathematics'
-              ].map((dept, i) => {
-                const query = vaultSearchQuery.toLowerCase();
-                const deptMatches = dept.toLowerCase().includes(query);
-                
-                const deptItems = vaultItemsData.filter(item => item.department === dept);
-                
-                const levels = ['100 Level', '200 Level', '300 Level', '400 Level'];
-                const filteredLevels = vaultLevelFilter ? levels.filter(l => l === vaultLevelFilter) : levels;
-
-                const hasMatchingItems = deptItems.some(item => 
-                  filteredLevels.includes(item.level) && 
-                  (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query)))
-                );
-
-                if (query) {
-                  if (!hasMatchingItems && !deptMatches) return null;
-                }
-
-                return (
-                  <details key={i} className={`group border rounded-2xl overflow-hidden backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
-                      <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
-                      <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
-                    </summary>
-                    <div className={`p-4 pt-0 border-t space-y-3 mt-4 ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
-                      {deptItems.length === 0 ? (
-                        <div className={`flex flex-col items-center justify-center py-10 text-center space-y-3 rounded-xl border ${isDarkMode ? 'bg-slate-900/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
-                            <BookOpen className="w-5 h-5 text-slate-500" />
-                          </div>
-                          <p className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No resources uploaded yet</p>
-                          <p className="text-slate-500 text-xs max-w-[250px] leading-relaxed">
-                            Check back later. The academic team is currently gathering materials for this department.
-                          </p>
-                        </div>
-                      ) : (
-                        filteredLevels.map(level => {
-                          const levelItems = deptItems.filter(item => item.level === level && (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query))));
-                          if (levelItems.length === 0) return null;
-
-                          return (
-                            <details key={level} className={`group/level rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border ${isDarkMode ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                              <summary className={`flex justify-between items-center p-4 cursor-pointer transition-colors group/summary ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
-                                <div className="flex items-center gap-3">
-                                  <span className={`font-semibold text-xs tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{level}</span>
-                                </div>
-                                <span className="text-yellow-500/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
-                              </summary>
-                              <div className={`p-4 pt-0 space-y-4 border-t mt-2 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
-                                {['First Semester', 'Second Semester'].map(semester => {
-                                  const semesterItems = levelItems.filter(item => item.semester === semester);
-                                  if (semesterItems.length === 0) return null;
-
-                                  return (
-                                    <div key={semester} className="space-y-2">
-                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
-                                      <div className="space-y-2">
-                                        {semesterItems.map((item, index) => (
-                                          <div 
-                                            key={item.id} 
-                                            className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
-                                          >
-                                            <div className="flex items-center gap-3">
-                                              <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                                                <span className="text-yellow-500 text-sm">📄</span>
-                                              </div>
-                                              <div className="flex flex-col">
-                                                <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{highlightText(item.title || 'Past Questions', vaultSearchQuery, isDarkMode)}</span>
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery, isDarkMode)}</span>
-                                                  {(item.viewCount !== undefined) && (
-                                                    <span className="flex items-center gap-1 text-[9px] text-slate-500 font-mono" title={`${item.viewCount} views`}>
-                                                      <Eye size={10} /> {item.viewCount}
-                                                    </span>
-                                                  )}
-                                                  {(item.viewCount || 0) > 50 && (
-                                                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-                                                      <Flame size={10} /> Trending
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
-                                              View Material
-                                            </a>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </details>
-                          );
-                        })
-                      )}
-                    </div>
-                  </details>
-                );
-              })}
-              
-              {vaultSearchQuery && [
-                'Department of Biochemistry',
-                'Department of Botany',
-                'Department of Fisheries and Aquatic Biology',
-                'Department of Microbiology',
-                'Department of Science Laboratory Technology',
-                'Department of Zoology and Environment Biology',
-                'Department of Chemistry',
-                'Department of Physics',
-                'Department of Mathematics'
-              ].every(dept => {
-                const query = vaultSearchQuery.toLowerCase();
-                const deptMatches = dept.toLowerCase().includes(query);
-                const years = [2021, 2022];
-                return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
-              }) && (
-                <div className={`text-center py-8 text-sm border rounded-2xl backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
-                  No past questions found matching "{vaultSearchQuery}"
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
-            <div className="text-center mb-10">
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                NASS LASU ONLINE MARKETPLACE
-              </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                NASS LASU is committed to empowering student-owned businesses by providing visibility and promotional opportunities through the faculty website. By showcasing student brands, products, and services on this platform, we aim to increase their reach, enhance brand awareness, and drive sales. This initiative reflects our dedication to fostering innovation, entrepreneurship, and economic growth within the student community, ensuring that student entrepreneurs have the support they need to thrive.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {studentBrandsData.map((brand) => (
-                <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <div className="aspect-[4/3] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
-                    <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
-                      {brand.productImageUrl && (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/20 shrink-0 shadow-lg">
-                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" loading="lazy" />
-                        </div>
-                      )}
-                      <div>
-                        <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                          {brand.category}
-                        </div>
-                        <h4 className="text-xl font-bold text-white tracking-tight">{brand.name}</h4>
-                        <p className="text-xs text-slate-200 font-medium">Owned by: <span className="text-yellow-400">{brand.owner}</span></p>
-                      </div>
-                    </div>
+              {vaultItemsData.map((item) => (
+                <div key={item.id} className="p-4 border rounded-2xl flex justify-between items-center bg-white/5 border-white/10">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                    <p className="text-xs text-slate-400">{item.department} • {item.level}</p>
                   </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <p className={`text-sm mb-4 leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{brand.description}</p>
-                    {brand.price && (
-                      <p className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Price: <span className="text-yellow-500 font-mono">{brand.price}</span></p>
-                    )}
-                    <div className="mt-auto space-y-3">
-                      {brand.website && (
-                        <a href={brand.website} target="_blank" rel="noopener noreferrer" className={`block w-full text-center py-2 border rounded-xl text-sm font-bold transition-colors ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'}`}>
-                          Visit Website
-                        </a>
-                      )}
-                      {brand.whatsappNumber && (
-                        <a href={`https://wa.me/${brand.whatsappNumber}?text=Hello%20${encodeURIComponent(brand.name || '')}%2C%20I%20saw%20your%20brand%20on%20the%20NASS%20LASU%20Online%20Marketplace%20and%20I%20would%20like%20to%20place%20an%20order.`} target="_blank" rel="noopener noreferrer" className="block w-full text-center py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded-xl text-sm font-bold transition-colors">
-                          Place an Order (WhatsApp)
-                        </a>
-                      )}
-                    </div>
-                  </div>
+                  <a href={item.link} onClick={(e) => handleResourceClick(e, item)} className="px-4 py-2 bg-yellow-400 text-slate-900 text-xs font-bold rounded-full uppercase">
+                    View
+                  </a>
                 </div>
               ))}
             </div>
           </section>
 
-          <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full relative">
-            <div className="text-center mb-10">
+          {/* NEW SECTION: MEET OUR PARTNERS */}
+          <section id="partners" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">🤝</div>
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                HALL OF FAME
+                MEET OUR PARTNERS
               </h2>
-              <p className={`text-sm md:text-base italic tracking-wide max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                "A Legacy Remembered, The Present Preserved, Future Scientific Leaders Inspired."
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Strategic organizations, student initiatives, and ecosystem enablers collaborating with NASS-LASU toward scientific and career advancement.
               </p>
             </div>
 
-            {hallOfFameData.length === 0 ? (
-              <div className={`text-center py-16 border rounded-3xl backdrop-blur-xl max-w-4xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <div className="text-4xl mb-4 opacity-50">🏆</div>
-                <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Profiles will be updated soon.</p>
+            {partnersData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Partners directory will be announced soon.
               </div>
             ) : (
-              <>
-                <div className="flex justify-center mb-8">
-                  <div className="w-full max-w-4xl flex flex-col gap-8">
-                    {hallOfFameData.filter(h => h.cardType !== 'Honoree').map((honoree, hIdx) => (
-                      <div key={honoree.id || hIdx} className={`w-full flex flex-col items-center border rounded-3xl overflow-hidden group p-8 lg:p-12 mt-4 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-yellow-400/50 shadow-[0_0_40px_rgba(250,204,21,0.1)]' : 'bg-white border-yellow-500 shadow-xl'}`}>
-                        <div className="group relative rounded-3xl bg-white/5 backdrop-blur-xl overflow-hidden transition-all border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] hover:scale-[1.02] mb-8 mt-6 w-full max-w-[400px] aspect-[4/5] shrink-0 mx-auto">
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                          <img src={honoree.imageUrl} alt={honoree.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                          <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                            <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                              Hall Of Fame
-                            </div>
-                            <h4 className="text-xl font-bold text-white tracking-tight mb-1">
-                              <div className="flex flex-col gap-1">
-                                {honoree.nickname && <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{honoree.nickname}'</span>}
-                                <span className="text-base font-normal text-slate-200">{honoree.name}</span>
-                              </div>
-                            </h4>
-                          </div>
-                        </div>
-
-                        <div className="w-full relative z-20 flex flex-col items-center text-center mt-2">
-                          <h3 className="text-lg md:text-xl text-yellow-500 font-bold uppercase tracking-wide mb-6 flex flex-col gap-1.5">
-                            <span className="tracking-widest">{honoree.position}</span>
-                            {honoree.subtitle && <span className={`text-sm md:text-base opacity-90 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{honoree.subtitle}</span>}
-                          </h3>
-                          
-                          <div className={`text-sm leading-relaxed space-y-4 max-w-3xl mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                            {honoree.tagline && (
-                              <p className="text-yellow-500/85 font-semibold tracking-wider uppercase text-xs md:text-sm">
-                                {honoree.tagline}
-                              </p>
-                            )}
-                            {honoree.bio && renderWithBold(honoree.bio, isDarkMode)}
-                          </div>
-                        </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {partnersData.map((partner) => (
+                  <div key={partner.id} className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                    <div>
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/40 mb-4 bg-black/20 p-2 flex items-center justify-center">
+                        <img referrerPolicy="no-referrer" src={partner.logoUrl || '/nass_logo.jpg'} alt={partner.name} className="w-full h-full object-contain" loading="lazy" />
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap justify-center gap-6">
-                  {hallOfFameData.filter(h => h.cardType === 'Honoree').map((h, hIdx) => (
-                    <div key={h.id || hIdx} className={`max-w-md p-8 rounded-3xl border text-center relative overflow-hidden group backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-yellow-400/30' : 'bg-white border-yellow-500 shadow-md'}`}>
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl transition-colors" />
-                      <div className="text-yellow-500/50 text-4xl font-serif mb-4">"</div>
-                      <h3 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{h.name}</h3>
-                      <p className="text-[10px] text-yellow-500 uppercase font-bold tracking-tighter mb-4">{h.position}</p>
-                      <p className={`text-xs italic mb-6 leading-relaxed p-4 rounded-xl border ${isDarkMode ? 'text-slate-300 bg-white/5 border-white/5' : 'text-slate-600 bg-slate-50 border-slate-200'}`}>{h.quote}</p>
-                      <div className="inline-block px-3 py-1 bg-yellow-400/10 border border-yellow-400/30 text-yellow-500 rounded text-[9px] font-bold uppercase tracking-widest">Legacy Honoree</div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400 mb-1 block">{partner.partnershipType || 'Official Partner'}</span>
+                      <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{partner.name}</h3>
+                      <p className={`text-xs leading-relaxed mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{partner.bio}</p>
+                      
+                      {partner.services && (
+                        <div className="mb-4">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Focus & Services</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {partner.services.split(',').map((srv: string, i: number) => (
+                              <span key={i} className="text-[10px] px-2.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">{srv.trim()}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </>
+
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                      {partner.website && (
+                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" title="Website">
+                          <Globe size={16} />
+                        </a>
+                      )}
+                      {partner.instagram && (
+                        <a href={partner.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="Instagram">
+                          IG
+                        </a>
+                      )}
+                      {partner.twitter && (
+                        <a href={partner.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="X / Twitter">
+                          X
+                        </a>
+                      )}
+                      {partner.linkedin && (
+                        <a href={partner.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="LinkedIn">
+                          IN
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </section>
 
+          {/* NEW SECTION: MEET OUR SPONSORS */}
+          <section id="sponsors" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                MEET OUR SPONSORS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Our generous corporate brands and benefactors powering student projects, faculty events, and educational drives across the faculty.
+              </p>
+            </div>
+
+            {sponsorsData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Sponsors will be updated soon.
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sponsorsData.map((sponsor) => (
+                  <div key={sponsor.id} className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                    <div>
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/40 mb-4 bg-black/20 p-2 flex items-center justify-center">
+                        <img referrerPolicy="no-referrer" src={sponsor.logoUrl || '/nass_logo.jpg'} alt={sponsor.name} className="w-full h-full object-contain" loading="lazy" />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400 mb-1 block">{sponsor.tier || 'Official Sponsor'}</span>
+                      <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sponsor.name}</h3>
+                      <p className={`text-xs leading-relaxed mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{sponsor.bio}</p>
+                      
+                      {sponsor.products && (
+                        <div className="mb-4">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Highlighted Products / Offers</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {sponsor.products.split(',').map((prd: string, i: number) => (
+                              <span key={i} className="text-[10px] px-2.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">{prd.trim()}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                      {sponsor.website && (
+                        <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" title="Website">
+                          <Globe size={16} />
+                        </a>
+                      )}
+                      {sponsor.instagram && (
+                        <a href={sponsor.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="Instagram">
+                          IG
+                        </a>
+                      )}
+                      {sponsor.twitter && (
+                        <a href={sponsor.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="X / Twitter">
+                          X
+                        </a>
+                      )}
+                      {sponsor.linkedin && (
+                        <a href={sponsor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="LinkedIn">
+                          IN
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Events Gallery Section */}
           <section id="events" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-10">
               <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
@@ -1072,239 +621,15 @@ export default function App() {
                 Initiative Of A Digitalized and Innovative Secretariat
               </p>
             </div>
+            
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 EVENTS GALLERY
               </h2>
-              <button 
-                onClick={() => setIsRsvpOpen(true)}
-                className="px-6 py-3 border border-yellow-400/50 text-yellow-500 hover:bg-yellow-400 hover:text-slate-900 rounded-full text-sm font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(250,204,21,0.2)] hover:shadow-[0_0_25px_rgba(250,204,21,0.4)] whitespace-nowrap self-start md:self-auto cursor-pointer"
-              >
-                RSVP for Events
-              </button>
-            </div>
-            <div className="relative group/scroll">
-              <button
-                onClick={() => scrollEvents('left')}
-                className={`absolute left-2 md:-left-6 top-1/2 -translate-y-1/2 z-40 p-2 md:p-3 rounded-full border transition-all opacity-100 md:opacity-0 group-hover/scroll:opacity-100 shadow-xl flex items-center justify-center pointer-events-auto ${isDarkMode ? 'bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-900 text-white border-white/20' : 'bg-white/90 hover:bg-yellow-400 hover:text-slate-900 text-slate-800 border-slate-300'}`}
-                aria-label="Scroll left"
-              >
-                <ChevronLeft size={24} className="w-5 h-5 md:w-6 md:h-6" />
-              </button>
-              
-              <button
-                onClick={() => scrollEvents('right')}
-                className={`absolute right-2 md:-right-6 top-1/2 -translate-y-1/2 z-40 p-2 md:p-3 rounded-full border transition-all opacity-100 md:opacity-0 group-hover/scroll:opacity-100 shadow-xl flex items-center justify-center pointer-events-auto ${isDarkMode ? 'bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-900 text-white border-white/20' : 'bg-white/90 hover:bg-yellow-400 hover:text-slate-900 text-slate-800 border-slate-300'}`}
-                aria-label="Scroll right"
-              >
-                <ChevronRight size={24} className="w-5 h-5 md:w-6 md:h-6" />
-              </button>
-
-              <div ref={eventsScrollRef} className="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory hide-scrollbar scroll-smooth px-4 md:px-0">
-                {eventsData.map((event) => {
-                  const rawImages = event.images 
-                    ? (typeof event.images === 'string' ? event.images.split(',') : event.images)
-                    : [];
-
-                  const imagesArray = rawImages
-                    .map((s: any) => String(s).trim())
-                    .filter((s: string) => s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:'));
-
-                  const shouldRenderSlideshow = imagesArray.length > 0;
-
-                  return (
-                  <div key={event.id} className={`w-[85vw] sm:w-[320px] flex-none aspect-[4/5] relative rounded-2xl overflow-hidden group snap-center border transition-all p-1 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <div className="w-full h-full rounded-xl overflow-hidden relative">
-                    {shouldRenderSlideshow ? (
-                      <ImageSlideshow 
-                        images={imagesArray} 
-                        interval={1500}
-                        alt={event.title} 
-                        fallbackImage={(event.image || '').trim().startsWith('http') || (event.image || '').trim().startsWith('/') ? (event.image || '').trim() : encodeURI((event.image || '').replace(/['"]/g, '').trim())}
-                      />
-                    ) : (
-                      <img 
-                        referrerPolicy="no-referrer" 
-                        src={(event.image || '').trim().startsWith('http') || (event.image || '').trim().startsWith('/') ? (event.image || '').trim() : encodeURI((event.image || '').replace(/['"]/g, '').trim())} 
-                        alt={event.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                        loading="lazy"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-90 pointer-events-none z-20" />
-                    <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 z-30">
-                      <div>
-                        <span className="text-[9px] bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 px-2 py-0.5 rounded font-bold uppercase tracking-widest mb-1.5 inline-block">{event.category}</span>
-                        <h3 className="text-sm font-bold text-white tracking-wide leading-snug">{event.title}</h3>
-                      </div>
-                      <div className="flex justify-start">
-                        <button 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
-                            setSelectedEventGallery({
-                              title: event.title,
-                              images: validImages
-                            });
-                          }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 text-xs font-bold rounded-lg transition-colors shadow-lg cursor-pointer"
-                        >
-                          <span>See More</span>
-                          <ArrowRight size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )})}
-              </div>
-            </div>
-            <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
-          </section>
-
-          {/* DYNAMIC FACULTY DIRECTORY & DEAN SECTION */}
-          <section className="px-4 max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-6">
-            <div className={`backdrop-blur-xl border rounded-2xl p-6 md:p-8 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`}>
-              <h3 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-6 flex items-center gap-2">
-                <UserIcon size={16} className="text-yellow-500" /> Faculty Directory
-              </h3>
-              <div className="space-y-4">
-                <div className={`flex items-center gap-4 p-4 rounded-2xl border transition-colors ${isDarkMode ? 'bg-white/5 border-white/15 hover:border-yellow-400/30 text-white' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-900'}`}>
-                  <img 
-                    referrerPolicy="no-referrer"
-                    src={siteContentMap.faculty_dean_imageUrl || "/nass_logo.jpg"} 
-                    alt={siteContentMap.faculty_dean_name || "Prof. A.O. Akinkurolere"} 
-                    className={`w-14 h-14 rounded-full object-cover border-2 border-yellow-500/50 flex-shrink-0 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`} 
-                    loading="lazy"
-                  />
-                  <div>
-                    <h4 className="text-sm font-bold tracking-tight">{siteContentMap.faculty_dean_name || "Prof. A.O. Akinkurolere"}</h4>
-                    <p className="text-[10px] font-bold uppercase tracking-tighter text-yellow-500">{siteContentMap.faculty_dean_title || "Dean of Science"}</p>
-                  </div>
-                </div>
-                <div className="p-5 border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-400/10 to-transparent rounded-r-2xl">
-                  <p className={`text-[11px] leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                    "{siteContentMap.faculty_dean_bio || "Welcome to a new era of digital efficiency and transparent administration in the Faculty of Science."}"
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-yellow-400/10 to-transparent border border-yellow-400/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-lg">
-              <div className="relative z-10">
-                {announcementsData.length > 0 ? (
-                  <>
-                    <span className="bg-yellow-400 text-slate-900 px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-4 inline-block">{announcementsData[0].tag}</span>
-                    <h3 className={`text-xl font-bold leading-tight mb-2 font-space-grotesk tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`} dangerouslySetInnerHTML={{ __html: announcementsData[0].title.replace('\n', '<br/>') }} />
-                    <p className={`text-[11px] mb-6 w-3/4 leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{announcementsData[0].description}</p>
-                    <div className="space-y-3">
-                      <div className={`flex items-center gap-3 text-[11px] font-bold p-3 rounded-xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-white' : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'}`}>
-                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                        <span className="w-20 text-yellow-500 tracking-widest">{announcementsData[0].event1Date}</span>
-                        <span>{announcementsData[0].event1Text}</span>
-                      </div>
-                      <div className={`flex items-center gap-3 text-[11px] font-bold p-3 rounded-xl border opacity-70 ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-white/50 border-slate-200 text-slate-600'}`}>
-                        <div className="w-2 h-2 rounded-full bg-slate-500" />
-                        <span className="w-20 tracking-widest">{announcementsData[0].event2Date}</span>
-                        <span>{announcementsData[0].event2Text}</span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-slate-400 text-sm">No new announcements at this time.</p>
-                )}
-              </div>
-              <div className="absolute -right-10 -bottom-10 text-9xl opacity-5">📅</div>
             </div>
           </section>
 
-          {/* REAL-LIFE FACULTY OF SCIENCE & CAMPUS NAVIGATION MAP SECTION */}
-          <section id="map" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="text-center mb-10">
-              <div className="text-yellow-500 text-4xl mb-4">📍</div>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
-                FACULTY & CAMPUS MAP GUIDE
-              </h2>
-              <p className={`text-xs uppercase tracking-widest font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Real-life directions and verified locations for freshers & students at LASU Main Campus (Ojo)
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Left Column: Key Locations Directory */}
-              <div className={`lg:col-span-1 border rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between space-y-4 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`}>
-                <div>
-                  <h3 className={`font-space-grotesk text-lg font-bold mb-4 uppercase tracking-wide flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    <MapPin size={18} className="text-yellow-500" /> Key Campus Landmarks
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      {
-                        title: "LASU Main Gate (Ojo)",
-                        desc: "Primary entrance on the Badagry Expressway. Board campus shuttles here straight to the Science complex.",
-                        query: "Lagos State University Main Gate Ojo"
-                      },
-                      {
-                        title: "Faculty of Science Complex",
-                        desc: "The central academic quadrangle housing departmental lecture rooms and laboratories.",
-                        query: "Faculty of Science Lagos State University Ojo"
-                      },
-                      {
-                        title: "Babatunde Raji Fashola Senate House",
-                        desc: "Central administrative building located within the core campus zone.",
-                        query: "LASU Senate House Ojo"
-                      },
-                      {
-                        title: "NASS LASU Secretariat",
-                        desc: "Official student administrative hub for records, student correspondence, and inquiries.",
-                        query: "Faculty of Science Lagos State University Ojo"
-                      }
-                    ].map((loc, idx) => (
-                      <div key={idx} className={`p-3.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-900/60 border-white/5 hover:border-yellow-400/40 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}>
-                        <h4 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>{loc.title}</h4>
-                        <p className="text-[11px] leading-relaxed mb-2">{loc.desc}</p>
-                        <a 
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.query)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] font-bold text-yellow-500 hover:underline uppercase tracking-tight"
-                        >
-                          <span>Get Directions</span> <ExternalLink size={10} />
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 text-center">
-                  <a 
-                    href="https://www.google.com/maps/place/Lagos+State+University,+Ojo/@6.4687,3.2045,15z" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Navigation size={14} /> Open Full Google Map
-                  </a>
-                </div>
-              </div>
-
-              {/* Right Column: Embedded Map View */}
-              <div className={`lg:col-span-2 border rounded-3xl overflow-hidden backdrop-blur-xl relative aspect-[16/10] lg:aspect-auto shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-                <iframe 
-                  title="LASU Faculty of Science Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.123456789!2d3.2045!3d6.4687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b844b20757d59%3A0x6b7724128537b8b2!2sLagos+State+University!5e0!3m2!1sen!2sng!4v1710000000000!5m2!1sen!2sng" 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0, minHeight: '400px' }} 
-                  allowFullScreen={true} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* FACULTY HOTLINE & EMERGENCY SECTION WITH WHATSAPP CHAT BUTTON */}
+          {/* Faculty Hotline & Emergency Section */}
           <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-4">
             <div className="text-center">
               <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
@@ -1315,136 +640,18 @@ export default function App() {
               </p>
             </div>
             <EmergencyHotline />
-            <div className={`mt-6 p-6 rounded-3xl border text-center backdrop-blur-xl shadow-lg max-w-3xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-              <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                For quick responses, chat with us on WhatsApp or call any of the numbers displayed above.
-              </p>
-              <a 
-                href="https://wa.me/2347074351819?text=Hello%20NASS%20LASU%20Welfare%20Office%2C%20I%20am%20reaching%20out%20from%20the%20website." 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-              >
-                <MessageCircle size={18} />
-                <span>Chat via WhatsApp (+234 707 435 1819)</span>
-              </a>
-            </div>
           </section>
 
-          <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-10 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10 w-full flex justify-center items-center shrink-0">
-                <div className={`relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center p-2 border-2 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.2)] overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
-                  <img 
-                    referrerPolicy="no-referrer"
-                    src={siteContentMap.secretariat_logo_url || "https://i.postimg.cc/Pp0q2xW3"} 
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      if (!target.src.endsWith('/nass_logo.jpg')) {
-                        target.src = '/nass_logo.jpg';
-                      }
-                    }}
-                    alt="The Secretariat Logo" 
-                    className="w-full h-full object-contain scale-105"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-
-              <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
-                <h2 className={`font-space-grotesk text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  <span className="text-yellow-500 text-4xl">🏛️</span> The Secretariat
-                </h2>
-                <p className="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-6">Faculty of Science</p>
-                
-                <div className={`space-y-6 leading-relaxed text-sm md:text-base ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                  <p>
-                    {siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities."}
-                  </p>
-                  <p>
-                    {siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student."}
-                  </p>
-                  
-                  <div className={`mt-8 p-6 rounded-2xl border text-left w-full mx-auto max-w-2xl ${isDarkMode ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                    <p className="text-yellow-500 font-bold mb-4 text-center sm:text-left">For all official correspondence, inquiries, requests, or submissions to the Association, kindly contact:</p>
-                    
-                    <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-6 mb-6">
-                      <a href={`tel:${siteContentMap.secretariat_phone || '+2348141693252'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
-                          <PhoneCall size={18} />
-                        </div>
-                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
-                      </a>
-                      
-                      <a href="mailto:nasslasu@gmail.com" className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
-                          <MessageSquare size={18} />
-                        </div>
-                        <span className="font-bold tracking-wider">nasslasu@gmail.com</span>
-                      </a>
-                    </div>
-
-                    {/* WhatsApp Button under Secretariat */}
-                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-center sm:justify-start">
-                      <a 
-                        href="https://wa.me/2348141693252?text=Hello%20Secretariat%2C%20I%20am%20reaching%20out%20from%20the%20NASS%20LASU%20website." 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
-                      >
-                        <MessageCircle size={16} />
-                        <span>Chat on WhatsApp (+234 814 169 3252)</span>
-                      </a>
-                    </div>
-                    
-                    <div className={`pt-6 border-t text-center sm:text-left mt-4 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                      <p className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
-                      <p className="text-yellow-500 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
-            </div>
-          </section>
-
+          {/* Admin Section */}
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
               <AdminPanel />
             </AdminGate>
           </section>
 
+          {/* Feedback Section */}
           <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
             <SecretariatFeedback />
-            
-            {/* WhatsApp Button under Secretariat Feedback */}
-            <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-              <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                For quick responses, send a message using the button below.
-              </p>
-              <a 
-                href="https://wa.me/2348141693252?text=Hello%20Secretariat%2C%20I%20have%20an%20urgent%20inquiry%20from%20the%20feedback%20portal." 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-              >
-                <MessageCircle size={18} />
-                <span>Quick Chat on WhatsApp</span>
-              </a>
-            </div>
-            
-            <div className="mt-16 pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              <div className="flex gap-6 mb-2">
-                <a href="#" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
-                <a href="#" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
-                <a href="#" className="hover:text-yellow-500 transition-colors">Instagram</a>
-              </div>
-              <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
-              <p className="text-yellow-500 mt-1">Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.</p>
-            </div>
           </section>
 
         </main>
@@ -1463,242 +670,6 @@ export default function App() {
       </aside>
 
       <Chatbot />
-
-      <AnimatePresence>
-        {isRsvpOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className={`border rounded-3xl p-6 md:p-8 max-w-md w-full relative shadow-2xl ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
-            >
-              <button
-                onClick={() => setIsRsvpOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-              
-              <div className="text-yellow-500 text-3xl mb-4">🎟️</div>
-              <h3 className="text-2xl font-bold mb-2">RSVP for Events</h3>
-              <p className="text-slate-400 text-sm mb-6">Register your attendance for upcoming faculty events. An email confirmation will be sent to you.</p>
-              
-              <form className="space-y-4" onSubmit={(e) => { 
-                e.preventDefault(); 
-                setIsRsvpOpen(false); 
-                addToast('RSVP submitted successfully! Check your email for confirmation.', 'success');
-              }}>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Select Event</label>
-                  <select className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 appearance-none ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
-                    <option value="science-week" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Science Week 2024</option>
-                    <option value="inauguration" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Inauguration Event</option>
-                    <option value="tech-fair" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Tech Fair & Exhibition</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Full Name</label>
-                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. John Doe" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Matric Number</label>
-                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. 18/555... " />
-                </div>
-                
-                <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest py-4 rounded-xl transition-colors mt-4 text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] cursor-pointer">
-                  Confirm Attendance
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="fixed bottom-14 left-6 z-50 flex flex-col items-start gap-4">
-        <AnimatePresence>
-          {isQuickActionsOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col gap-3"
-            >
-              <button 
-                onClick={() => {
-                  document.getElementById('hotline')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Siren size={18} className="text-slate-900 animate-pulse" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Emergency Hotline</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('brands')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <ShoppingBag size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Online Marketplace</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('vault')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <BookOpen size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Academic Vault</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Navigation size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Faculty Map</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('feedback')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <MessageSquare size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Feedback Form</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <button
-          onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-          className="p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50 cursor-pointer"
-          aria-label="Quick Actions"
-        >
-          {isQuickActionsOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {selectedExecutive && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedExecutive(null)}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
-            >
-              <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-                <div className="relative aspect-[3/2] w-full shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
-                  <img 
-                    src={selectedExecutive.imageUrl || undefined} 
-                    alt={selectedExecutive.name} 
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <button
-                    onClick={() => setSelectedExecutive(null)}
-                    className="absolute top-4 right-4 z-20 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors cursor-pointer"
-                  >
-                    <X size={20} />
-                  </button>
-                  <div className="absolute bottom-4 left-6 right-6 z-20">
-                    <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                      {selectedExecutive.office}
-                    </div>
-                    <h3 className="text-2xl font-bold text-yellow-400 tracking-tight">
-                      {selectedExecutive.name}
-                    </h3>
-                    {selectedExecutive.nickname && (
-                      <p className="text-yellow-400 font-space-grotesk font-bold uppercase mt-1">'{selectedExecutive.nickname}'</p>
-                    )}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-500 font-semibold uppercase tracking-widest">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                    {selectedExecutive.department}
-                  </div>
-                  <div className={`leading-relaxed text-sm p-4 rounded-xl border whitespace-pre-wrap ${isDarkMode ? 'text-yellow-100 bg-white/5 border-white/5' : 'text-slate-700 bg-slate-50 border-slate-200'}`}>
-                    {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary, isDarkMode) : "No profile summary available."}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
-          aria-label="Back to top"
-        >
-          <ArrowUp size={24} />
-        </button>
-      )}
-
-      {selectedEventGallery && (
-        <PageantGallery
-          title={selectedEventGallery.title}
-          images={selectedEventGallery.images}
-          onClose={() => setSelectedEventGallery(null)}
-        />
-      )}
-      
-      <style>{`
-        .font-space-grotesk { font-family: 'Space Grotesk', system-ui, sans-serif; }
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(250, 204, 21, 0.3);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(250, 200, 21, 0.5);
-        }
-      `}</style>
     </div>
   );
 }
