@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../lib/firebase';
 import {
   Shield, Plus, Trash2, Edit, Search, Eye, Upload, Loader2, FolderKanban,
-  X, Save, Image as ImageIcon, LogOut, AlertTriangle,
+  X, Save, Image as ImageIcon, LogOut, AlertTriangle, Globe, Sparkles
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
@@ -57,10 +57,6 @@ const fileToDataUrl = (file: File): Promise<string> => {
   });
 };
 
-// Resize/compress an image file to a Blob before it ever leaves the browser.
-// This is what actually fixes "images take forever to show" — a raw phone
-// photo can be 3-8MB; this brings it down to roughly 100-300KB while still
-// looking sharp at the sizes the site displays images at.
 const compressImageToBlob = (file: File, maxDim = 1600, quality = 0.82): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -97,7 +93,7 @@ const uploadFile = async (file: File): Promise<string> => {
     await uploadBytes(storageRef, uploadBody);
     return await getDownloadURL(storageRef);
   } catch (err) {
-    console.warn('Firebase Storage upload failed or unconfigured, falling back to compressed Data URL:', err);
+    console.warn('Firebase Storage upload failed, falling back to Data URL:', err);
     return await fileToDataUrl(file);
   }
 };
@@ -230,7 +226,6 @@ const GalleryUploadZone = ({ value, onChange, highContrast }: { value: string; o
   );
 };
 
-// Renders one field's input, dispatching on the field's declared type.
 const AdminFieldInput = ({ field, value, onChange, highContrast }: { field: AdminField; value: any; onChange: (val: any) => void; highContrast: boolean; }) => {
   switch (field.type) {
     case 'textarea':
@@ -271,7 +266,7 @@ const AdminFieldInput = ({ field, value, onChange, highContrast }: { field: Admi
 };
 
 // ============================================================================
-// "+ NEW SECTION" — build a brand-new manageable section without touching code
+// NEW SECTION MODAL
 // ============================================================================
 
 const NewSectionModal = ({ onClose, onCreate, highContrast }: { onClose: () => void; onCreate: (section: AdminSection) => void; highContrast: boolean; }) => {
@@ -310,8 +305,8 @@ const NewSectionModal = ({ onClose, onCreate, highContrast }: { onClose: () => v
         </p>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Section Name (e.g. "Gallery Album", "Sponsors")</label>
-          <input className="w-full bg-slate-800 border border-white/10 rounded-lg p-2.5 text-sm text-white" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Sponsors" />
+          <label className="block text-xs text-slate-400 mb-1">Section Name (e.g. "Gallery Album", "Volunteers")</label>
+          <input className="w-full bg-slate-800 border border-white/10 rounded-lg p-2.5 text-sm text-white" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Volunteers" />
         </div>
 
         <div className="space-y-2">
@@ -343,6 +338,48 @@ const NewSectionModal = ({ onClose, onCreate, highContrast }: { onClose: () => v
 };
 
 // ============================================================================
+// PARTNERS & SPONSORS CONFIGURATION
+// ============================================================================
+
+const PARTNERS_SECTION: AdminSection = {
+  key: 'partners',
+  label: 'Partners',
+  collection: 'partners',
+  titleField: 'name',
+  subtitleField: 'partnershipType',
+  fields: [
+    { key: 'name', label: 'Organization Name', type: 'text', required: true, placeholder: 'e.g. Magna Collective, AI Society' },
+    { key: 'partnershipType', label: 'Partnership Type', type: 'text', placeholder: 'e.g. Official Tech Partner, Media Enabler' },
+    { key: 'logoUrl', label: 'Partner Logo', type: 'image' },
+    { key: 'bio', label: 'Partner Bio / Overview', type: 'textarea', placeholder: 'Brief summary of the partner...' },
+    { key: 'services', label: 'Services / Focus Areas (Comma separated)', type: 'text', placeholder: 'e.g. Cloud Credits, Mentorship, Hackathons' },
+    { key: 'website', label: 'Website Link', type: 'url', placeholder: 'https://...' },
+    { key: 'instagram', label: 'Instagram Link', type: 'url', placeholder: 'https://instagram.com/...' },
+    { key: 'twitter', label: 'Twitter / X Link', type: 'url', placeholder: 'https://x.com/...' },
+    { key: 'linkedin', label: 'LinkedIn Link', type: 'url', placeholder: 'https://linkedin.com/company/...' },
+  ],
+};
+
+const SPONSORS_SECTION: AdminSection = {
+  key: 'sponsors',
+  label: 'Sponsors',
+  collection: 'sponsors',
+  titleField: 'name',
+  subtitleField: 'tier',
+  fields: [
+    { key: 'name', label: 'Sponsor / Company Name', type: 'text', required: true, placeholder: 'e.g. Prospera Finance, CWAY' },
+    { key: 'tier', label: 'Sponsorship Tier', type: 'text', placeholder: 'e.g. Headline Sponsor, Platinum, Gold' },
+    { key: 'logoUrl', label: 'Sponsor Logo', type: 'image' },
+    { key: 'bio', label: 'Corporate Bio / Statement', type: 'textarea', placeholder: 'Message or remark from sponsor...' },
+    { key: 'products', label: 'Featured Products / Student Offers (Comma separated)', type: 'text', placeholder: 'e.g. 20% Discount, Free SIMs, Energy Drinks' },
+    { key: 'website', label: 'Website Link', type: 'url', placeholder: 'https://...' },
+    { key: 'instagram', label: 'Instagram Link', type: 'url', placeholder: 'https://instagram.com/...' },
+    { key: 'twitter', label: 'Twitter / X Link', type: 'url', placeholder: 'https://x.com/...' },
+    { key: 'linkedin', label: 'LinkedIn Link', type: 'url', placeholder: 'https://linkedin.com/company/...' },
+  ],
+};
+
+// ============================================================================
 // MAIN ADMIN PANEL
 // ============================================================================
 
@@ -350,7 +387,7 @@ export const AdminPanel = () => {
   const [user, setUser] = useState<any>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [customSections, setCustomSections] = useState<AdminSection[]>([]);
-  const [activeSectionKey, setActiveSectionKey] = useState<string>(BUILT_IN_SECTIONS[0].key);
+  const [activeSectionKey, setActiveSectionKey] = useState<string>('partners');
   const [data, setData] = useState<any[]>([]);
   const [vaultData, setVaultData] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -360,10 +397,26 @@ export const AdminPanel = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showNewSection, setShowNewSection] = useState(false);
 
-  const allSections = useMemo(() => [...BUILT_IN_SECTIONS, ...customSections].map(withOrderField), [customSections]);
-  const activeSection = useMemo(() => allSections.find((s) => s.key === activeSectionKey) || allSections[0], [allSections, activeSectionKey]);
+  // Marquee Management State
+  const [marqueeInput, setMarqueeInput] = useState('');
+  const [isSavingMarquee, setIsSavingMarquee] = useState(false);
+  const [marqueeSuccess, setMarqueeSuccess] = useState(false);
 
-  // --- Auth ---
+  // Combine standard built-ins with Partners & Sponsors
+  const allSections = useMemo(() => {
+    return [
+      PARTNERS_SECTION,
+      SPONSORS_SECTION,
+      ...BUILT_IN_SECTIONS,
+      ...customSections
+    ].map(withOrderField);
+  }, [customSections]);
+
+  const activeSection = useMemo(() => {
+    return allSections.find((s) => s.key === activeSectionKey) || allSections[0];
+  }, [allSections, activeSectionKey]);
+
+  // --- Auth Listener ---
   useEffect(() => {
     try {
       const unsubscribe = auth.onAuthStateChanged(
@@ -371,7 +424,7 @@ export const AdminPanel = () => {
         (err) => {
           console.warn('Firebase Auth error:', err);
           if (err?.message?.includes('configuration-not-found') || (err as any)?.code === 'auth/configuration-not-found') {
-            setAuthError("Firebase Authentication is not enabled for this project. Enable it in Firebase Console -> Authentication -> Get Started.");
+            setAuthError("Firebase Authentication is not enabled for this project. Enable it in Firebase Console -> Authentication.");
           }
         }
       );
@@ -392,9 +445,9 @@ export const AdminPanel = () => {
     } catch (err: any) {
       console.error('Login error:', err);
       if (err?.code === 'auth/configuration-not-found' || err?.message?.includes('configuration-not-found')) {
-        setAuthError("Firebase Authentication is not enabled for this project. Enable it in Firebase Console -> Authentication -> Get Started -> Sign-in method.");
+        setAuthError("Firebase Authentication is not enabled. Enable it in Firebase Console -> Authentication.");
       } else {
-        setAuthError(err?.message || 'Login failed. Please check your connection.');
+        setAuthError(err?.message || 'Login failed. Please check connection.');
       }
     }
   };
@@ -404,7 +457,7 @@ export const AdminPanel = () => {
     setUser(null);
   };
 
-  // --- Load custom section configs (live, created via "+ New Section") ---
+  // --- Custom Section Configurations ---
   useEffect(() => {
     if (!user || !authorized) return;
     const unsub = onSnapshot(collection(db, 'adminSectionConfigs'), (snap) => {
@@ -412,6 +465,63 @@ export const AdminPanel = () => {
     }, (err) => console.warn('adminSectionConfigs listener error:', err.message));
     return () => unsub();
   }, [user, authorized]);
+
+  // --- Live Data for active section ---
+  useEffect(() => {
+    setSelectedIds([]);
+    setSearch('');
+    if (!user || !authorized || !activeSection) return;
+    const q = collection(db, activeSection.collection);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    }, (error) => console.warn('Firestore error in AdminPanel:', error.message));
+    return () => unsubscribe();
+  }, [user, authorized, activeSection]);
+
+  // --- Vault items listener for Analytics Chart ---
+  useEffect(() => {
+    if (!user || !authorized) return;
+    const unsub = onSnapshot(collection(db, 'vaultItems'), (snapshot) => {
+      setVaultData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    }, (error) => console.warn('Firestore error on vaultItems:', error.message));
+    return () => unsub();
+  }, [user, authorized]);
+
+  // --- Fetch Marquee Text when on Site Content tab ---
+  useEffect(() => {
+    if (!user || !authorized) return;
+    const fetchMarquee = async () => {
+      try {
+        const docRef = doc(db, 'siteContent', 'marquee_text');
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          setMarqueeInput(snap.data().value || '');
+        }
+      } catch (e) {
+        console.warn('Error fetching marquee text:', e);
+      }
+    };
+    fetchMarquee();
+  }, [user, authorized, activeSectionKey]);
+
+  const handleSaveMarquee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!marqueeInput.trim()) return;
+    setIsSavingMarquee(true);
+    setMarqueeSuccess(false);
+    try {
+      await setDoc(doc(db, 'siteContent', 'marquee_text'), {
+        value: marqueeInput.trim(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+      setMarqueeSuccess(true);
+      setTimeout(() => setMarqueeSuccess(false), 3000);
+    } catch (e) {
+      console.error('Failed to save marquee:', e);
+    } finally {
+      setIsSavingMarquee(false);
+    }
+  };
 
   const handleCreateSection = async (section: AdminSection) => {
     try {
@@ -424,42 +534,20 @@ export const AdminPanel = () => {
   };
 
   const handleDeleteSection = async (section: AdminSection) => {
-    if (!window.confirm(`Remove the "${section.label}" tab? (This does not delete existing documents in Firestore, just the tab.)`)) return;
+    if (!window.confirm(`Remove the "${section.label}" tab? (Documents remain in Firestore).`)) return;
     try {
       await deleteDoc(doc(db, 'adminSectionConfigs', section.collection));
-      setActiveSectionKey(BUILT_IN_SECTIONS[0].key);
+      setActiveSectionKey(allSections[0].key);
     } catch (err) {
       console.error('Error deleting section:', err);
     }
   };
-
-  // --- Live data for the active section ---
-  useEffect(() => {
-    setSelectedIds([]);
-    setSearch('');
-    if (!user || !authorized || !activeSection) return;
-    const q = collection(db, activeSection.collection);
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
-    }, (error) => console.warn('Firestore error in AdminPanel:', error.message));
-    return () => unsubscribe();
-  }, [user, authorized, activeSection]);
-
-  // --- Vault data, kept separately for the chart (always visible) ---
-  useEffect(() => {
-    if (!user || !authorized) return;
-    const unsub = onSnapshot(collection(db, 'vaultItems'), (snapshot) => {
-      setVaultData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
-    }, (error) => console.warn('Firestore error on vaultItems:', error.message));
-    return () => unsub();
-  }, [user, authorized]);
 
   const filteredData = useMemo(() => {
     const base = !search.trim() ? data : data.filter((item) => Object.values(item).some((v) => typeof v === 'string' && v.toLowerCase().includes(search.toLowerCase())));
     return [...base].sort(sortByOrder);
   }, [data, search]);
 
-  // --- CRUD ---
   const handleAddItem = () => setEditingItem(blankItemFor(activeSection));
   const handleEdit = (item: any) => setEditingItem(item);
 
@@ -474,7 +562,7 @@ export const AdminPanel = () => {
       setEditingItem(null);
     } catch (err: any) {
       console.error('Error saving item:', err);
-      setSaveError(err?.message || 'Failed to save. The image payload might be too large — try a smaller photo.');
+      setSaveError(err?.message || 'Failed to save item.');
     }
   };
 
@@ -533,7 +621,7 @@ export const AdminPanel = () => {
     return Object.values(counts);
   }, [vaultData]);
 
-  // --- Not signed in ---
+  // --- Login Gate ---
   if (!user) {
     return (
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-8 text-center max-w-lg mx-auto shadow-2xl space-y-4">
@@ -555,21 +643,22 @@ export const AdminPanel = () => {
     );
   }
 
-  // --- Signed in, but not on the allowlist ---
+  // --- Authorization Gate ---
   if (!authorized) {
     return (
       <div className="bg-slate-900/80 backdrop-blur-md border border-red-500/30 rounded-2xl p-8 text-center max-w-lg mx-auto shadow-2xl space-y-4">
         <AlertTriangle className="w-12 h-12 text-red-400 mx-auto" />
         <h3 className="text-xl font-bold text-white space-grotesk">Not Authorized</h3>
         <p className="text-slate-400 text-sm">
-          Signed in as <span className="text-white font-bold">{user.email}</span>, but this account isn't on the admin list for this site.
+          Signed in as <span className="text-white font-bold">{user.email}</span>, but this account isn't on the authorized administrator list.
         </p>
-        <button onClick={handleLogout} className="text-sm text-yellow-400 hover:text-yellow-300 font-bold flex items-center gap-1.5 mx-auto"><LogOut size={14} /> Sign Out</button>
+        <button onClick={handleLogout} className="text-sm text-yellow-400 hover:text-yellow-300 font-bold flex items-center gap-1.5 mx-auto">
+          <LogOut size={14} /> Sign Out
+        </button>
       </div>
     );
   }
 
-  // --- Authorized admin view ---
   return (
     <div className={`${highContrast ? 'bg-black border-2 border-white' : 'bg-slate-900/60 backdrop-blur-md border border-white/10'} rounded-2xl p-6 md:p-8 max-w-4xl mx-auto transition-colors duration-300`}>
       <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
@@ -585,6 +674,7 @@ export const AdminPanel = () => {
         </div>
       </div>
 
+      {/* Analytics Chart */}
       <div className={`mb-8 p-4 rounded-xl ${highContrast ? 'bg-black border-2 border-white' : 'bg-white/5 border border-white/10'}`}>
         <h4 className="text-sm font-bold text-white mb-4">Document Distribution by Department</h4>
         <div className="h-56 w-full">
@@ -602,7 +692,34 @@ export const AdminPanel = () => {
         </div>
       </div>
 
-      {/* Section tabs — driven entirely by config, add a section and a tab appears automatically */}
+      {/* Marquee Ticker Quick Editor (Visible across all tabs) */}
+      <div className={`mb-8 p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-yellow-400/5 border-yellow-400/20'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
+            <Sparkles size={14} /> Live Marquee Announcement Ticker
+          </h4>
+          {marqueeSuccess && <span className="text-[11px] text-green-400 font-bold">Updated Live!</span>}
+        </div>
+        <p className="text-xs text-slate-400 mb-3">Update the moving broadcast message displayed across the bottom of the entire website.</p>
+        <form onSubmit={handleSaveMarquee} className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            value={marqueeInput}
+            onChange={(e) => setMarqueeInput(e.target.value)}
+            placeholder="Type your scrolling announcement text..."
+            className="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
+          />
+          <button
+            type="submit"
+            disabled={isSavingMarquee}
+            className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 shrink-0"
+          >
+            {isSavingMarquee ? 'Saving...' : 'Save Ticker'}
+          </button>
+        </form>
+      </div>
+
+      {/* Section Tabs */}
       <div className="flex flex-wrap gap-2.5 mb-2">
         {allSections.map((section) => (
           <button
@@ -618,6 +735,7 @@ export const AdminPanel = () => {
           <Plus size={14} /> New Section
         </button>
       </div>
+
       {activeSection?.isCustom && (
         <div className="mb-6">
           <button onClick={() => handleDeleteSection(activeSection)} className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1">
@@ -627,6 +745,7 @@ export const AdminPanel = () => {
       )}
       {!activeSection?.isCustom && <div className="mb-6" />}
 
+      {/* Edit / Add Form */}
       {editingItem ? (
         <form onSubmit={handleSaveEdit} className="space-y-4 bg-slate-800/30 p-6 rounded-xl border border-white/10">
           <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-2">
@@ -676,8 +795,8 @@ export const AdminPanel = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <AnimatePresence>
               {filteredData.map((item) => {
-                const cover = item[activeSection.fields.find((f) => f.type === 'image')?.key || ''] || item.imageUrl || item.image;
-                const title = item[activeSection.titleField] || 'Untitled';
+                const cover = item[activeSection.fields.find((f) => f.type === 'image')?.key || ''] || item.logoUrl || item.imageUrl || item.image;
+                const title = item[activeSection.titleField] || item.name || 'Untitled';
                 const subtitleRaw = activeSection.subtitleField ? item[activeSection.subtitleField] : '';
                 const subtitle = typeof subtitleRaw === 'string' ? subtitleRaw.slice(0, 60) : '';
                 return (
@@ -686,13 +805,14 @@ export const AdminPanel = () => {
                       <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => handleSelectToggle(item.id)} className="w-4 h-4 rounded border-white/10 bg-slate-900 accent-yellow-400 cursor-pointer" />
                     </div>
                     {cover ? (
-                      <img src={cover} alt={title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                      <img src={cover} alt={title} className="w-16 h-16 rounded-lg object-contain bg-black/20 p-1 border border-white/10 shrink-0" />
                     ) : (
                       <div className="w-16 h-16 rounded-lg bg-slate-800 flex items-center justify-center text-slate-500 shrink-0"><ImageIcon size={20} /></div>
                     )}
                     <div className="flex-1 min-w-0">
                       <h5 className="font-bold text-white text-sm truncate">{title}</h5>
-                      {subtitle && <p className="text-xs text-slate-400 mb-2 truncate">{subtitle}</p>}
+                      {subtitle && <p className="text-xs text-yellow-400 font-semibold mb-1 truncate">{subtitle}</p>}
+                      {item.bio && <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{item.bio}</p>}
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <button onClick={() => handleEdit(item)} className="text-blue-400 hover:text-blue-300 p-2 bg-blue-400/10 rounded-lg transition-colors"><Edit size={16} /></button>
