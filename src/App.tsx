@@ -162,6 +162,8 @@ export default function App() {
     const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
       if (!snap.empty) {
         setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setAnnouncementsData([]);
       }
     }, (error) => {
       console.warn("Firestore listener warning (announcements):", error.message);
@@ -1517,7 +1519,7 @@ export default function App() {
                 <div className={`relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center p-2 border-2 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.2)] overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
                   <img 
                     referrerPolicy="no-referrer"
-                    src={siteContentMap.secretariat_logo_url || "https://i.postimg.cc/Pp0q2xW3"} 
+                    src={siteContentMap.secretariat_logo_url || "/secretariat_logo.png"} 
                     onError={(e) => {
                       const target = e.currentTarget;
                       if (!target.src.endsWith('/nass_logo.jpg')) {
