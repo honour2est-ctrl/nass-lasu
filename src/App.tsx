@@ -9,7 +9,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -102,6 +102,11 @@ export default function App() {
   const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
   const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
   const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
+  
+  // New States for Sponsors and Partners
+  const [partnersData, setPartnersData] = useState<any[]>([]);
+  const [sponsorsData, setSponsorsData] = useState<any[]>([]);
+
   const [lastViewedResources, setLastViewedResources] = useState<any[]>(() => {
     try {
       const stored = localStorage.getItem('lastViewedResources');
@@ -160,6 +165,27 @@ export default function App() {
       }
     }, (error) => {
       console.warn("Firestore listener warning (announcements):", error.message);
+    });
+
+    // New Listeners for Partners and Sponsors
+    const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
+      if (!snap.empty) {
+        setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setPartnersData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (partners):", error.message);
+    });
+
+    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
+      if (!snap.empty) {
+        setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setSponsorsData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (sponsors):", error.message);
     });
 
     const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
@@ -256,6 +282,8 @@ export default function App() {
       unsubHallOfFame();
       unsubSiteContent();
       unsubSiteContentAlt();
+      unsubPartners();
+      unsubSponsors();
     };
   }, []);
 
@@ -407,7 +435,7 @@ export default function App() {
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
 
   return (
-    <div className={`relative min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+    <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
       <BackgroundEngine />
       <CursorTrail />
       <motion.div
@@ -415,7 +443,7 @@ export default function App() {
         style={{ scaleX: scrollYProgress }}
       />
       
-      <div className="relative z-10 selection:bg-yellow-400 selection:text-slate-900">
+      <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
         
         <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
@@ -448,6 +476,20 @@ export default function App() {
               >
                 <ShoppingBag size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Market</span>
+              </a>
+              <a 
+                href="#partners" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Handshake size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Partners</span>
+              </a>
+              <a 
+                href="#sponsors" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Award size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Sponsors</span>
               </a>
               <a 
                 href="#events" 
@@ -488,7 +530,7 @@ export default function App() {
           </div>
         </nav>
 
-        <main className="flex flex-col gap-32 pb-16 pt-24">
+        <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
           
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
@@ -792,7 +834,7 @@ export default function App() {
                           </div>
                         </div>
                       </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-200 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                         View Material
                       </a>
                     </div>
@@ -990,6 +1032,142 @@ export default function App() {
             </div>
           </section>
 
+          {/* NEW SECTION: MEET OUR PARTNERS */}
+          <section id="partners" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">🤝</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                MEET OUR PARTNERS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Strategic organizations, student initiatives, and ecosystem enablers collaborating with NASS-LASU toward scientific and career advancement.
+              </p>
+            </div>
+
+            {partnersData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Partners directory will be announced soon.
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {partnersData.map((partner) => (
+                  <div key={partner.id} className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                    <div>
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/40 mb-4 bg-black/20 p-2 flex items-center justify-center">
+                        <img referrerPolicy="no-referrer" src={partner.logoUrl || '/nass_logo.jpg'} alt={partner.name} className="w-full h-full object-contain" loading="lazy" />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400 mb-1 block">{partner.partnershipType || 'Official Partner'}</span>
+                      <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{partner.name}</h3>
+                      <p className={`text-xs leading-relaxed mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{partner.bio}</p>
+                      
+                      {partner.services && (
+                        <div className="mb-4">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Focus & Services</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {partner.services.split(',').map((srv: string, i: number) => (
+                              <span key={i} className="text-[10px] px-2.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">{srv.trim()}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                      {partner.website && (
+                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" title="Website">
+                          <Globe size={16} />
+                        </a>
+                      )}
+                      {partner.instagram && (
+                        <a href={partner.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="Instagram">
+                          IG
+                        </a>
+                      )}
+                      {partner.twitter && (
+                        <a href={partner.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="X / Twitter">
+                          X
+                        </a>
+                      )}
+                      {partner.linkedin && (
+                        <a href={partner.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="LinkedIn">
+                          IN
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* NEW SECTION: MEET OUR SPONSORS */}
+          <section id="sponsors" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                MEET OUR SPONSORS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Our generous corporate brands and benefactors powering student projects, faculty events, and educational drives across the faculty.
+              </p>
+            </div>
+
+            {sponsorsData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Sponsors will be updated soon.
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sponsorsData.map((sponsor) => (
+                  <div key={sponsor.id} className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                    <div>
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/40 mb-4 bg-black/20 p-2 flex items-center justify-center">
+                        <img referrerPolicy="no-referrer" src={sponsor.logoUrl || '/nass_logo.jpg'} alt={sponsor.name} className="w-full h-full object-contain" loading="lazy" />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400 mb-1 block">{sponsor.tier || 'Official Sponsor'}</span>
+                      <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sponsor.name}</h3>
+                      <p className={`text-xs leading-relaxed mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{sponsor.bio}</p>
+                      
+                      {sponsor.products && (
+                        <div className="mb-4">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Highlighted Products / Offers</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {sponsor.products.split(',').map((prd: string, i: number) => (
+                              <span key={i} className="text-[10px] px-2.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">{prd.trim()}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                      {sponsor.website && (
+                        <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" title="Website">
+                          <Globe size={16} />
+                        </a>
+                      )}
+                      {sponsor.instagram && (
+                        <a href={sponsor.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="Instagram">
+                          IG
+                        </a>
+                      )}
+                      {sponsor.twitter && (
+                        <a href={sponsor.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="X / Twitter">
+                          X
+                        </a>
+                      )}
+                      {sponsor.linkedin && (
+                        <a href={sponsor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="LinkedIn">
+                          IN
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full relative">
             <div className="text-center mb-10">
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
@@ -1141,7 +1319,7 @@ export default function App() {
                         <button 
                           onClick={(e) => {
                             e.preventDefault();
-                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
+                            const validImages = (event.images || []).filter((s: string) => typeof s === 'string' && (s.startsWith('/') || s.startsWith('./' ) || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:')));
                             setSelectedEventGallery({
                               title: event.title,
                               images: validImages
