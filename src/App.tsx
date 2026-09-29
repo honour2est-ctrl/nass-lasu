@@ -162,6 +162,8 @@ export default function App() {
     const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
       if (!snap.empty) {
         setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setAnnouncementsData([]);
       }
     }, (error) => {
       console.warn("Firestore listener warning (announcements):", error.message);
@@ -531,19 +533,19 @@ export default function App() {
 
         <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
           
-          {/* HERO SECTION WITH TOP CRIMSON RIBBON */}
+          {/* HERO SECTION WITH TOP ROYAL NAVY & GOLD RIBBON */}
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               
-              {/* TOP CRIMSON RIBBON: ABIODUN LED ADMINISTRATION */}
-              <div className="relative inline-flex items-center justify-center mb-2">
-                <div className="absolute inset-0 bg-red-600/40 blur-lg rounded-full -z-10" />
-                <div className="bg-gradient-to-r from-red-900 via-red-600 to-red-900 text-white border-y-2 border-x-4 border-yellow-400 px-6 sm:px-10 py-2 sm:py-2.5 rounded-full shadow-[0_0_30px_rgba(220,38,38,0.6)] flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
-                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
-                  <span className="text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] font-space-grotesk text-yellow-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              {/* TOP ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
+              <div className="relative inline-flex items-center justify-center mb-1">
+                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
+                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-yellow-400 text-xs">🏛️</span>
+                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     ABIODUN LED ADMINISTRATION
                   </span>
-                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
+                  <span className="text-yellow-400 text-xs">🏛️</span>
                 </div>
               </div>
 
@@ -552,9 +554,14 @@ export default function App() {
                   NIGERIAN ASSOCIATION OF SCIENCE STUDENTS<br />
                   <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
                 </h1>
-                <p className="text-yellow-500 font-mono tracking-[0.3em] text-[10px] md:text-xs font-semibold uppercase mt-4">
-                  {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
-                </p>
+                
+                {/* BOLDER, GLOWING INITIATIVE TAGLINE */}
+                <div className="relative inline-flex items-center justify-center mt-4">
+                  <div className="absolute inset-0 bg-yellow-400/25 blur-xl rounded-full pointer-events-none -z-10" />
+                  <p className="relative inline-block font-mono tracking-[0.32em] text-xs sm:text-sm md:text-base font-black uppercase text-yellow-300 px-5 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/40 backdrop-blur-md shadow-[0_0_20px_rgba(250,204,21,0.45)] [text-shadow:0_0_12px_rgba(250,204,21,0.85),0_0_24px_rgba(234,179,8,0.6)]">
+                    {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
+                  </p>
+                </div>
               </div>
               
               <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -1792,16 +1799,16 @@ export default function App() {
               </a>
             </div>
             
-            {/* BOTTOM CRIMSON RIBBON: ABIODUN LED ADMINISTRATION */}
+            {/* BOTTOM ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
             <div className="w-full flex justify-center px-4 mt-16 mb-4">
               <div className="relative inline-flex items-center justify-center">
-                <div className="absolute inset-0 bg-red-600/40 blur-lg rounded-full -z-10" />
-                <div className="bg-gradient-to-r from-red-900 via-red-600 to-red-900 text-white border-y-2 border-x-4 border-yellow-400 px-6 sm:px-10 py-2 sm:py-2.5 rounded-full shadow-[0_0_30px_rgba(220,38,38,0.6)] flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
-                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
-                  <span className="text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] font-space-grotesk text-yellow-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
+                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-yellow-400 text-xs">🏛️</span>
+                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     ABIODUN LED ADMINISTRATION
                   </span>
-                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
+                  <span className="text-yellow-400 text-xs">🏛️</span>
                 </div>
               </div>
             </div>
