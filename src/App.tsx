@@ -9,7 +9,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -555,12 +555,25 @@ export default function App() {
                   <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
                 </h1>
                 
-                {/* BOLDER, GLOWING INITIATIVE TAGLINE */}
-                <div className="relative inline-flex items-center justify-center mt-4">
-                  <div className="absolute inset-0 bg-yellow-400/25 blur-xl rounded-full pointer-events-none -z-10" />
-                  <p className="relative inline-block font-mono tracking-[0.32em] text-xs sm:text-sm md:text-base font-black uppercase text-yellow-300 px-5 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/40 backdrop-blur-md shadow-[0_0_20px_rgba(250,204,21,0.45)] [text-shadow:0_0_12px_rgba(250,204,21,0.85),0_0_24px_rgba(234,179,8,0.6)]">
-                    {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
-                  </p>
+                {/* GLASSMORPHIC CRYSTALLINE RAY TAGLINE WITH PEN ICON */}
+                <div className="relative inline-flex items-center justify-center mt-4 group">
+                  {/* Outer Ambient Glow */}
+                  <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-xl -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
+                  
+                  {/* Glassmorphic Container with Perpetual Crystalline Ray */}
+                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_25px_rgba(250,204,21,0.25)] flex items-center gap-3">
+                    
+                    {/* Crystalline Light Ray Animation */}
+                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
+                    <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+                      <PenTool size={14} className="text-yellow-400" />
+                    </div>
+
+                    <span className="font-mono tracking-[0.25em] text-[11px] sm:text-xs md:text-sm font-black uppercase text-yellow-300 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)]">
+                      {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
+                    </span>
+                  </div>
                 </div>
               </div>
               
@@ -1820,7 +1833,24 @@ export default function App() {
                 <a href="#" className="hover:text-yellow-500 transition-colors">Instagram</a>
               </div>
               <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
-              <p className="text-yellow-500 mt-1">Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.</p>
+              
+              {/* GLASSMORPHIC CRYSTALLINE RAY FOOTER BADGE WITH PEN ICON */}
+              <div className="relative inline-flex items-center justify-center mt-3 group">
+                <div className="absolute -inset-1 bg-yellow-400/15 rounded-full blur-lg -z-10 group-hover:bg-yellow-400/25 transition-all duration-500" />
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/85 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2.5">
+                  
+                  {/* Crystalline Light Ray Animation */}
+                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
+                  <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+                    <PenTool size={13} className="text-yellow-400" />
+                  </div>
+
+                  <span className="text-yellow-400 font-bold tracking-wider text-[10px] sm:text-xs uppercase drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]">
+                    Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.
+                  </span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -2061,6 +2091,10 @@ export default function App() {
         @keyframes marquee {
           0% { transform: translateX(0%); }
           100% { transform: translateX(-50%); }
+        }
+        @keyframes shine {
+          0% { transform: translateX(-100%); }
+          50%, 100% { transform: translateX(200%); }
         }
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
