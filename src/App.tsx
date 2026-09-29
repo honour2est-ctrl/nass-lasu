@@ -103,7 +103,7 @@ export default function App() {
   const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
   const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
   
-  // New States for Sponsors and Partners
+  // States for Sponsors and Partners
   const [partnersData, setPartnersData] = useState<any[]>([]);
   const [sponsorsData, setSponsorsData] = useState<any[]>([]);
 
@@ -162,14 +162,11 @@ export default function App() {
     const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
       if (!snap.empty) {
         setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setAnnouncementsData([]);
       }
     }, (error) => {
       console.warn("Firestore listener warning (announcements):", error.message);
     });
 
-    // New Listeners for Partners and Sponsors
     const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
       if (!snap.empty) {
         setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
@@ -534,8 +531,22 @@ export default function App() {
 
         <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
           
+          {/* HERO SECTION WITH TOP CRIMSON RIBBON */}
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
+              
+              {/* TOP CRIMSON RIBBON: ABIODUN LED ADMINISTRATION */}
+              <div className="relative inline-flex items-center justify-center mb-2">
+                <div className="absolute inset-0 bg-red-600/40 blur-lg rounded-full -z-10" />
+                <div className="bg-gradient-to-r from-red-900 via-red-600 to-red-900 text-white border-y-2 border-x-4 border-yellow-400 px-6 sm:px-10 py-2 sm:py-2.5 rounded-full shadow-[0_0_30px_rgba(220,38,38,0.6)] flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
+                  <span className="text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] font-space-grotesk text-yellow-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    ABIODUN LED ADMINISTRATION
+                  </span>
+                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <h1 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] bg-gradient-to-r ${isDarkMode ? 'from-white via-white to-yellow-400' : 'from-slate-900 via-slate-800 to-yellow-600'} bg-clip-text text-transparent uppercase`}>
                   NIGERIAN ASSOCIATION OF SCIENCE STUDENTS<br />
@@ -836,7 +847,7 @@ export default function App() {
                           </div>
                         </div>
                       </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-200 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
                         View Material
                       </a>
                     </div>
@@ -1034,7 +1045,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* NEW SECTION: MEET OUR PARTNERS */}
+          {/* MEET OUR PARTNERS SECTION */}
           <section id="partners" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-12">
               <div className="text-yellow-500 text-4xl mb-4">🤝</div>
@@ -1051,47 +1062,106 @@ export default function App() {
                 Partners directory will be announced soon.
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {partnersData.map((partner) => (
-                  <div key={partner.id} className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <div 
+                    key={partner.id} 
+                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+                    }`}
+                  >
                     <div>
-                      <div className="w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/40 mb-4 bg-black/20 p-2 flex items-center justify-center">
-                        <img referrerPolicy="no-referrer" src={partner.logoUrl || '/nass_logo.jpg'} alt={partner.name} className="w-full h-full object-contain" loading="lazy" />
+                      {/* Big, Prominent Logo Showcase Banner */}
+                      <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
+                        isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="absolute inset-0 bg-radial from-yellow-400/10 to-transparent pointer-events-none" />
+                        <img 
+                          referrerPolicy="no-referrer" 
+                          src={partner.logoUrl || '/nass_logo.jpg'} 
+                          alt={partner.name} 
+                          className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500" 
+                          loading="lazy" 
+                        />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400 mb-1 block">{partner.partnershipType || 'Official Partner'}</span>
-                      <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{partner.name}</h3>
-                      <p className={`text-xs leading-relaxed mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{partner.bio}</p>
-                      
-                      {partner.services && (
-                        <div className="mb-4">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Focus & Services</span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {partner.services.split(',').map((srv: string, i: number) => (
-                              <span key={i} className="text-[10px] px-2.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">{srv.trim()}</span>
-                            ))}
+
+                      {/* Content Area */}
+                      <div className="p-6">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
+                          {partner.partnershipType || 'Official Partner'}
+                        </span>
+                        <h3 className={`text-2xl font-extrabold mb-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {partner.name}
+                        </h3>
+                        <p className={`text-xs leading-relaxed mb-5 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {partner.bio}
+                        </p>
+                        
+                        {partner.services && (
+                          <div className="mb-4">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                              Focus & Services
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {partner.services.split(',').map((srv: string, i: number) => (
+                                <span 
+                                  key={i} 
+                                  className="text-[11px] px-3 py-1 rounded-lg bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold"
+                                >
+                                  {srv.trim()}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                    {/* Social / External Links Bar */}
+                    <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
                       {partner.website && (
-                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" title="Website">
-                          <Globe size={16} />
+                        <a 
+                          href={partner.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="p-2.5 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" 
+                          title="Website"
+                        >
+                          <Globe size={18} />
                         </a>
                       )}
                       {partner.instagram && (
-                        <a href={partner.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="Instagram">
+                        <a 
+                          href={partner.instagram} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="Instagram"
+                        >
                           IG
                         </a>
                       )}
                       {partner.twitter && (
-                        <a href={partner.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="X / Twitter">
+                        <a 
+                          href={partner.twitter} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="X / Twitter"
+                        >
                           X
                         </a>
                       )}
                       {partner.linkedin && (
-                        <a href={partner.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="LinkedIn">
+                        <a 
+                          href={partner.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="LinkedIn"
+                        >
                           IN
                         </a>
                       )}
@@ -1102,7 +1172,7 @@ export default function App() {
             )}
           </section>
 
-          {/* NEW SECTION: MEET OUR SPONSORS */}
+          {/* MEET OUR SPONSORS SECTION */}
           <section id="sponsors" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-12">
               <div className="text-yellow-500 text-4xl mb-4">🏆</div>
@@ -1119,47 +1189,106 @@ export default function App() {
                 Sponsors will be updated soon.
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {sponsorsData.map((sponsor) => (
-                  <div key={sponsor.id} className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <div 
+                    key={sponsor.id} 
+                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+                    }`}
+                  >
                     <div>
-                      <div className="w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/40 mb-4 bg-black/20 p-2 flex items-center justify-center">
-                        <img referrerPolicy="no-referrer" src={sponsor.logoUrl || '/nass_logo.jpg'} alt={sponsor.name} className="w-full h-full object-contain" loading="lazy" />
+                      {/* Big, Prominent Logo Showcase Banner */}
+                      <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
+                        isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="absolute inset-0 bg-radial from-yellow-400/10 to-transparent pointer-events-none" />
+                        <img 
+                          referrerPolicy="no-referrer" 
+                          src={sponsor.logoUrl || '/nass_logo.jpg'} 
+                          alt={sponsor.name} 
+                          className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500" 
+                          loading="lazy" 
+                        />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400 mb-1 block">{sponsor.tier || 'Official Sponsor'}</span>
-                      <h3 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sponsor.name}</h3>
-                      <p className={`text-xs leading-relaxed mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{sponsor.bio}</p>
-                      
-                      {sponsor.products && (
-                        <div className="mb-4">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Highlighted Products / Offers</span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {sponsor.products.split(',').map((prd: string, i: number) => (
-                              <span key={i} className="text-[10px] px-2.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">{prd.trim()}</span>
-                            ))}
+
+                      {/* Content Area */}
+                      <div className="p-6">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
+                          {sponsor.tier || 'Official Sponsor'}
+                        </span>
+                        <h3 className={`text-2xl font-extrabold mb-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {sponsor.name}
+                        </h3>
+                        <p className={`text-xs leading-relaxed mb-5 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {sponsor.bio}
+                        </p>
+                        
+                        {sponsor.products && (
+                          <div className="mb-4">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                              Highlighted Products & Student Offers
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {sponsor.products.split(',').map((prd: string, i: number) => (
+                                <span 
+                                  key={i} 
+                                  className="text-[11px] px-3 py-1 rounded-lg bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold"
+                                >
+                                  {prd.trim()}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                    {/* Social / External Links Bar */}
+                    <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
                       {sponsor.website && (
-                        <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" title="Website">
-                          <Globe size={16} />
+                        <a 
+                          href={sponsor.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="p-2.5 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" 
+                          title="Website"
+                        >
+                          <Globe size={18} />
                         </a>
                       )}
                       {sponsor.instagram && (
-                        <a href={sponsor.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="Instagram">
+                        <a 
+                          href={sponsor.instagram} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="Instagram"
+                        >
                           IG
                         </a>
                       )}
                       {sponsor.twitter && (
-                        <a href={sponsor.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="X / Twitter">
+                        <a 
+                          href={sponsor.twitter} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="X / Twitter"
+                        >
                           X
                         </a>
                       )}
                       {sponsor.linkedin && (
-                        <a href={sponsor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" title="LinkedIn">
+                        <a 
+                          href={sponsor.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="LinkedIn"
+                        >
                           IN
                         </a>
                       )}
@@ -1168,6 +1297,53 @@ export default function App() {
                 ))}
               </div>
             )}
+
+            {/* PARTNERSHIP & SPONSORSHIP CALL-TO-ACTION CARD */}
+            <div className={`mt-16 p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+              isDarkMode 
+                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.15)]' 
+                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
+            }`}>
+              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3.5 py-1 rounded-full inline-block">
+                  Collaborate With Us
+                </span>
+                
+                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Do you want to be part of our Partners / Sponsors?
+                </h3>
+                
+                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  Send a message to our official liaison desk or send an email to lock in your brand's presence on our digital platform and events.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                  {/* WhatsApp Direct Chat Button */}
+                  <a 
+                    href="https://wa.me/2348141693252?text=Hello%20NASS%20LASU%2C%20we%20are%20interested%20in%20becoming%20an%20official%20Partner%20%2F%20Sponsor%20with%20the%20association." 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Chat on WhatsApp (+234 814 169 3252)</span>
+                  </a>
+
+                  {/* Email Direct Link Button */}
+                  <a 
+                    href="mailto:nasslasu@gmail.com?subject=Partnership%20%2F%20Sponsorship%20Inquiry%20-%20NASS%20LASU" 
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-extrabold uppercase tracking-widest transition-all border hover:scale-105 active:scale-95 cursor-pointer ${
+                      isDarkMode 
+                        ? 'bg-white/10 hover:bg-white/20 text-white border-white/20' 
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                    }`}
+                  >
+                    <MessageSquare size={18} className="text-yellow-500" />
+                    <span>Send an Email (nasslasu@gmail.com)</span>
+                  </a>
+                </div>
+              </div>
+            </div>
           </section>
 
           <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full relative">
@@ -1616,7 +1792,21 @@ export default function App() {
               </a>
             </div>
             
-            <div className="mt-16 pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+            {/* BOTTOM CRIMSON RIBBON: ABIODUN LED ADMINISTRATION */}
+            <div className="w-full flex justify-center px-4 mt-16 mb-4">
+              <div className="relative inline-flex items-center justify-center">
+                <div className="absolute inset-0 bg-red-600/40 blur-lg rounded-full -z-10" />
+                <div className="bg-gradient-to-r from-red-900 via-red-600 to-red-900 text-white border-y-2 border-x-4 border-yellow-400 px-6 sm:px-10 py-2 sm:py-2.5 rounded-full shadow-[0_0_30px_rgba(220,38,38,0.6)] flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
+                  <span className="text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] font-space-grotesk text-yellow-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    ABIODUN LED ADMINISTRATION
+                  </span>
+                  <span className="text-yellow-300 text-xs sm:text-sm animate-pulse">★</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
               <div className="flex gap-6 mb-2">
                 <a href="#" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
                 <a href="#" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
