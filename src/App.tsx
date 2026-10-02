@@ -9,7 +9,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Layers } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -458,6 +458,13 @@ export default function App() {
             
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
               <a 
+                href="#vision" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Sparkles size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">WebApp Story</span>
+              </a>
+              <a 
                 href="#executives" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -586,6 +593,13 @@ export default function App() {
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <a 
+                  href="#vision" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <Sparkles size={16} />
+                  <span>The WebApp Vision</span>
+                </a>
+                <a 
                   href="#vault" 
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
@@ -597,15 +611,210 @@ export default function App() {
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
                   <ShoppingBag size={16} />
-                  <span>Explore Marketplace</span>
+                  <span>Marketplace</span>
                 </a>
-                <a 
-                  href="#about" 
-                  className="hidden md:flex bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <Download size={16} />
-                  <span>Download App</span>
-                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* NASS LASU WEBAPP (THE VISION • THE PROCESS • THE BIRTH) SECTION */}
+          <section id="vision" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-14 space-y-3">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                36TH ADMINISTRATION
+              </span>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                NASS LASU WEBAPP
+              </h2>
+              <p className="text-yellow-400 font-mono text-xs sm:text-sm md:text-base font-bold tracking-[0.25em] uppercase">
+                THE VISION • THE PROCESS • THE BIRTH
+              </p>
+              
+              <div className="relative inline-flex items-center justify-center pt-2 group">
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
+                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                  <PenTool size={12} className="text-yellow-400" />
+                  <span className="font-mono tracking-[0.2em] text-[10px] sm:text-xs font-semibold italic text-yellow-300">
+                    Initiative of a Digitalized and Innovative Secretariat
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Introductory Lead Card */}
+            <div className={`p-8 md:p-12 rounded-3xl border backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
+              isDarkMode 
+                ? 'bg-gradient-to-br from-white/5 via-slate-900/60 to-slate-950 border-yellow-400/30 shadow-[0_0_50px_rgba(250,204,21,0.08)]' 
+                : 'bg-white border-slate-200 shadow-xl'
+            }`}>
+              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="relative z-10 max-w-4xl mx-auto space-y-6 text-sm md:text-base leading-relaxed">
+                <p className="text-base md:text-lg font-medium leading-relaxed">
+                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>NASS LASU WebApp</strong> is one of the flagship initiatives of the <strong className="text-yellow-500">DIGITALIZED AND INNOVATIVE SECRETARIAT</strong> under the Office of the 36th NASS LASU General Secretary, <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Comr. Onovwiome Honourable Onome</strong>.
+                </p>
+                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
+                  It was conceived from a simple but transformative vision: <span className="text-yellow-400 font-semibold">to bring the Faculty of Science into a new era of digital accessibility, visibility, connectivity, and innovation.</span>
+                </p>
+                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
+                  In an age where technology has become an essential part of education, communication, administration, and institutional development, the Faculty of Science must have a digital presence that reflects the calibre, creativity, and technological potential of its students.
+                </p>
+                <div className={`p-4 rounded-2xl border-l-4 border-yellow-500 font-semibold ${isDarkMode ? 'bg-yellow-400/10 text-yellow-200' : 'bg-yellow-50 text-slate-800'}`}>
+                  The WebApp is therefore envisioned not merely as a website, but as a living digital ecosystem for the Faculty of Science.
+                </div>
+              </div>
+            </div>
+
+            {/* The 3 Pillars: Vision, Process, Birth */}
+            <div className="grid md:grid-cols-3 gap-8 mb-16">
+              {/* THE VISION */}
+              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                isDarkMode 
+                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+              }`}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
+                    <Compass size={24} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 01</span>
+                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    THE VISION
+                  </h3>
+                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p>
+                      To create a centralized digital platform where Science students can easily access academic materials, faculty information, opportunities, announcements, events, departmental resources, student services, and other essential resources.
+                    </p>
+                    <p>
+                      It seeks to reduce the gap between students and information by eliminating total dependence on scattered WhatsApp messages, physical notices, or word-of-mouth.
+                    </p>
+                    <p>
+                      Beyond accessibility, it is designed to rebrand the Faculty of Science in the digital age—presenting it as a community capable of embracing technology, creativity, and modern administration.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* THE PROCESS */}
+              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                isDarkMode 
+                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+              }`}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
+                    <Cpu size={24} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 02</span>
+                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    THE PROCESS
+                  </h3>
+                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p>
+                      The development of the WebApp represents a deliberate effort to transform an idea into a functional digital system capable of serving the Faculty.
+                    </p>
+                    <p>
+                      The process involves identifying relevant services, organizing them into an accessible digital structure, developing the platform, and creating systems for continuous updates that future administrations can build upon.
+                    </p>
+                    <p>
+                      It serves as a digital extension of the Secretariat to progressively document activities, preserve institutional records, and maintain a direct connection with students.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* THE BIRTH */}
+              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                isDarkMode 
+                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+              }`}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
+                    <Sparkles size={24} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 03</span>
+                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    THE BIRTH
+                  </h3>
+                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p>
+                      The birth of the NASS LASU WebApp marks a significant step in the journey toward a more digitalized Faculty of Science.
+                    </p>
+                    <p>
+                      It is a product of the belief that student leadership should not only respond to the needs of the present, but must build systems that remain useful beyond a single administration.
+                    </p>
+                    <p>
+                      The platform is architected with continuity and institutional memory in mind—allowing future administrations to expand and improve rather than rebuilding from ground zero.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MORE THAN A WEBSITE GRID */}
+            <div className="space-y-8">
+              <div className="text-center space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500">FACULTY ECOSYSTEM</span>
+                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  MORE THAN A WEBSITE
+                </h3>
+                <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  The NASS LASU WebApp serves 11 multi-dimensional strategic functions across student and administrative life:
+                </p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[
+                  { icon: '📚', title: 'Academic Resource Centre', desc: 'Learning materials, past questions, guides, and educational resources.' },
+                  { icon: '📢', title: 'Faculty Communication Hub', desc: 'Real-time announcements, official notices, events, and important updates.' },
+                  { icon: '🎓', title: 'Student Opportunity Centre', desc: 'Scholarships, internships, fellowships, competitions, grants, and career pipelines.' },
+                  { icon: '🏛️', title: 'Digital Faculty Identity', desc: 'Presents the Faculty of Science professionally to students and the wider global world.' },
+                  { icon: '🧑🏽‍💻', title: 'Student Engagement Platform', desc: 'Connecting students directly with initiatives, services, representatives, and activities.' },
+                  { icon: '🗂️', title: 'Institutional Memory System', desc: 'Documenting faculty achievements, programmes, reports, projects, and milestones.' },
+                  { icon: '🌐', title: 'Departmental Visibility Platform', desc: 'Giving all departments and student societies a stronger, unified digital presence.' },
+                  { icon: '🤝', title: 'Partnership & Sponsorship Gateway', desc: 'Enabling organizations, alumni, brands, and tech partners to discover and engage with Science students.' },
+                  { icon: '🚀', title: 'Innovation Showcase', desc: 'Highlighting exceptional students, cutting-edge projects, scientific research, and startups.' },
+                  { icon: '📰', title: 'Digital News & Events Platform', desc: 'Documenting and publicizing active events, summits, dinners, and Science Week activities.' },
+                  { icon: '🔗', title: 'A Bridge to the Outside World', desc: 'Connecting the faculty with alumni, industry professionals, and the wider technology ecosystem.' }
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-6 rounded-2xl border backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_8px_20px_rgba(250,204,21,0.1)]' 
+                        : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
+                    }`}
+                  >
+                    <div className="text-3xl mb-3">{item.icon}</div>
+                    <h4 className={`text-sm md:text-base font-bold mb-1.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {item.title}
+                    </h4>
+                    <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Manifesto Closer Pill Banner */}
+              <div className={`p-8 md:p-10 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl mt-12 ${
+                isDarkMode 
+                  ? 'bg-gradient-to-b from-yellow-400/10 via-slate-950/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
+                  : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
+              }`}>
+                <div className="relative z-10 max-w-3xl mx-auto space-y-4">
+                  <p className={`text-xs md:text-sm leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                    "Ultimately, the NASS LASU WebApp represents a shift from information being scattered to information being centralized; from physical dependency to digital accessibility; from temporary documentation to institutional memory; and from simply managing a Secretariat to building digital infrastructure for the future."
+                  </p>
+                  <div className="pt-2">
+                    <p className="font-space-grotesk font-black text-sm md:text-base text-yellow-400 uppercase tracking-widest">
+                      This is the vision of the 36th Administration. This is the process. This is the birth of a digital Faculty of Science.
+                    </p>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.3em] font-extrabold text-yellow-500 mt-2">
+                      DIGITALIZED AND INNOVATIVE SECRETARIAT
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -2077,6 +2286,18 @@ export default function App() {
                   <BookOpen size={18} className="text-slate-900" />
                 </div>
                 <span className="text-xs uppercase tracking-wider font-extrabold">Academic Vault</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Sparkles size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Story</span>
               </button>
               <button 
                 onClick={() => {
