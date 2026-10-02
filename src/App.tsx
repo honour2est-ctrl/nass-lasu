@@ -773,7 +773,7 @@ export default function App() {
           </section>
 
           <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
               DEPARTMENTS
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
@@ -1715,20 +1715,11 @@ export default function App() {
             <div className="text-center mb-10">
               <div className="text-yellow-500 text-4xl mb-4">🏆</div>
               <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                Directorate of Sports & Student Recreation
+                The Office of The 36th Sport Director (Comrade Wolex)
               </h3>
-              
-              {/* Glassmorphic Crystalline Pill Tagline */}
-              <div className="relative inline-flex items-center justify-center mt-2 mb-4 group">
-                <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10" />
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                  <PenTool size={12} className="text-yellow-400" />
-                  <span className="font-mono tracking-[0.25em] text-[10px] sm:text-xs font-black uppercase text-yellow-300">
-                    Toward Physical & Athletic Excellence
-                  </span>
-                </div>
-              </div>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
 
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-4`}>
                 NASS LASU SPORTS
@@ -1887,7 +1878,7 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️️</div>
+              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛</div>
             </div>
           </section>
 
