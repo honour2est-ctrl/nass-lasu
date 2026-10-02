@@ -479,13 +479,6 @@ export default function App() {
                 <span className="hidden lg:inline">Market</span>
               </a>
               <a 
-                href="#sports" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Trophy size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Sports</span>
-              </a>
-              <a 
                 href="#partners" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -519,6 +512,13 @@ export default function App() {
               >
                 <Siren size={14} className="text-slate-900 animate-pulse" />
                 <span className="hidden lg:inline">Hotline</span>
+              </a>
+              <a 
+                href="#sports" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Trophy size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Sports</span>
               </a>
 
               {/* Crescent Moon Theme Toggle Button */}
@@ -773,7 +773,7 @@ export default function App() {
           </section>
 
           <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
               DEPARTMENTS
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
@@ -1065,107 +1065,6 @@ export default function App() {
                   </div>
                 </div>
               ))}
-            </div>
-          </section>
-
-          {/* NASS LASU SPORTS SECTION */}
-          <section id="sports" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <div className="text-center mb-10">
-              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
-              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                Directorate of Sports & Student Recreation
-              </h3>
-              
-              {/* Glassmorphic Crystalline Pill Tagline */}
-              <div className="relative inline-flex items-center justify-center mt-2 mb-4 group">
-                <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10" />
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                  <PenTool size={12} className="text-yellow-400" />
-                  <span className="font-mono tracking-[0.25em] text-[10px] sm:text-xs font-black uppercase text-yellow-300">
-                    Toward Physical & Athletic Excellence
-                  </span>
-                </div>
-              </div>
-
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-4`}>
-                NASS LASU SPORTS
-              </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                Sports at Lagos State University are more than just games—they form the backbone of unity, mental wellness, and discipline across the Faculty of Science. Engaging in competitive and intramural athletics builds teamwork, sharpens cognitive focus away from academic pressure, and showcases talent for university and national stages.
-              </p>
-            </div>
-
-            {/* Popular LASU Sports Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {[
-                {
-                  icon: '⚽',
-                  title: 'Football (Soccer)',
-                  desc: 'The heartbeat of campus sports—from the Dean’s Cup and Science Inter-Departmental derbies to the VC Cup.'
-                },
-                {
-                  icon: '🏀',
-                  title: 'Basketball',
-                  desc: 'Fast-paced matches at the LASU outdoor courts, drawing intense rivalry between faculty teams.'
-                },
-                {
-                  icon: '🏃‍♂️',
-                  title: 'Track & Field',
-                  desc: '100m–400m sprints, relays, and long-distance athletics that produce regional and university-wide champions.'
-                },
-                {
-                  icon: '🏓',
-                  title: 'Indoor Games',
-                  desc: 'Table Tennis, Chess, Scrabble, and Badminton testing strategic agility and tactical precision.'
-                }
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
-                    isDarkMode
-                      ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_10px_25px_rgba(250,204,21,0.1)]'
-                      : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
-                  }`}
-                >
-                  <div className="text-3xl mb-3">{item.icon}</div>
-                  <h4 className={`text-base font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title}</h4>
-                  <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* WhatsApp Community Call-To-Action Card */}
-            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
-                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
-            }`}>
-              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3 py-1 rounded-full inline-block">
-                  Join The Squad
-                </span>
-                
-                <h3 className={`font-space-grotesk text-2xl md:text-3xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Join the NASS LASU Sports Community
-                </h3>
-                
-                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                  Stay updated on training schedules, trials for the Faculty of Science teams, Dean's Cup fixtures, and intramural matches. Connect with fellow student-athletes and fans across all departments.
-                </p>
-
-                <div className="pt-3">
-                  <a 
-                    href="https://chat.whatsapp.com/GCIUzdrLVXI9QKeuWuQlHb?s=cl&p=a&mlu=4&ilr=4" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <MessageCircle size={18} />
-                    <span>Join NASS LASU Sports WhatsApp Group</span>
-                  </a>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -1811,6 +1710,107 @@ export default function App() {
             </div>
           </section>
 
+          {/* NASS LASU SPORTS SECTION (COMES DIRECTLY AFTER HOTLINES) */}
+          <section id="sports" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <div className="text-center mb-10">
+              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                Directorate of Sports & Student Recreation
+              </h3>
+              
+              {/* Glassmorphic Crystalline Pill Tagline */}
+              <div className="relative inline-flex items-center justify-center mt-2 mb-4 group">
+                <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10" />
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
+                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                  <PenTool size={12} className="text-yellow-400" />
+                  <span className="font-mono tracking-[0.25em] text-[10px] sm:text-xs font-black uppercase text-yellow-300">
+                    Toward Physical & Athletic Excellence
+                  </span>
+                </div>
+              </div>
+
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-4`}>
+                NASS LASU SPORTS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                Sports at Lagos State University are more than just games—they form the backbone of unity, mental wellness, and discipline across the Faculty of Science. Engaging in competitive and intramural athletics builds teamwork, sharpens cognitive focus away from academic pressure, and showcases talent for university and national stages.
+              </p>
+            </div>
+
+            {/* Popular LASU Sports Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {[
+                {
+                  icon: '⚽',
+                  title: 'Football (Soccer)',
+                  desc: 'The heartbeat of campus sports—from the Dean’s Cup and Science Inter-Departmental derbies to the VC Cup.'
+                },
+                {
+                  icon: '🏀',
+                  title: 'Basketball',
+                  desc: 'Fast-paced matches at the LASU outdoor courts, drawing intense rivalry between faculty teams.'
+                },
+                {
+                  icon: '🏃‍♂️',
+                  title: 'Track & Field',
+                  desc: '100m–400m sprints, relays, and long-distance athletics that produce regional and university-wide champions.'
+                },
+                {
+                  icon: '🏓',
+                  title: 'Indoor Games',
+                  desc: 'Table Tennis, Chess, Scrabble, and Badminton testing strategic agility and tactical precision.'
+                }
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+                    isDarkMode
+                      ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_10px_25px_rgba(250,204,21,0.1)]'
+                      : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
+                  }`}
+                >
+                  <div className="text-3xl mb-3">{item.icon}</div>
+                  <h4 className={`text-base font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title}</h4>
+                  <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* WhatsApp Community Call-To-Action Card */}
+            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+              isDarkMode 
+                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
+                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
+            }`}>
+              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3 py-1 rounded-full inline-block">
+                  Join The Squad
+                </span>
+                
+                <h3 className={`font-space-grotesk text-2xl md:text-3xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Join the NASS LASU Sports Community
+                </h3>
+                
+                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  Stay updated on training schedules, trials for the Faculty of Science teams, Dean's Cup fixtures, and intramural matches. Connect with fellow student-athletes and fans across all departments.
+                </p>
+
+                <div className="pt-3">
+                  <a 
+                    href="https://chat.whatsapp.com/GCIUzdrLVXI9QKeuWuQlHb?s=cl&p=a&mlu=4&ilr=4" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Join NASS LASU Sports WhatsApp Group</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-10 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -1887,7 +1887,7 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
+              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️️</div>
             </div>
           </section>
 
