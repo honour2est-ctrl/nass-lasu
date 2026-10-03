@@ -9,8 +9,8 @@ import { AdminPanel } from './components/AdminPanel';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users } from 'lucide-react';
-import { collection, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings } from 'lucide-react';
+import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
 import { useToast } from './components/Toast';
@@ -67,6 +67,209 @@ const INITIAL_EVENTS_DATA = [
 ];
 
 const DEFAULT_MARQUEE = "Powered By The Digitalized And Innovative Secretariat. Get premium visibility for your business by advertising on the website, send a message to 08141693252 or nasslasu@gmail.com (30% discount for Nass Lasu Students)";
+
+function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMap: Record<string, string>, isDarkMode: boolean }) {
+  const { addToast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
+    secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
+    secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
+    secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
+    secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
+    secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
+    secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
+    secretariat_signatory_title: siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary',
+    secretariat_image_url: siteContentMap.secretariat_image_url || '',
+  });
+
+  useEffect(() => {
+    setFormData({
+      secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
+      secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
+      secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
+      secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
+      secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
+      secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
+      secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
+      secretariat_signatory_title: siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary',
+      secretariat_image_url: siteContentMap.secretariat_image_url || '',
+    });
+  }, [siteContentMap]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      for (const [key, value] of Object.entries(formData)) {
+        await setDoc(doc(db, 'siteContent', key), {
+          contentKey: key,
+          value: value
+        }, { merge: true });
+      }
+      addToast('Secretariat content updated successfully!', 'success');
+      setIsOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      addToast('Failed to update Secretariat content: ' + err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="w-full mt-6 flex flex-col items-center">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+      >
+        <Settings size={14} />
+        <span>{isOpen ? 'Close Secretariat Editor' : 'Edit Secretariat Details (Admin)'}</span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="w-full mt-6"
+          >
+            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
+              <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-white/10">
+                <span className="text-2xl">🏛️</span>
+                <div>
+                  <h4 className="font-space-grotesk text-lg font-black text-yellow-400 uppercase tracking-wider">Secretariat Live Editor</h4>
+                  <p className="text-xs text-slate-400">Save changes below to update the live website immediately.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Section Title</label>
+                    <input
+                      type="text"
+                      name="secretariat_title"
+                      value={formData.secretariat_title}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Subtitle</label>
+                    <input
+                      type="text"
+                      name="secretariat_subtitle"
+                      value={formData.secretariat_subtitle}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Paragraph 1 (Administrative Role)</label>
+                  <textarea
+                    name="secretariat_description_1"
+                    rows={3}
+                    value={formData.secretariat_description_1}
+                    onChange={handleChange}
+                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Paragraph 2 (Digital Transformation)</label>
+                  <textarea
+                    name="secretariat_description_2"
+                    rows={3}
+                    value={formData.secretariat_description_2}
+                    onChange={handleChange}
+                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Image URL (Optional - leave blank for text only)</label>
+                  <input
+                    type="text"
+                    name="secretariat_image_url"
+                    placeholder="https://... image link"
+                    value={formData.secretariat_image_url}
+                    onChange={handleChange}
+                    className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Phone</label>
+                    <input
+                      type="text"
+                      name="secretariat_phone"
+                      value={formData.secretariat_phone}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Email</label>
+                    <input
+                      type="email"
+                      name="secretariat_email"
+                      value={formData.secretariat_email}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signatory Name</label>
+                    <input
+                      type="text"
+                      name="secretariat_signatory_name"
+                      value={formData.secretariat_signatory_name}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signatory Title</label>
+                    <input
+                      type="text"
+                      name="secretariat_signatory_title"
+                      value={formData.secretariat_signatory_title}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
+                  >
+                    {saving ? 'Publishing Updates...' : 'Publish Secretariat Updates'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function App() {
   const { addToast } = useToast();
@@ -555,7 +758,7 @@ export default function App() {
               <div className="relative inline-flex items-center justify-center mb-1">
                 <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
                 <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
-                  <span className="text-yellow-400 text-xs">🏛️️</span>
+                  <span className="text-yellow-400 text-xs">🏛️</span>
                   <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     ABIODUN LED ADMINISTRATION
                   </span>
@@ -1823,9 +2026,13 @@ export default function App() {
             </div>
           </section>
 
+          {/* ADMIN PANEL WITH INLINE SECRETARIAT LIVE EDITOR */}
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
-              <AdminPanel />
+              <div className="space-y-8">
+                <AdminPanel />
+                <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
+              </div>
             </AdminGate>
           </section>
 
@@ -2148,10 +2355,22 @@ export default function App() {
         html {
           scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
-          overscroll-behavior-y: contain;
+          overscroll-behavior-y: none;
+          touch-action: pan-y;
         }
         body {
           -webkit-overflow-scrolling: touch;
+          overflow-x: hidden;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+        }
+        .backdrop-blur-xl,
+        .backdrop-blur-2xl,
+        .backdrop-blur-md {
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          will-change: transform;
         }
         .font-space-grotesk { font-family: 'Space Grotesk', system-ui, sans-serif; }
         @keyframes marquee {
