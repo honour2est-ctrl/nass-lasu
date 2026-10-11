@@ -1,9 +1,3 @@
-Here is the updated React code incorporating both requested additions:
-
-1. **Animated SWIPE RIGHT Badge**: Added a floating, animated badge with a sliding arrow (`motion.div`) in the **Events & Galleries** section header to guide users to swipe/scroll through the event cards.
-2. **Direct Logo/Image Upload for Secretariat**: Updated the `SecretariatInlineEditor` component to include a file input (`<input type="file" accept="image/*" />`) that converts selected image files directly into Base64 Data URLs and updates state for immediate Firestore synchronization.
-
-```tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll } from 'motion/react';
 import { BackgroundEngine } from './components/BackgroundEngine';
@@ -339,7 +333,6 @@ export default function App() {
   const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
   const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
   
-  // States for Sponsors and Partners
   const [partnersData, setPartnersData] = useState<any[]>([]);
   const [sponsorsData, setSponsorsData] = useState<any[]>([]);
 
@@ -764,7 +757,7 @@ export default function App() {
                 <span className="hidden lg:inline">Sports</span>
               </a>
 
-              {/* Crescent Moon Theme Toggle Button */}
+              {/* Theme Toggle Button */}
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 cursor-pointer ${
@@ -783,11 +776,10 @@ export default function App() {
 
         <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
           
-          {/* HERO SECTION WITH TOP ROYAL NAVY & GOLD RIBBON */}
+          {/* HERO SECTION */}
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               
-              {/* TOP ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
               <div className="relative inline-flex items-center justify-center mb-1">
                 <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
                 <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
@@ -805,7 +797,6 @@ export default function App() {
                   <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
                 </h1>
                 
-                {/* GLASSMORPHIC CRYSTALLINE RAY TAGLINE WITH PEN ICON */}
                 <div className="relative inline-flex items-center justify-center mt-4 group">
                   <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-xl -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
                   
@@ -853,7 +844,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* NASS LASU WEBAPP (THE VISION • THE PROCESS • THE BIRTH) SECTION */}
+          {/* VISION SECTION */}
           <section id="vision" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-14 space-y-3">
               <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
@@ -877,7 +868,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Introductory Lead Card */}
             <div className={`p-8 md:p-12 rounded-3xl border backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
               isDarkMode 
                 ? 'bg-gradient-to-br from-white/5 via-slate-900/60 to-slate-950 border-yellow-400/30 shadow-[0_0_50px_rgba(250,204,21,0.08)]' 
@@ -900,9 +890,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* The 3 Pillars: Vision, Process, Birth */}
             <div className="grid md:grid-cols-3 gap-8 mb-16">
-              {/* THE VISION */}
               <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                 isDarkMode 
                   ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
@@ -930,7 +918,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* THE PROCESS */}
               <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                 isDarkMode 
                   ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
@@ -958,7 +945,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* THE BIRTH */}
               <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                 isDarkMode 
                   ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
@@ -987,7 +973,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* MORE THAN A WEBSITE GRID */}
             <div className="space-y-8">
               <div className="text-center space-y-2">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500">FACULTY ECOSYSTEM</span>
@@ -1032,7 +1017,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Manifesto Closer Pill Banner */}
               <div className={`p-8 md:p-10 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl mt-12 ${
                 isDarkMode 
                   ? 'bg-gradient-to-b from-yellow-400/10 via-slate-950/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
@@ -1599,7 +1583,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* MEET OUR PARTNERS SECTION */}
+          {/* PARTNERS SECTION */}
           <section id="partners" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-12">
               <div className="text-yellow-500 text-4xl mb-4">🤝</div>
@@ -1627,7 +1611,6 @@ export default function App() {
                     }`}
                   >
                     <div>
-                      {/* Big, Prominent Logo Showcase Banner */}
                       <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
                         isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
                       }`}>
@@ -1641,7 +1624,6 @@ export default function App() {
                         />
                       </div>
 
-                      {/* Content Area */}
                       <div className="p-6">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
                           {partner.partnershipType || 'Official Partner'}
@@ -1673,7 +1655,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Social / External Links Bar */}
                     <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
                       {partner.website && (
                         <a 
@@ -1726,7 +1707,7 @@ export default function App() {
             )}
           </section>
 
-          {/* MEET OUR SPONSORS SECTION */}
+          {/* SPONSORS SECTION */}
           <section id="sponsors" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-12">
               <div className="text-yellow-500 text-4xl mb-4">🏆</div>
@@ -1754,7 +1735,6 @@ export default function App() {
                     }`}
                   >
                     <div>
-                      {/* Big, Prominent Logo Showcase Banner */}
                       <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
                         isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
                       }`}>
@@ -1768,7 +1748,6 @@ export default function App() {
                         />
                       </div>
 
-                      {/* Content Area */}
                       <div className="p-6">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
                           {sponsor.tier || 'Official Sponsor'}
@@ -1800,7 +1779,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Social / External Links Bar */}
                     <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
                       {sponsor.website && (
                         <a 
@@ -1852,7 +1830,6 @@ export default function App() {
               </div>
             )}
 
-            {/* PARTNERSHIP & SPONSORSHIP CALL-TO-ACTION CARD */}
             <div className={`mt-16 p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
               isDarkMode 
                 ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.15)]' 
@@ -1872,7 +1849,6 @@ export default function App() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                  {/* WhatsApp Direct Chat Button */}
                   <a 
                     href="https://wa.me/2348141693252?text=Hello%20NASS%20LASU%2C%20we%20are%20interested%20in%20becoming%20an%20official%20Partner%20%2F%20Sponsor%20with%20the%20association." 
                     target="_blank" 
@@ -1883,7 +1859,6 @@ export default function App() {
                     <span>Chat on WhatsApp (+234 814 169 3252)</span>
                   </a>
 
-                  {/* Email Direct Link Button */}
                   <a 
                     href="mailto:nasslasu@gmail.com?subject=Partnership%20%2F%20Sponsorship%20Inquiry%20-%20NASS%20LASU" 
                     className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-extrabold uppercase tracking-widest transition-all border hover:scale-105 active:scale-95 cursor-pointer ${
@@ -1900,7 +1875,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* FACULTY HOTLINE & EMERGENCY SECTION WITH WHATSAPP CHAT BUTTON */}
+          {/* HOTLINE SECTION */}
           <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-4">
             <div className="text-center">
               <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
@@ -1927,7 +1902,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* NASS LASU SPORTS SECTION (COMES DIRECTLY AFTER HOTLINES) */}
+          {/* SPORTS SECTION */}
           <section id="sports" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <div className="text-center mb-10">
               <div className="text-yellow-500 text-4xl mb-4">🏆</div>
@@ -1946,7 +1921,6 @@ export default function App() {
               </p>
             </div>
 
-            {/* Popular LASU Sports Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
               {[
                 {
@@ -1985,7 +1959,6 @@ export default function App() {
               ))}
             </div>
 
-            {/* WhatsApp Community Call-To-Action Card */}
             <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
               isDarkMode 
                 ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
@@ -2019,12 +1992,11 @@ export default function App() {
             </div>
           </section>
 
-          {/* EDITABLE SECRETARIAT SECTION */}
+          {/* SECRETARIAT SECTION */}
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
             <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              {/* Optional dynamic picture editable via Admin Panel (renders only if uploaded) */}
               {siteContentMap.secretariat_image_url && (
                 <div className="relative z-10 w-full flex justify-center items-center">
                   <div className="max-w-md w-full aspect-video rounded-2xl overflow-hidden border border-yellow-400/30 shadow-xl">
@@ -2073,7 +2045,6 @@ export default function App() {
                       </a>
                     </div>
 
-                    {/* WhatsApp Direct Chat Button */}
                     <div className="mt-4 pt-4 border-t border-white/10 flex justify-center sm:justify-start">
                       <a 
                         href={`https://wa.me/${(siteContentMap.secretariat_phone || '2348141693252').replace(/[^0-9]/g, '')}?text=Hello%20Secretariat%2C%20I%20am%20reaching%20out%20from%20the%20NASS%20LASU%20website.`}
@@ -2097,7 +2068,6 @@ export default function App() {
               <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
             </div>
 
-            {/* BE A PART OF THE DIGITALIZED AND INNOVATIVE SECRETARIAT CALL-TO-ACTION CARD */}
             <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
               isDarkMode 
                 ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/95 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.18)]' 
@@ -2106,7 +2076,6 @@ export default function App() {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10 max-w-3xl mx-auto space-y-5">
-                {/* Pill Tagline with Crystalline Sheen */}
                 <div className="relative inline-flex items-center justify-center group">
                   <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
                   <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
@@ -2145,7 +2114,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* ADMIN PANEL WITH INLINE SECRETARIAT LIVE EDITOR */}
+          {/* ADMIN PANEL */}
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
               <div className="space-y-8">
@@ -2155,10 +2124,10 @@ export default function App() {
             </AdminGate>
           </section>
 
+          {/* FEEDBACK SECTION */}
           <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
             <SecretariatFeedback />
             
-            {/* WhatsApp Button under Secretariat Feedback */}
             <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 For quick responses, send a message using the button below.
@@ -2174,7 +2143,6 @@ export default function App() {
               </a>
             </div>
             
-            {/* BOTTOM ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
             <div className="w-full flex justify-center px-4 mt-16 mb-4">
               <div className="relative inline-flex items-center justify-center">
                 <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
@@ -2196,7 +2164,6 @@ export default function App() {
               </div>
               <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
               
-              {/* GLASSMORPHIC CRYSTALLINE RAY FOOTER BADGE WITH PEN ICON */}
               <div className="relative inline-flex items-center justify-center mt-3 group">
                 <div className="absolute -inset-1 bg-yellow-400/15 rounded-full blur-lg -z-10 group-hover:bg-yellow-400/25 transition-all duration-500" />
                 <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/85 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2.5">
@@ -2217,7 +2184,6 @@ export default function App() {
         </main>
       </div>
 
-      {/* Sticky Bottom Persistent Marquee */}
       <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
         <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
           {[...Array(4)].map((_, i) => (
@@ -2529,5 +2495,3 @@ export default function App() {
     </div>
   );
 }
-
-```
