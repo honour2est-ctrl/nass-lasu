@@ -112,7 +112,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
     }
 
     setUploadingImage(true);
-    addToast('Uploading image to Firebase Storage...', 'info');
+    addToast('Uploading logo to Firebase Storage...', 'info');
 
     try {
       if (storage) {
@@ -121,7 +121,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
         const downloadUrl = await getDownloadURL(fileRef);
 
         setFormData(prev => ({ ...prev, secretariat_image_url: downloadUrl }));
-        addToast('Logo/Image uploaded successfully to storage!', 'success');
+        addToast('Logo uploaded successfully to storage!', 'success');
       } else {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -232,25 +232,25 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Logo/Image</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Circular Secretariat Logo</label>
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <input
                       type="text"
                       name="secretariat_image_url"
-                      placeholder="https://... image link or upload file below"
+                      placeholder="https://... image link or upload logo file below"
                       value={formData.secretariat_image_url}
                       onChange={handleChange}
                       className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
                     />
                     <label className="w-full sm:w-auto shrink-0 px-4 py-2 bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-colors rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
                       <Upload size={14} />
-                      <span>{uploadingImage ? 'Uploading...' : 'Upload Logo'}</span>
+                      <span>{uploadingImage ? 'Uploading...' : 'Upload Circular Logo'}</span>
                       <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploadingImage} className="hidden" />
                     </label>
                   </div>
                   {formData.secretariat_image_url && (
-                    <div className="mt-2 w-20 h-20 rounded-xl overflow-hidden border border-yellow-400/30">
-                      <img src={formData.secretariat_image_url} alt="Secretariat preview" className="w-full h-full object-cover" />
+                    <div className="mt-2 w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400 p-1 bg-slate-950">
+                      <img src={formData.secretariat_image_url} alt="Secretariat preview" className="w-full h-full object-cover rounded-full" />
                     </div>
                   )}
                 </div>
@@ -365,28 +365,6 @@ export default function App() {
       return [];
     }
   });
-  const [announcementsData, setAnnouncementsData] = useState<any[]>([
-    {
-      id: "a1",
-      tag: "Urgent Update",
-      title: "Faculty Course Registration Portal Deadline",
-      description: "All Science students are requested to complete their online course registrations and document validation before the official portal closes.",
-      event1Date: "NOV 15",
-      event1Text: "Portal Closes",
-      event2Date: "DEC 02",
-      event2Text: "Exams Begin"
-    },
-    {
-      id: "a2",
-      tag: "Academic Notice",
-      title: "36th Secretariat Past Questions Vault Live",
-      description: "Past examination questions and course study materials across all 9 departments have been digitized and updated in the Academic Vault.",
-      event1Date: "ACTIVE",
-      event1Text: "Vault Ready",
-      event2Date: "2026/2027",
-      event2Text: "Session"
-    }
-  ]);
 
   useEffect(() => {
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
@@ -417,16 +395,6 @@ export default function App() {
       }
     }, (error) => {
       console.warn("Firestore listener warning (ssrcMembers):", error.message);
-    });
-
-    const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
-      if (!snap.empty) {
-        setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        // Fallback default announcements kept
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (announcements):", error.message);
     });
 
     const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
@@ -535,7 +503,6 @@ export default function App() {
       unsubBrands();
       unsubExecs();
       unsubSsrc();
-      unsubAnnouncements();
       unsubEvents();
       unsubVaultItems();
       unsubLegislativeDocs();
@@ -718,13 +685,6 @@ export default function App() {
             
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
               <a 
-                href="#news" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Megaphone size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">News Flash</span>
-              </a>
-              <a 
                 href="#vision" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -794,6 +754,13 @@ export default function App() {
                 <Trophy size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Sports</span>
               </a>
+              <a 
+                href="#news" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Megaphone size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">News Flash</span>
+              </a>
 
               {/* Theme Toggle Button */}
               <button
@@ -858,13 +825,6 @@ export default function App() {
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <a 
-                  href="#news" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <Megaphone size={16} />
-                  <span>News & Flash</span>
-                </a>
-                <a 
                   href="#vision" 
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
@@ -878,69 +838,14 @@ export default function App() {
                   <BookOpen size={16} />
                   <span>Get Started</span>
                 </a>
-              </div>
-            </div>
-          </section>
-
-          {/* NEWS & ANNOUNCEMENTS FLASH SECTION */}
-          <section id="news" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="text-center mb-10 space-y-2">
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
-                OFFICIAL BULLETIN
-              </span>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                NEWS & ANNOUNCEMENTS FLASH
-              </h2>
-              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Stay informed with the latest updates, official memos, registration deadlines, and academic notices.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {announcementsData.map((item, idx) => (
-                <div
-                  key={item.id || idx}
-                  className={`p-6 sm:p-8 rounded-3xl border backdrop-blur-xl relative overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-xl flex flex-col justify-between ${
-                    isDarkMode 
-                      ? 'bg-gradient-to-br from-white/10 via-slate-900/80 to-slate-950 border-yellow-400/30 shadow-[0_0_30px_rgba(250,204,21,0.05)]' 
-                      : 'bg-white border-slate-200 shadow-md'
-                  }`}
+                <a 
+                  href="#news" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-yellow-400/20 text-yellow-400 border border-yellow-400/40">
-                        {item.tag || 'Notice'}
-                      </span>
-                      <Bell size={16} className="text-yellow-400 animate-bounce" />
-                    </div>
-
-                    <h3 className={`font-space-grotesk text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                      {item.title}
-                    </h3>
-
-                    <p className={`text-xs md:text-sm leading-relaxed mb-6 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      {item.description}
-                    </p>
-                  </div>
-
-                  {(item.event1Date || item.event2Date) && (
-                    <div className={`grid grid-cols-2 gap-4 pt-4 border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                      {item.event1Date && (
-                        <div className="flex flex-col">
-                          <span className="text-[9px] uppercase font-bold tracking-wider text-yellow-500">{item.event1Text || 'Date'}</span>
-                          <span className={`text-xs font-black font-mono ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.event1Date}</span>
-                        </div>
-                      )}
-                      {item.event2Date && (
-                        <div className="flex flex-col">
-                          <span className="text-[9px] uppercase font-bold tracking-wider text-yellow-500">{item.event2Text || 'Milestone'}</span>
-                          <span className={`text-xs font-black font-mono ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.event2Date}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                  <Megaphone size={16} />
+                  <span>News Flash</span>
+                </a>
+              </div>
             </div>
           </section>
 
@@ -2097,6 +2002,41 @@ export default function App() {
             </div>
           </section>
 
+          {/* NEWS FLASH SECTION (MOVED TO BOTTOM) */}
+          <section id="news" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <div className="text-center mb-8 space-y-2">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                OFFICIAL BULLETIN
+              </span>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                NEWS FLASH
+              </h2>
+              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Official administrative news, flash updates, and departmental notices will be posted here.
+              </p>
+            </div>
+
+            <div className={`p-10 sm:p-16 rounded-3xl border text-center backdrop-blur-xl relative overflow-hidden shadow-xl ${
+              isDarkMode 
+                ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
+                : 'bg-white border-slate-200'
+            }`}>
+              <div className="relative z-10 max-w-md mx-auto space-y-4">
+                <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mx-auto shadow-inner">
+                  <Megaphone size={28} className="animate-pulse" />
+                </div>
+                
+                <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                  Official news coming soon
+                </h3>
+
+                <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  The Secretariat is currently preparing upcoming press releases and official updates. Please check back shortly.
+                </p>
+              </div>
+            </div>
+          </section>
+
           {/* SECRETARIAT SECTION */}
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
             <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
@@ -2104,11 +2044,11 @@ export default function App() {
               
               {siteContentMap.secretariat_image_url && (
                 <div className="relative z-10 w-full flex justify-center items-center">
-                  <div className="max-w-md w-full aspect-video rounded-2xl overflow-hidden border border-yellow-400/30 shadow-xl">
+                  <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden border-4 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.3)] bg-slate-950 p-2 shrink-0">
                     <img 
                       src={siteContentMap.secretariat_image_url} 
-                      alt="Secretariat" 
-                      className="w-full h-full object-cover" 
+                      alt="Secretariat Logo" 
+                      className="w-full h-full object-cover rounded-full" 
                       loading="lazy" 
                     />
                   </div>
@@ -2370,18 +2310,6 @@ export default function App() {
             >
               <button 
                 onClick={() => {
-                  document.getElementById('news')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Megaphone size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">News & Flash</span>
-              </button>
-              <button 
-                onClick={() => {
                   document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
@@ -2415,6 +2343,18 @@ export default function App() {
                   <Trophy size={18} className="text-slate-900" />
                 </div>
                 <span className="text-xs uppercase tracking-wider font-extrabold">Sports Directorate</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('news')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Megaphone size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">News Flash</span>
               </button>
               <button 
                 onClick={() => {
