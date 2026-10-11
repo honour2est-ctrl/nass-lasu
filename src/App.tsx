@@ -8,7 +8,7 @@ import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll, uploadBytes } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -368,13 +368,23 @@ export default function App() {
   const [announcementsData, setAnnouncementsData] = useState<any[]>([
     {
       id: "a1",
-      tag: "New Deadline",
-      title: "Course Registration Closing Soon",
-      description: "Ensure your courses are properly registered before Nov 15th to avoid penalties.",
+      tag: "Urgent Update",
+      title: "Faculty Course Registration Portal Deadline",
+      description: "All Science students are requested to complete their online course registrations and document validation before the official portal closes.",
       event1Date: "NOV 15",
       event1Text: "Portal Closes",
       event2Date: "DEC 02",
       event2Text: "Exams Begin"
+    },
+    {
+      id: "a2",
+      tag: "Academic Notice",
+      title: "36th Secretariat Past Questions Vault Live",
+      description: "Past examination questions and course study materials across all 9 departments have been digitized and updated in the Academic Vault.",
+      event1Date: "ACTIVE",
+      event1Text: "Vault Ready",
+      event2Date: "2026/2027",
+      event2Text: "Session"
     }
   ]);
 
@@ -413,7 +423,7 @@ export default function App() {
       if (!snap.empty) {
         setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
       } else {
-        setAnnouncementsData([]);
+        // Fallback default announcements kept
       }
     }, (error) => {
       console.warn("Firestore listener warning (announcements):", error.message);
@@ -708,6 +718,13 @@ export default function App() {
             
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
               <a 
+                href="#news" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Megaphone size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">News Flash</span>
+              </a>
+              <a 
                 href="#vision" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -841,6 +858,13 @@ export default function App() {
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <a 
+                  href="#news" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <Megaphone size={16} />
+                  <span>News & Flash</span>
+                </a>
+                <a 
                   href="#vision" 
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
@@ -854,14 +878,69 @@ export default function App() {
                   <BookOpen size={16} />
                   <span>Get Started</span>
                 </a>
-                <a 
-                  href="#brands" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <ShoppingBag size={16} />
-                  <span>Marketplace</span>
-                </a>
               </div>
+            </div>
+          </section>
+
+          {/* NEWS & ANNOUNCEMENTS FLASH SECTION */}
+          <section id="news" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-10 space-y-2">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                OFFICIAL BULLETIN
+              </span>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                NEWS & ANNOUNCEMENTS FLASH
+              </h2>
+              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Stay informed with the latest updates, official memos, registration deadlines, and academic notices.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {announcementsData.map((item, idx) => (
+                <div
+                  key={item.id || idx}
+                  className={`p-6 sm:p-8 rounded-3xl border backdrop-blur-xl relative overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-xl flex flex-col justify-between ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-br from-white/10 via-slate-900/80 to-slate-950 border-yellow-400/30 shadow-[0_0_30px_rgba(250,204,21,0.05)]' 
+                      : 'bg-white border-slate-200 shadow-md'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-yellow-400/20 text-yellow-400 border border-yellow-400/40">
+                        {item.tag || 'Notice'}
+                      </span>
+                      <Bell size={16} className="text-yellow-400 animate-bounce" />
+                    </div>
+
+                    <h3 className={`font-space-grotesk text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {item.title}
+                    </h3>
+
+                    <p className={`text-xs md:text-sm leading-relaxed mb-6 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      {item.description}
+                    </p>
+                  </div>
+
+                  {(item.event1Date || item.event2Date) && (
+                    <div className={`grid grid-cols-2 gap-4 pt-4 border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+                      {item.event1Date && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-yellow-500">{item.event1Text || 'Date'}</span>
+                          <span className={`text-xs font-black font-mono ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.event1Date}</span>
+                        </div>
+                      )}
+                      {item.event2Date && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-yellow-500">{item.event2Text || 'Milestone'}</span>
+                          <span className={`text-xs font-black font-mono ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.event2Date}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </section>
 
@@ -2289,6 +2368,18 @@ export default function App() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-3"
             >
+              <button 
+                onClick={() => {
+                  document.getElementById('news')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Megaphone size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">News & Flash</span>
+              </button>
               <button 
                 onClick={() => {
                   document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
