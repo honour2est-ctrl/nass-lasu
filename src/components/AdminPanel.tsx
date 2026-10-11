@@ -5,12 +5,18 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../lib/firebase';
 import {
   Shield, Plus, Trash2, Edit, Search, Eye, Upload, Loader2, FolderKanban,
-  X, Save, Image as ImageIcon, LogOut, AlertTriangle, Globe, Sparkles
+  X, Save, Image as ImageIcon, LogOut, AlertTriangle, Globe, Sparkles, Megaphone, ShieldCheck
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { AdminField, AdminSection, BUILT_IN_SECTIONS, blankItemFor, withOrderField, sortByOrder } from '../adminSections';
 import { isAuthorizedAdmin } from '../adminAuth';
+
+// Explicitly defined Limited Media Officers
+const LIMITED_OFFICER_EMAILS = [
+  'akachukwuezekiel40@gmail.com',
+  'inioluwaadelegan5@gmail.com'
+];
 
 // ============================================================================
 // FILE / IMAGE UPLOAD HELPERS
@@ -232,7 +238,7 @@ const AdminFieldInput = ({ field, value, onChange, highContrast }: { field: Admi
     case 'richtext':
       return (
         <textarea
-          className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm"
+          className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-400"
           rows={field.type === 'richtext' ? 10 : 4}
           value={value || ''}
           placeholder={field.placeholder}
@@ -241,17 +247,17 @@ const AdminFieldInput = ({ field, value, onChange, highContrast }: { field: Admi
       );
     case 'select':
       return (
-        <select className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm" value={value || ''} onChange={(e) => onChange(e.target.value)}>
+        <select className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-400" value={value || ''} onChange={(e) => onChange(e.target.value)}>
           {(field.options || []).map((opt) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
       );
     case 'number':
       return (
-        <input type="number" className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm" value={value ?? 0} onChange={(e) => onChange(Number(e.target.value))} />
+        <input type="number" className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-400" value={value ?? 0} onChange={(e) => onChange(Number(e.target.value))} />
       );
     case 'url':
       return (
-        <input type="url" placeholder={field.placeholder || 'https://...'} className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm" value={value || ''} onChange={(e) => onChange(e.target.value)} />
+        <input type="url" placeholder={field.placeholder || 'https://...'} className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-400" value={value || ''} onChange={(e) => onChange(e.target.value)} />
       );
     case 'image':
       return <FileUploadZone label={field.label} value={value || ''} onChange={onChange} highContrast={highContrast} />;
@@ -260,7 +266,7 @@ const AdminFieldInput = ({ field, value, onChange, highContrast }: { field: Admi
     case 'text':
     default:
       return (
-        <input type="text" placeholder={field.placeholder} className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm" value={value || ''} onChange={(e) => onChange(e.target.value)} />
+        <input type="text" placeholder={field.placeholder} className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-400" value={value || ''} onChange={(e) => onChange(e.target.value)} />
       );
   }
 };
@@ -387,7 +393,7 @@ export const AdminPanel = () => {
   const [user, setUser] = useState<any>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [customSections, setCustomSections] = useState<AdminSection[]>([]);
-  const [activeSectionKey, setActiveSectionKey] = useState<string>('partners');
+  const [activeSectionKey, setActiveSectionKey] = useState<string>('events');
   const [data, setData] = useState<any[]>([]);
   const [vaultData, setVaultData] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -397,20 +403,44 @@ export const AdminPanel = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showNewSection, setShowNewSection] = useState(false);
 
-  // Marquee Management State
+  // Marquee Ticker State
   const [marqueeInput, setMarqueeInput] = useState('');
   const [isSavingMarquee, setIsSavingMarquee] = useState(false);
   const [marqueeSuccess, setMarqueeSuccess] = useState(false);
 
-  // Combine standard built-ins with Partners & Sponsors
+  // News Flash Bulletin State
+  const [newsFlashText, setNewsFlashText] = useState('');
+  const [newsFlashStatus, setNewsFlashStatus] = useState('Active');
+  const [savingNewsFlash, setSavingNewsFlash] = useState(false);
+  const [newsFlashSuccess, setNewsFlashSuccess] = useState(false);
+
+  // Email Normalization & Officer Checks
+  const userEmailNormalized = user?.email?.toLowerCase().trim() || '';
+  const isLimitedOfficer = LIMITED_OFFICER_EMAILS.includes(userEmailNormalized);
+
+  // Combine built-ins and custom sections
   const allSections = useMemo(() => {
-    return [
+    const rawList = [
       PARTNERS_SECTION,
       SPONSORS_SECTION,
       ...BUILT_IN_SECTIONS,
       ...customSections
     ].map(withOrderField);
-  }, [customSections]);
+
+    if (isLimitedOfficer) {
+      // Strictly expose Events & Site Content tabs to limited officers
+      return rawList.filter((sec) => sec.key === 'events' || sec.key === 'site_content');
+    }
+
+    return rawList;
+  }, [customSections, isLimitedOfficer]);
+
+  // Adjust default active section key if current key isn't allowed
+  useEffect(() => {
+    if (isLimitedOfficer && activeSectionKey !== 'events' && activeSectionKey !== 'site_content') {
+      setActiveSectionKey('events');
+    }
+  }, [isLimitedOfficer, activeSectionKey]);
 
   const activeSection = useMemo(() => {
     return allSections.find((s) => s.key === activeSectionKey) || allSections[0];
@@ -434,7 +464,7 @@ export const AdminPanel = () => {
     }
   }, []);
 
-  const authorized = isAuthorizedAdmin(user?.email);
+  const authorized = isAuthorizedAdmin(user?.email) || isLimitedOfficer;
 
   const handleLogin = async () => {
     setAuthError(null);
@@ -459,12 +489,12 @@ export const AdminPanel = () => {
 
   // --- Custom Section Configurations ---
   useEffect(() => {
-    if (!user || !authorized) return;
+    if (!user || !authorized || isLimitedOfficer) return;
     const unsub = onSnapshot(collection(db, 'adminSectionConfigs'), (snap) => {
       setCustomSections(snap.docs.map((d) => ({ ...(d.data() as AdminSection), key: `custom_${d.id}` })));
     }, (err) => console.warn('adminSectionConfigs listener error:', err.message));
     return () => unsub();
-  }, [user, authorized]);
+  }, [user, authorized, isLimitedOfficer]);
 
   // --- Live Data for active section ---
   useEffect(() => {
@@ -478,18 +508,19 @@ export const AdminPanel = () => {
     return () => unsubscribe();
   }, [user, authorized, activeSection]);
 
-  // --- Vault items listener for Analytics Chart ---
+  // --- Vault items listener for Analytics Chart (Super Admin Only) ---
   useEffect(() => {
-    if (!user || !authorized) return;
+    if (!user || !authorized || isLimitedOfficer) return;
     const unsub = onSnapshot(collection(db, 'vaultItems'), (snapshot) => {
       setVaultData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
     }, (error) => console.warn('Firestore error on vaultItems:', error.message));
     return () => unsub();
-  }, [user, authorized]);
+  }, [user, authorized, isLimitedOfficer]);
 
-  // --- Fetch Marquee Text when on Site Content tab ---
+  // --- Sync Marquee & News Flash content on Site Content tab ---
   useEffect(() => {
     if (!user || !authorized) return;
+
     const fetchMarquee = async () => {
       try {
         const docRef = doc(db, 'siteContent', 'marquee_text');
@@ -501,7 +532,17 @@ export const AdminPanel = () => {
         console.warn('Error fetching marquee text:', e);
       }
     };
+
+    const unsubNewsFlash = onSnapshot(doc(db, 'siteContent', 'news_flash_content'), (docSnap) => {
+      if (docSnap.exists()) {
+        const d = docSnap.data();
+        setNewsFlashText(d.text || '');
+        setNewsFlashStatus(d.status || 'Active');
+      }
+    });
+
     fetchMarquee();
+    return () => unsubNewsFlash();
   }, [user, authorized, activeSectionKey]);
 
   const handleSaveMarquee = async (e: React.FormEvent) => {
@@ -512,7 +553,8 @@ export const AdminPanel = () => {
     try {
       await setDoc(doc(db, 'siteContent', 'marquee_text'), {
         value: marqueeInput.trim(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email
       }, { merge: true });
       setMarqueeSuccess(true);
       setTimeout(() => setMarqueeSuccess(false), 3000);
@@ -520,6 +562,33 @@ export const AdminPanel = () => {
       console.error('Failed to save marquee:', e);
     } finally {
       setIsSavingMarquee(false);
+    }
+  };
+
+  const handleSaveNewsFlash = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingNewsFlash(true);
+    setNewsFlashSuccess(false);
+    try {
+      await setDoc(doc(db, 'siteContent', 'news_flash_content'), {
+        contentKey: 'news_flash_content',
+        text: newsFlashText,
+        status: newsFlashStatus,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email
+      }, { merge: true });
+
+      await setDoc(doc(db, 'siteContent', 'news_flash_status'), {
+        contentKey: 'news_flash_status',
+        value: newsFlashText.trim() ? newsFlashStatus : 'Inactive'
+      }, { merge: true });
+
+      setNewsFlashSuccess(true);
+      setTimeout(() => setNewsFlashSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save news flash:', err);
+    } finally {
+      setSavingNewsFlash(false);
     }
   };
 
@@ -674,53 +743,43 @@ export const AdminPanel = () => {
         </div>
       </div>
 
-      {/* Analytics Chart */}
-      <div className={`mb-8 p-4 rounded-xl ${highContrast ? 'bg-black border-2 border-white' : 'bg-white/5 border border-white/10'}`}>
-        <h4 className="text-sm font-bold text-white mb-4">Document Distribution by Department</h4>
-        <div className="h-56 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="name" stroke={highContrast ? '#ffffff' : '#94a3b8'} fontSize={11} axisLine={false} tickLine={false} />
-              <YAxis stroke={highContrast ? '#ffffff' : '#94a3b8'} fontSize={11} axisLine={false} tickLine={false} />
-              <Tooltip cursor={{ fill: highContrast ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: highContrast ? '#000000' : '#0f172a', borderColor: highContrast ? '#ffffff' : '#334155', borderRadius: '8px', color: '#fff' }} itemStyle={{ fontSize: '13px' }} labelStyle={{ color: highContrast ? '#ffffff' : '#94a3b8', fontSize: '13px', marginBottom: '4px', fontWeight: 'bold' }} />
-              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-              <Bar dataKey="Total Documents" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
-              <Bar dataKey="First Sem" fill="#eab308" radius={[4, 4, 0, 0]} maxBarSize={40} />
-              <Bar dataKey="Second Sem" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Role Banner */}
+      <div className="mb-6 p-4 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="text-yellow-400" size={20} />
+          <div>
+            <span className="text-xs font-black uppercase tracking-widest text-yellow-400 block">
+              Logged in as: {user.email}
+            </span>
+            <span className="text-[11px] text-slate-400">
+              {isLimitedOfficer ? 'Limited Access Mode (Events & News Flash Only)' : 'Super Admin Full Access'}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Marquee Ticker Quick Editor (Visible across all tabs) */}
-      <div className={`mb-8 p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-yellow-400/5 border-yellow-400/20'}`}>
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
-            <Sparkles size={14} /> Live Marquee Announcement Ticker
-          </h4>
-          {marqueeSuccess && <span className="text-[11px] text-green-400 font-bold">Updated Live!</span>}
+      {/* Analytics Chart (Super Admin Only) */}
+      {!isLimitedOfficer && (
+        <div className={`mb-8 p-4 rounded-xl ${highContrast ? 'bg-black border-2 border-white' : 'bg-white/5 border border-white/10'}`}>
+          <h4 className="text-sm font-bold text-white mb-4">Document Distribution by Department</h4>
+          <div className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" stroke={highContrast ? '#ffffff' : '#94a3b8'} fontSize={11} axisLine={false} tickLine={false} />
+                <YAxis stroke={highContrast ? '#ffffff' : '#94a3b8'} fontSize={11} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: highContrast ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: highContrast ? '#000000' : '#0f172a', borderColor: highContrast ? '#ffffff' : '#334155', borderRadius: '8px', color: '#fff' }} itemStyle={{ fontSize: '13px' }} labelStyle={{ color: highContrast ? '#ffffff' : '#94a3b8', fontSize: '13px', marginBottom: '4px', fontWeight: 'bold' }} />
+                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                <Bar dataKey="Total Documents" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="First Sem" fill="#eab308" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="Second Sem" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <p className="text-xs text-slate-400 mb-3">Update the moving broadcast message displayed across the bottom of the entire website.</p>
-        <form onSubmit={handleSaveMarquee} className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={marqueeInput}
-            onChange={(e) => setMarqueeInput(e.target.value)}
-            placeholder="Type your scrolling announcement text..."
-            className="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
-          />
-          <button
-            type="submit"
-            disabled={isSavingMarquee}
-            className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 shrink-0"
-          >
-            {isSavingMarquee ? 'Saving...' : 'Save Ticker'}
-          </button>
-        </form>
-      </div>
+      )}
 
       {/* Section Tabs */}
-      <div className="flex flex-wrap gap-2.5 mb-2">
+      <div className="flex flex-wrap gap-2.5 mb-6">
         {allSections.map((section) => (
           <button
             key={section.key}
@@ -731,19 +790,103 @@ export const AdminPanel = () => {
             {section.label}
           </button>
         ))}
-        <button onClick={() => setShowNewSection(true)} className="px-4 py-2 rounded-lg font-bold text-sm bg-white/5 text-yellow-400 hover:bg-white/10 flex items-center gap-1.5 border border-dashed border-yellow-400/30">
-          <Plus size={14} /> New Section
-        </button>
+
+        {!isLimitedOfficer && (
+          <button onClick={() => setShowNewSection(true)} className="px-4 py-2 rounded-lg font-bold text-sm bg-white/5 text-yellow-400 hover:bg-white/10 flex items-center gap-1.5 border border-dashed border-yellow-400/30">
+            <Plus size={14} /> New Section
+          </button>
+        )}
       </div>
 
-      {activeSection?.isCustom && (
+      {/* News Flash Bulletin & Marquee Editor (Visible on Site Content Tab) */}
+      {activeSectionKey === 'site_content' && (
+        <div className="space-y-6 mb-8">
+          {/* News Flash Bulletin Editor */}
+          <div className={`p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-slate-900/90 border-yellow-400/30 shadow-xl'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
+                <Megaphone size={14} /> Live News Flash Bulletin Editor
+              </h4>
+              {newsFlashSuccess && <span className="text-[11px] text-green-400 font-bold">Published Live!</span>}
+            </div>
+            <p className="text-xs text-slate-400 mb-4">Post, edit, or toggle official bulletin updates displayed on the main page.</p>
+
+            <form onSubmit={handleSaveNewsFlash} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Bulletin Announcement Text
+                </label>
+                <textarea
+                  rows={3}
+                  value={newsFlashText}
+                  onChange={(e) => setNewsFlashText(e.target.value)}
+                  placeholder="Type official news flash content..."
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-yellow-400"
+                />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    Display Status
+                  </label>
+                  <select
+                    value={newsFlashStatus}
+                    onChange={(e) => setNewsFlashStatus(e.target.value)}
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
+                  >
+                    <option value="Active">Active (Display Live)</option>
+                    <option value="Inactive">Inactive (Hide Bulletin)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingNewsFlash}
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 shrink-0"
+              >
+                {savingNewsFlash ? 'Publishing...' : 'Publish News Flash'}
+              </button>
+            </form>
+          </div>
+
+          {/* Marquee Ticker Quick Editor */}
+          <div className={`p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-yellow-400/5 border-yellow-400/20'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
+                <Sparkles size={14} /> Live Marquee Announcement Ticker
+              </h4>
+              {marqueeSuccess && <span className="text-[11px] text-green-400 font-bold">Updated Live!</span>}
+            </div>
+            <p className="text-xs text-slate-400 mb-3">Update the moving broadcast message displayed across the bottom of the website.</p>
+            <form onSubmit={handleSaveMarquee} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                value={marqueeInput}
+                onChange={(e) => setMarqueeInput(e.target.value)}
+                placeholder="Type your scrolling announcement text..."
+                className="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
+              />
+              <button
+                type="submit"
+                disabled={isSavingMarquee}
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 shrink-0"
+              >
+                {isSavingMarquee ? 'Saving...' : 'Save Ticker'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {activeSection?.isCustom && !isLimitedOfficer && (
         <div className="mb-6">
           <button onClick={() => handleDeleteSection(activeSection)} className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1">
             <Trash2 size={12} /> Remove "{activeSection.label}" tab
           </button>
         </div>
       )}
-      {!activeSection?.isCustom && <div className="mb-6" />}
 
       {/* Edit / Add Form */}
       {editingItem ? (
@@ -780,7 +923,9 @@ export const AdminPanel = () => {
               {selectedIds.length > 0 && (
                 <button onClick={handleBulkDelete} className="flex items-center gap-1.5 bg-red-500/20 text-red-300 hover:bg-red-500/30 px-3 py-2.5 rounded-xl text-xs font-bold"><Trash2 size={14} /> Delete ({selectedIds.length})</button>
               )}
-              <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-white/10 text-white hover:bg-white/20 px-3 py-2.5 rounded-xl text-xs font-bold">Export CSV</button>
+              {!isLimitedOfficer && (
+                <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-white/10 text-white hover:bg-white/20 px-3 py-2.5 rounded-xl text-xs font-bold">Export CSV</button>
+              )}
               <button onClick={handleAddItem} className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-yellow-400/10 whitespace-nowrap"><Plus size={16} /> Add New</button>
             </div>
           </div>
@@ -827,7 +972,7 @@ export const AdminPanel = () => {
         </div>
       )}
 
-      {showNewSection && <NewSectionModal onClose={() => setShowNewSection(false)} onCreate={handleCreateSection} highContrast={highContrast} />}
+      {showNewSection && !isLimitedOfficer && <NewSectionModal onClose={() => setShowNewSection(false)} onCreate={handleCreateSection} highContrast={highContrast} />}
     </div>
   );
 };
