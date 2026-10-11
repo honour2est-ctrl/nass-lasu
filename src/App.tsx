@@ -210,6 +210,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
                   />
                 </div>
 
+                {/* Direct Logo Upload Input */}
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                     Secretariat Banner / Logo (Upload File Directly)
@@ -357,24 +358,44 @@ export default function App() {
 
   useEffect(() => {
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
-      setStudentBrandsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setStudentBrandsData([]);
+      }
+    });
     
     const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
-      setExecutivesData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setExecutivesData([]);
+      }
+    });
 
     const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
-      setSsrcMembersData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setSsrcMembersData([]);
+      }
+    });
 
     const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
-      setPartnersData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setPartnersData([]);
+      }
+    });
 
     const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
-      setSponsorsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setSponsorsData([]);
+      }
+    });
 
     const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
       if (!snap.empty) {
@@ -396,19 +417,27 @@ export default function App() {
       } else {
         setEventsData(INITIAL_EVENTS_DATA);
       }
-    }, (err) => console.warn(err.message));
+    });
 
     const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
-      setVaultItemsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setVaultItemsData([]);
+      }
+    });
 
     const unsubLegislativeDocs = onSnapshot(collection(db, 'legislative_documents'), (snap) => {
-      setLegislativeDocsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (err) => console.warn(err.message));
+      if (!snap.empty) {
+        setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setLegislativeDocsData([]);
+      }
+    });
 
     const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
       setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (err) => console.warn(err.message));
+    });
 
     let combinedMap: Record<string, string> = {};
     const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
@@ -419,7 +448,7 @@ export default function App() {
         if (key) combinedMap[key] = val;
       });
       setSiteContentMap({ ...combinedMap });
-    }, (err) => console.warn(err.message));
+    });
 
     return () => {
       unsubBrands();
@@ -514,7 +543,6 @@ export default function App() {
       
       <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
         
-        {/* TOP NAVIGATION BAR */}
         <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
@@ -615,7 +643,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* EVENTS & GALLERY SECTION WITH ANIMATED "SWIPE RIGHT" BADGE */}
+          {/* EVENTS & GALLERY SECTION WITH ANIMATED "SWIPE RIGHT" BUTTON */}
           <section id="events" className="px-4 max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
@@ -746,7 +774,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* ADMIN PANEL WITH INLINE EDITOR */}
+          {/* ADMIN PANEL WITH SECRETARIAT DIRECT FILE UPLOAD INLINE EDITOR */}
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
               <div className="space-y-8">
@@ -754,11 +782,6 @@ export default function App() {
                 <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
               </div>
             </AdminGate>
-          </section>
-
-          {/* SECRETARIAT FEEDBACK */}
-          <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
-            <SecretariatFeedback />
           </section>
 
         </main>
