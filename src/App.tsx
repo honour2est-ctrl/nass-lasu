@@ -10,7 +10,7 @@ import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
-import { ref, getDownloadURL, listAll } from 'firebase/storage';
+import { ref, getDownloadURL, listAll, uploadBytes } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
 import { useToast } from './components/Toast';
 import { sortByOrder } from './adminSections';
@@ -71,6 +71,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
   const { addToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
     secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
@@ -101,19 +102,39 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        addToast('Image file size should be less than 2MB', 'error');
-        return;
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      addToast('Image file size should be less than 5MB', 'error');
+      return;
+    }
+
+    setUploadingImage(true);
+    addToast('Uploading image to Firebase Storage...', 'info');
+
+    try {
+      if (storage) {
+        const fileRef = ref(storage, `secretariat_images/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const downloadUrl = await getDownloadURL(fileRef);
+
+        setFormData(prev => ({ ...prev, secretariat_image_url: downloadUrl }));
+        addToast('Logo/Image uploaded successfully to storage!', 'success');
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, secretariat_image_url: reader.result as string }));
+          addToast('Logo loaded as local preview.', 'info');
+        };
+        reader.readAsDataURL(file);
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, secretariat_image_url: reader.result as string }));
-        addToast('Logo/Image uploaded successfully as preview!', 'info');
-      };
-      reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('Error uploading image to storage:', err);
+      addToast('Failed to upload image: ' + err.message, 'error');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -223,8 +244,8 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
                     />
                     <label className="w-full sm:w-auto shrink-0 px-4 py-2 bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-colors rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
                       <Upload size={14} />
-                      <span>Upload Logo</span>
-                      <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                      <span>{uploadingImage ? 'Uploading...' : 'Upload Logo'}</span>
+                      <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploadingImage} className="hidden" />
                     </label>
                   </div>
                   {formData.secretariat_image_url && (
@@ -283,7 +304,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={saving || uploadingImage}
                     className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     {saving ? 'Publishing Updates...' : 'Publish Secretariat Updates'}
@@ -423,15 +444,15 @@ export default function App() {
         const fetchedEvents = snap.docs.map(doc => {
           const data = doc.data();
           const initialMatch = INITIAL_EVENTS_DATA.find(i => i.id.toString() === doc.id || i.title?.toUpperCase() === (data.title || '').toUpperCase());
-          const rawImages = data.images || initialMatch?.images || [];
+          const rawImages = data.images || data.image || initialMatch?.images || initialMatch?.image || [];
           const cleanImages = (Array.isArray(rawImages) ? rawImages : String(rawImages).split(','))
             .map((s: any) => String(s).trim())
-            .filter((s: string) => s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:'));
+            .filter((s: string) => s.length > 0);
           return {
             ...initialMatch,
             ...data,
             id: doc.id,
-            images: cleanImages
+            images: cleanImages.length > 0 ? cleanImages : (initialMatch?.images || [])
           };
         });
         setEventsData(fetchedEvents.sort(sortByOrder));
@@ -1272,43 +1293,48 @@ export default function App() {
               ref={eventsScrollRef} 
               className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory"
             >
-              {eventsData.map((ev) => (
-                <div
-                  key={ev.id}
-                  onClick={() => setSelectedEventGallery({ title: ev.title, images: ev.images })}
-                  className={`min-w-[300px] sm:min-w-[360px] md:min-w-[400px] snap-start group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between ${
-                    isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'
-                  }`}
-                >
-                  <div className="aspect-[16/10] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                    <img 
-                      referrerPolicy="no-referrer" 
-                      src={ev.image || (ev.images && ev.images[0]) || undefined} 
-                      alt={ev.title} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                      loading="lazy" 
-                    />
-                    <div className="absolute top-4 right-4 z-20">
-                      <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
-                        {ev.images ? ev.images.length : 0} Photos
+              {eventsData.map((ev) => {
+                const coverImage = ev.image || (ev.images && ev.images[0]) || '/pageant/cover.jpg';
+                const imageCount = ev.images && Array.isArray(ev.images) ? ev.images.length : (ev.image ? 1 : 0);
+
+                return (
+                  <div
+                    key={ev.id}
+                    onClick={() => setSelectedEventGallery({ title: ev.title, images: ev.images || (ev.image ? [ev.image] : []) })}
+                    className={`min-w-[300px] sm:min-w-[360px] md:min-w-[400px] snap-start group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between ${
+                      isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'
+                    }`}
+                  >
+                    <div className="aspect-[16/10] overflow-hidden relative">
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
+                      <img 
+                        referrerPolicy="no-referrer" 
+                        src={coverImage} 
+                        alt={ev.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        loading="lazy" 
+                      />
+                      <div className="absolute top-4 right-4 z-20">
+                        <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
+                          {imageCount} Photos
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500 mb-2 block">
+                        {ev.category || 'Faculty Event'}
                       </span>
+                      <h3 className={`text-lg font-black tracking-tight uppercase line-clamp-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {ev.title}
+                      </h3>
+                      <div className="mt-4 flex items-center justify-between text-xs font-bold text-yellow-400">
+                        <span>Explore Gallery</span>
+                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500 mb-2 block">
-                      {ev.category || 'Faculty Event'}
-                    </span>
-                    <h3 className={`text-lg font-black tracking-tight uppercase line-clamp-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                      {ev.title}
-                    </h3>
-                    <div className="mt-4 flex items-center justify-between text-xs font-bold text-yellow-400">
-                      <span>Explore Gallery</span>
-                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
