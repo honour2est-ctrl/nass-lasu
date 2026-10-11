@@ -73,9 +73,6 @@ const INITIAL_EVENTS_DATA = [
 
 const DEFAULT_MARQUEE = "Powered By The Digitalized And Innovative Secretariat. Get premium visibility for your business by advertising on the website, send a message to 08141693252 or nasslasu@gmail.com (30% discount for Nass Lasu Students)";
 
-// ==========================================
-// 1. PUBLIC NEWS FLASH SECTION COMPONENT
-// ==========================================
 function NewsFlashSection({ news, isDarkMode }: { news: any[], isDarkMode: boolean }) {
   return (
     <section id="newsflash" className="px-4 max-w-7xl mx-auto w-full">
@@ -84,7 +81,6 @@ function NewsFlashSection({ news, isDarkMode }: { news: any[], isDarkMode: boole
           ? 'bg-slate-900/60 border-yellow-400/30' 
           : 'bg-white border-slate-200 shadow-xl'
       }`}>
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 bg-yellow-400/20 text-yellow-400 rounded-2xl border border-yellow-400/30 shadow-[0_0_15px_rgba(250,204,21,0.2)]">
             <Globe className="w-7 h-7 text-yellow-400 animate-[spin_10s_linear_infinite]" />
@@ -102,7 +98,6 @@ function NewsFlashSection({ news, isDarkMode }: { news: any[], isDarkMode: boole
           </div>
         </div>
 
-        {/* Content Grid */}
         {news.length === 0 ? (
           <div className={`text-center py-10 border border-dashed rounded-2xl text-xs uppercase tracking-widest font-bold ${
             isDarkMode ? 'border-white/10 text-slate-500' : 'border-slate-300 text-slate-400'
@@ -158,23 +153,18 @@ function NewsFlashSection({ news, isDarkMode }: { news: any[], isDarkMode: boole
   );
 }
 
-// ==========================================
-// 2. DELEGATED SUB-ADMIN PORTAL COMPONENT
-// ==========================================
 function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
   const { addToast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [passcode, setPasscode] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'news' | 'gallery'>('news');
 
-  // News Flash Form States
   const [newsTitle, setNewsTitle] = useState('');
   const [newsDesc, setNewsDesc] = useState('');
   const [newsLink, setNewsLink] = useState('');
   const [newsImage, setNewsImage] = useState<File | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Gallery Form States
   const [galleryTitle, setGalleryTitle] = useState('');
   const [galleryCategory, setGalleryCategory] = useState('');
   const [galleryImage, setGalleryImage] = useState<File | null>(null);
@@ -220,7 +210,7 @@ function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
       setNewsImage(null);
     } catch (err: any) {
       console.error(err);
-      addToast('Error publishing bulletin: ' + err.message, 'error');
+      addToast('Error publishing bulletin: ' + (err?.message || 'Unknown error'), 'error');
     } finally {
       setIsPublishing(false);
     }
@@ -246,7 +236,7 @@ function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
       setGalleryImage(null);
     } catch (err: any) {
       console.error(err);
-      addToast('Error uploading event photo: ' + err.message, 'error');
+      addToast('Error uploading event photo: ' + (err?.message || 'Unknown error'), 'error');
     } finally {
       setIsPublishing(false);
     }
@@ -296,7 +286,6 @@ function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
     <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl my-8 ${
       isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-white' : 'bg-white border-slate-300 text-slate-900'
     }`}>
-      {/* Header */}
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
         <div className="flex items-center gap-3">
           <Globe className="w-6 h-6 text-yellow-400" />
@@ -313,7 +302,6 @@ function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => setActiveTab('news')}
@@ -337,7 +325,6 @@ function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
         </button>
       </div>
 
-      {/* News Flash Form */}
       {activeTab === 'news' && (
         <form onSubmit={handleCreateNews} className="space-y-4 bg-slate-950 p-6 rounded-2xl border border-white/10">
           <h4 className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Post Live News Bulletin</h4>
@@ -400,7 +387,6 @@ function SubAdminPortal({ isDarkMode }: { isDarkMode: boolean }) {
         </form>
       )}
 
-      {/* Gallery Form */}
       {activeTab === 'gallery' && (
         <form onSubmit={handleCreateGalleryItem} className="space-y-4 bg-slate-950 p-6 rounded-2xl border border-white/10">
           <h4 className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Add Photo to Event Gallery</h4>
@@ -459,8 +445,8 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
   const [formData, setFormData] = useState({
     secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
     secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
-    secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
-    secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
+    secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association...",
+    secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty...",
     secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
     secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
     secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
@@ -472,8 +458,8 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
     setFormData({
       secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
       secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
-      secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
-      secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
+      secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association...",
+      secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty...",
       secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
       secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
       secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
@@ -500,7 +486,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
       setIsOpen(false);
     } catch (err: any) {
       console.error(err);
-      addToast('Failed to update Secretariat content: ' + err.message, 'error');
+      addToast('Failed to update Secretariat content: ' + (err?.message || 'Unknown error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -580,11 +566,11 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Image URL (Optional - leave blank for text only)</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Image URL</label>
                   <input
                     type="text"
                     name="secretariat_image_url"
-                    placeholder="https://... image link"
+                    placeholder="https://..."
                     value={formData.secretariat_image_url}
                     onChange={handleChange}
                     className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
@@ -658,359 +644,59 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
 export default function App() {
   const { addToast } = useToast();
   const { scrollYProgress } = useScroll();
-  const eventsScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollEvents = (direction: 'left' | 'right') => {
-    if (eventsScrollRef.current) {
-      const { scrollLeft, clientWidth } = eventsScrollRef.current;
-      const scrollAmount = clientWidth * 0.8;
-      eventsScrollRef.current.scrollTo({
-        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
 
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [vaultSearchQuery, setVaultSearchQuery] = useState('');
-  const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
-  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const [isRsvpOpen, setIsRsvpOpen] = useState(false);
-  const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
   const [executivesData, setExecutivesData] = useState<any[]>([]);
-  const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
-  const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
   const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
   const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
-  const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
   const [studentBrandsData, setStudentBrandsData] = useState<any[]>([]);
-  const [ssrcMembersData, setSsrcMembersData] = useState<any[]>([]);
   const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
-  const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
-  const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
-  
-  // Real-time News Flash State
   const [newsFlashData, setNewsFlashData] = useState<any[]>([]);
 
-  // States for Sponsors and Partners
-  const [partnersData, setPartnersData] = useState<any[]>([]);
-  const [sponsorsData, setSponsorsData] = useState<any[]>([]);
-
-  const [lastViewedResources, setLastViewedResources] = useState<any[]>(() => {
-    try {
-      const stored = localStorage.getItem('lastViewedResources');
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      return [];
-    }
-  });
-
   useEffect(() => {
-    // Listen to Firestore News Flash
     const unsubNewsFlash = onSnapshot(query(collection(db, 'newsFlash'), orderBy('createdAt', 'desc')), (snap) => {
-      if (!snap.empty) {
-        setNewsFlashData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } else {
-        setNewsFlashData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (newsFlash):", error.message);
-    });
+      setNewsFlashData(snap.empty ? [] : snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, (err) => console.warn("Firestore error:", err.message));
 
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
-      if (!snap.empty) {
-        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setStudentBrandsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (studentBrands):", error.message);
-    });
+      setStudentBrandsData(snap.empty ? [] : snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(sortByOrder));
+    }, (err) => console.warn("Firestore error:", err.message));
     
     const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
-      if (!snap.empty) {
-        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setExecutivesData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (executives):", error.message);
-    });
-
-    const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
-      if (!snap.empty) {
-        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSsrcMembersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (ssrcMembers):", error.message);
-    });
-
-    const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
-      if (!snap.empty) {
-        setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setPartnersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (partners):", error.message);
-    });
-
-    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
-      if (!snap.empty) {
-        setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSponsorsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (sponsors):", error.message);
-    });
-
-    const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
-      if (!snap.empty) {
-        const fetchedEvents = snap.docs.map(doc => {
-          const data = doc.data();
-          const initialMatch = INITIAL_EVENTS_DATA.find(i => i.id.toString() === doc.id || i.title?.toUpperCase() === (data.title || '').toUpperCase());
-          const rawImages = data.images || initialMatch?.images || [];
-          const cleanImages = (Array.isArray(rawImages) ? rawImages : String(rawImages).split(','))
-            .map((s: any) => String(s).trim())
-            .filter((s: string) => s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:'));
-          return {
-            ...initialMatch,
-            ...data,
-            id: doc.id,
-            images: cleanImages
-          };
-        });
-        setEventsData(fetchedEvents.sort(sortByOrder));
-      } else {
-        setEventsData(INITIAL_EVENTS_DATA);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (events):", error.message);
-    });
+      setExecutivesData(snap.empty ? [] : snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(sortByOrder));
+    }, (err) => console.warn("Firestore error:", err.message));
 
     const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
-      if (!snap.empty) {
-        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setVaultItemsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (vaultItems):", error.message);
-    });
+      setVaultItemsData(snap.empty ? [] : snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(sortByOrder));
+    }, (err) => console.warn("Firestore error:", err.message));
 
-    const unsubLegislativeDocs = onSnapshot(collection(db, 'legislative_documents'), (snap) => {
-      if (!snap.empty) {
-        setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } else {
-        setLegislativeDocsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (legislative_documents):", error.message);
-    });
-
-    const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
-      setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (corePillars):", error.message);
-    });
-
-    const unsubHallOfFame = onSnapshot(collection(db, 'hallOfFame'), (snap) => {
-      setHallOfFameData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (hallOfFame):", error.message);
-    });
-
-    const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
-      const map = { ...existingMap };
-      snap.docs.forEach((docSnap: any) => {
-        const d = docSnap.data();
-        const key = d.contentKey || docSnap.id;
-        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || d.imageUrl || d.name || d.bio || '');
-        if (key) map[key] = val;
-      });
-      return map;
-    };
-
-    let combinedMap: Record<string, string> = {};
     const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
-      combinedMap = updateMapFromSnap(snap, combinedMap);
-      setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (siteContent):", error.message);
-    });
-
-    const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
-      combinedMap = updateMapFromSnap(snap, combinedMap);
-      setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (site_content):", error.message);
-    });
+      const map: Record<string, string> = {};
+      snap.docs.forEach(docSnap => {
+        const d = docSnap.data();
+        map[d.contentKey || docSnap.id] = d.value ?? '';
+      });
+      setSiteContentMap(map);
+    }, (err) => console.warn("Firestore error:", err.message));
 
     return () => {
       unsubNewsFlash();
       unsubBrands();
       unsubExecs();
-      unsubSsrc();
-      unsubEvents();
       unsubVaultItems();
-      unsubLegislativeDocs();
-      unsubCorePillars();
-      unsubHallOfFame();
       unsubSiteContent();
-      unsubSiteContentAlt();
-      unsubPartners();
-      unsubSponsors();
     };
   }, []);
 
-  const handleDownloadDocument = async (docType: 'constitution' | 'standing_orders') => {
-    const isConstitution = docType === 'constitution';
-    const docName = isConstitution ? 'NASS LASU Constitution' : 'NASS LASU Standing Orders';
-    const defaultFileName = isConstitution ? 'NASS_LASU_CONSTITUTION.pdf' : 'NASS_LASU_STANDING_ORDERS.docx';
-    
-    setDownloadingDocType(docType);
-    addToast(`Downloading ${docName}... Please wait a bit`, 'info');
-
-    let downloadUrl: string | null = null;
-
-    const legMatch = legislativeDocsData.find(item => {
-      const typeStr = (item.type || item.docType || item.title || item.name || '').toLowerCase();
-      return isConstitution ? typeStr.includes('constitution') : (typeStr.includes('standing') || typeStr.includes('order'));
-    });
-    if (legMatch && (legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link)) {
-      downloadUrl = legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link;
-    }
-
-    if (!downloadUrl) {
-      const vaultMatch = vaultItemsData.find(item => {
-        const titleStr = (item.title || item.name || item.department || '').toLowerCase();
-        return isConstitution ? titleStr.includes('constitution') : (titleStr.includes('standing') || titleStr.includes('order'));
-      });
-      if (vaultMatch && (vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl)) {
-        downloadUrl = vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl;
-      }
-    }
-
-    if (!downloadUrl && storage) {
-      const candidatePaths = isConstitution ? [
-        'documents/NASS_LASU_CONSTITUTION.pdf',
-        'documents/nass_lasu_constitution.pdf',
-        'documents/constitution.pdf',
-        'documents/Nass_Lasu_Constitution.pdf',
-        'nass_lasu_constitution.pdf',
-        'constitution.pdf',
-        'NASS_LASU_CONSTITUTION.pdf'
-      ] : [
-        'documents/NASS_LASU_STANDING_ORDERS.docx',
-        'documents/NASS_LASU_STANDING_ORDERS.doc',
-        'documents/NASS_LASU_STANDING_ORDERS.pdf',
-        'documents/nass_lasu_standing_orders.docx',
-        'documents/standing_orders.docx',
-        'documents/Nass_Lasu_Standing_Orders.docx',
-        'nass_lasu_standing_orders.docx',
-        'standing_orders.docx',
-        'NASS_LASU_STANDING_ORDERS.docx'
-      ];
-
-      for (const path of candidatePaths) {
-        try {
-          const fileRef = ref(storage, path);
-          const url = await getDownloadURL(fileRef);
-          if (url) {
-            downloadUrl = url;
-            break;
-          }
-        } catch (e) {}
-      }
-
-      if (!downloadUrl) {
-        try {
-          const folderRef = ref(storage, 'documents');
-          const res = await listAll(folderRef);
-          for (const itemRef of res.items) {
-            const nameLower = itemRef.name.toLowerCase();
-            const matches = isConstitution ? nameLower.includes('constitution') : (nameLower.includes('standing') || nameLower.includes('order'));
-            if (matches) {
-              downloadUrl = await getDownloadURL(itemRef);
-              break;
-            }
-          }
-        } catch (e) {}
-      }
-    }
-
-    setDownloadingDocType(null);
-
-    if (downloadUrl) {
-      try {
-        const response = await fetch(downloadUrl);
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = defaultFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-        
-        addToast(`Successfully downloaded ${docName}!`, 'success');
-      } catch (err) {
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = defaultFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        addToast(`Successfully downloaded ${docName}!`, 'success');
-      }
-    } else {
-      addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
-    }
-  };
-
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > window.innerHeight * 0.8) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
-    };
-
+    const handleScroll = () => setShowBackToTop(window.scrollY > window.innerHeight * 0.8);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleResourceClick = (e: React.MouseEvent<HTMLAnchorElement>, item: any) => {
-    e.preventDefault();
-    if (item.link) {
-      window.open(item.link, '_blank');
-    }
-
-    setLastViewedResources(prev => {
-      const filtered = prev.filter(p => p.id !== item.id);
-      const updated = [item, ...filtered].slice(0, 5);
-      localStorage.setItem('lastViewedResources', JSON.stringify(updated));
-      return updated;
-    });
-
-    if (item.id) {
-      const docRef = doc(db, 'vaultItems', item.id);
-      updateDoc(docRef, {
-        viewCount: increment(1)
-      }).catch(err => console.error("Error updating view count:", err));
-    }
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
 
@@ -1024,8 +710,6 @@ export default function App() {
       />
       
       <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
-        
-        {/* Navigation Bar */}
         <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
@@ -1037,85 +721,27 @@ export default function App() {
             </div>
             
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
-              <a 
-                href="#newsflash" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
+              <a href="#newsflash" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
                 <Globe size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">News Flash</span>
               </a>
-              <a 
-                href="#vision" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
+              <a href="#vision" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
                 <Sparkles size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">WebApp Story</span>
               </a>
-              <a 
-                href="#executives" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
+              <a href="#executives" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
                 <UserIcon size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Excos</span>
               </a>
-              <a 
-                href="#vault" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
+              <a href="#vault" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
                 <BookOpen size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Vault</span>
               </a>
-              <a 
-                href="#brands" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
+              <a href="#brands" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0">
                 <ShoppingBag size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Market</span>
               </a>
-              <a 
-                href="#partners" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Handshake size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Partners</span>
-              </a>
-              <a 
-                href="#sponsors" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Award size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Sponsors</span>
-              </a>
-              <a 
-                href="#events" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Eye size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Events</span>
-              </a>
-              <a 
-                href="#map" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Navigation size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Map</span>
-              </a>
-              <a 
-                href="#hotline" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Siren size={14} className="text-slate-900 animate-pulse" />
-                <span className="hidden lg:inline">Hotline</span>
-              </a>
-              <a 
-                href="#sports" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Trophy size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Sports</span>
-              </a>
 
-              {/* Crescent Moon / Sun Theme Toggle Button */}
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 cursor-pointer ${
@@ -1124,7 +750,6 @@ export default function App() {
                     : 'bg-slate-200 border-slate-300 text-slate-800 hover:bg-slate-300'
                 }`}
                 aria-label="Toggle Theme"
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {isDarkMode ? '🌙' : '☀️'}
               </button>
@@ -1133,17 +758,12 @@ export default function App() {
         </nav>
 
         <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
-          
-          {/* HERO SECTION */}
           <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
-              
-              {/* TOP EXECUTIVE SEAL */}
               <div className="relative inline-flex items-center justify-center mb-1">
-                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
-                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
+                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5">
                   <span className="text-yellow-400 text-xs">🏛️</span>
-                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300">
                     ABIODUN LED ADMINISTRATION
                   </span>
                   <span className="text-yellow-400 text-xs">🏛️</span>
@@ -1155,214 +775,91 @@ export default function App() {
                   NIGERIAN ASSOCIATION OF SCIENCE STUDENTS<br />
                   <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
                 </h1>
-                
-                {/* TAGLINE BADGE */}
-                <div className="relative inline-flex items-center justify-center mt-4 group">
-                  <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-xl -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
-                  
-                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_25px_rgba(250,204,21,0.25)] flex items-center gap-3">
-                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-
-                    <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
-                      <PenTool size={14} className="text-yellow-400" />
-                    </div>
-
-                    <span className="font-mono tracking-[0.25em] text-[11px] sm:text-xs md:text-sm font-black uppercase text-yellow-300 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)]">
-                      {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
-                    </span>
-                  </div>
-                </div>
               </div>
-              
+
               <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                 {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <a 
-                  href="#newsflash" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
+                <a href="#newsflash" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm">
                   <Globe size={16} />
                   <span>News Flash</span>
                 </a>
-                <a 
-                  href="#vision" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <Sparkles size={16} />
-                  <span>The WebApp Vision</span>
-                </a>
-                <a 
-                  href="#vault" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
+                <a href="#vault" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm">
                   <BookOpen size={16} />
-                  <span>Get Started</span>
-                </a>
-                <a 
-                  href="#brands" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <ShoppingBag size={16} />
-                  <span>Marketplace</span>
+                  <span>Academic Vault</span>
                 </a>
               </div>
             </div>
           </section>
 
-          {/* 1. NEW NEWS FLASH SECTION */}
           <NewsFlashSection news={newsFlashData} isDarkMode={isDarkMode} />
 
-          {/* NASS LASU WEBAPP VISION SECTION */}
-          <section id="vision" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="text-center mb-14 space-y-3">
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
-                36TH ADMINISTRATION
-              </span>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                NASS LASU WEBAPP
-              </h2>
-              <p className="text-yellow-400 font-mono text-xs sm:text-sm md:text-base font-bold tracking-[0.25em] uppercase">
-                THE VISION • THE PROCESS • THE BIRTH
-              </p>
-              
-              <div className="relative inline-flex items-center justify-center pt-2 group">
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                  <PenTool size={12} className="text-yellow-400" />
-                  <span className="font-mono tracking-[0.2em] text-[10px] sm:text-xs font-semibold italic text-yellow-300">
-                    Initiative of a Digitalized and Innovative Secretariat
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Introductory Lead Card */}
-            <div className={`p-8 md:p-12 rounded-3xl border backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
-              isDarkMode 
-                ? 'bg-gradient-to-br from-white/5 via-slate-900/60 to-slate-950 border-yellow-400/30 shadow-[0_0_50px_rgba(250,204,21,0.08)]' 
-                : 'bg-white border-slate-200 shadow-xl'
-            }`}>
-              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative z-10 max-w-4xl mx-auto space-y-6 text-sm md:text-base leading-relaxed">
-                <p className="text-base md:text-lg font-medium leading-relaxed">
-                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>NASS LASU WebApp</strong> is one of the flagship initiatives of the <strong className="text-yellow-500">DIGITALIZED AND INNOVATIVE SECRETARIAT</strong> under the Office of the 36th NASS LASU General Secretary, <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Comr. Onovwiome Honourable Onome</strong>.
+          <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
+            <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+              <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
+                <h2 className={`font-space-grotesk text-3xl md:text-5xl font-black mb-2 flex items-center justify-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  <span className="text-yellow-500 text-4xl">🏛️</span> {siteContentMap.secretariat_title || 'The Secretariat'}
+                </h2>
+                <p className="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-6">
+                  {siteContentMap.secretariat_subtitle || 'Faculty of Science'}
                 </p>
-                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
-                  It was conceived from a simple but transformative vision: <span className="text-yellow-400 font-semibold">to bring the Faculty of Science into a new era of digital accessibility, visibility, connectivity, and innovation.</span>
-                </p>
-                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
-                  In an age where technology has become an essential part of education, communication, administration, and institutional development, the Faculty of Science must have a digital presence that reflects the calibre, creativity, and technological potential of its students.
-                </p>
-                <div className={`p-4 rounded-2xl border-l-4 border-yellow-500 font-semibold ${isDarkMode ? 'bg-yellow-400/10 text-yellow-200' : 'bg-yellow-50 text-slate-800'}`}>
-                  The WebApp is therefore envisioned not merely as a website, but as a living digital ecosystem for the Faculty of Science.
-                </div>
-              </div>
-            </div>
-
-            {/* The 3 Pillars */}
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                isDarkMode 
-                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
-                    <Compass size={24} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 01</span>
-                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    THE VISION
-                  </h3>
-                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <p>To create a centralized digital platform where Science students can easily access academic materials, faculty information, opportunities, announcements, events, departmental resources, student services, and other essential resources.</p>
-                    <p>It seeks to reduce the gap between students and information by eliminating total dependence on scattered WhatsApp messages, physical notices, or word-of-mouth.</p>
-                    <p>Beyond accessibility, it is designed to rebrand the Faculty of Science in the digital age—presenting it as a community capable of embracing technology, creativity, and modern administration.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                isDarkMode 
-                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
-                    <Cpu size={24} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 02</span>
-                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    THE PROCESS
-                  </h3>
-                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <p>The development of the WebApp represents a deliberate effort to transform an idea into a functional digital system capable of serving the Faculty.</p>
-                    <p>The process involves identifying relevant services, organizing them into an accessible digital structure, developing the platform, and creating systems for continuous updates that future administrations can build upon.</p>
-                    <p>It serves as a digital extension of the Secretariat to progressively document activities, preserve institutional records, and maintain a direct connection with students.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                isDarkMode 
-                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
-                    <Sparkles size={24} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 03</span>
-                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    THE BIRTH
-                  </h3>
-                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <p>The birth of the NASS LASU WebApp marks a significant step in the journey toward a more digitalized Faculty of Science.</p>
-                    <p>It is a product of the belief that student leadership should not only respond to the needs of the present, but must build systems that remain useful beyond a single administration.</p>
-                    <p>The platform is architected with continuity and institutional memory in mind—allowing future administrations to expand and improve rather than rebuilding from ground zero.</p>
-                  </div>
-                </div>
               </div>
             </div>
           </section>
 
-          {/* ABOUT NASS-LASU */}
-          <section id="about" className="px-4 max-w-5xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
-              ABOUT NASS-LASU
-            </h2>
-            <div className={`border rounded-3xl p-8 md:p-12 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
-              <div className="prose max-w-none space-y-6">
-                <p className="text-lg leading-relaxed">
-                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
-                </p>
-                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
-                <p className="leading-relaxed">The association represents students across three main academic branches:</p>
-                <ul className={`list-disc pl-6 space-y-2 marker:text-yellow-500 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Biological Science:</strong> Biochemistry, Botany, Fisheries and Aquatic Biology, Microbiology, SLT, Zoology and Environment Biology</li>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Chemical Science:</strong> Chemistry</li>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Physical Science:</strong> Physics, Mathematics</li>
-                </ul>
+          <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-8">
+            <AdminGate>
+              <div className="space-y-8">
+                <AdminPanel />
+                <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
               </div>
-            </div>
+            </AdminGate>
+
+            <SubAdminPortal isDarkMode={isDarkMode} />
           </section>
 
-          {/* EXECUTIVES SECTION */}
-          <section id="executives" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="flex items-end justify-between mb-8">
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                TOP EXECUTIVES
-              </h2>
-            </div>
+          <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
+            <SecretariatFeedback />
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {executivesData.map((ex) => (
-                <div 
-                  key={ex.id} 
-                  onClick={() => setSelectedExecutive(ex)}
-                  className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)] ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
-                >
-                  <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
-                    <div className="absolute inset-
+            <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+              <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
+              <p className="text-yellow-400 font-bold">Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.</p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
+        <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 shrink-0">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shrink-0" />
+              <span>{activeMarqueeText}</span>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <Chatbot />
+
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:scale-110 transition-all flex items-center justify-center cursor-pointer"
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
+
+      <style>{`
+        html { scroll-behavior: smooth; }
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+    </div>
+  );
+}
