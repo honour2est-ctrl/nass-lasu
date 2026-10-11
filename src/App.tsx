@@ -6,10 +6,9 @@ import { Chatbot } from './components/Chatbot';
 import { AdminGate } from './components/AdminGate';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
-import { ImageSlideshow } from './components/ImageSlideshow';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -17,2384 +16,2469 @@ import { useToast } from './components/Toast';
 import { sortByOrder } from './adminSections';
 
 const escapeRegExp = (string: string) => {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
 const highlightText = (text: string, query: string, isDarkMode: boolean) => {
-  if (!query.trim()) return text;
-  const escapedQuery = escapeRegExp(query);
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-  return parts.map((part, i) => 
-    part.toLowerCase() === query.toLowerCase() 
-      ? <span key={i} className={`rounded-sm px-0.5 ${isDarkMode ? 'bg-yellow-400/30 text-yellow-300' : 'bg-yellow-500/30 text-yellow-800 font-bold'}`}>{part}</span>
-      : part
-  );
+  if (!query.trim()) return text;
+  const escapedQuery = escapeRegExp(query);
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  return parts.map((part, i) => 
+    part.toLowerCase() === query.toLowerCase() 
+      ? <span key={i} className={`rounded-sm px-0.5 ${isDarkMode ? 'bg-yellow-400/30 text-yellow-300' : 'bg-yellow-500/30 text-yellow-800 font-bold'}`}>{part}</span>
+      : part
+  );
 };
 
 const renderWithBold = (text: string, isDarkMode: boolean) => {
-  if (!text) return null;
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
-    }
-    return <span key={i}>{part}</span>;
-  });
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{part.slice(2, -2)}</strong>;
+    }
+    return <span key={i}>{part}</span>;
+  });
 };
 
 const INITIAL_EVENTS_DATA = [
-  {
-    id: 1,
-    title: "MR AND MISS NASS LASU FRESHER",
-    category: "Science Week",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
-    images: ["/pageant/cover.jpg","/pageant/pageant-1.webp","/pageant/pageant-10.webp","/pageant/pageant-11.webp","/pageant/pageant-12.jpg","/pageant/pageant-13.jpg","/pageant/pageant-14.jpg","/pageant/pageant-15.jpg","/pageant/pageant-16.jpg","/pageant/pageant-17.jpg","/pageant/pageant-18.jpg","/pageant/pageant-19.jpg","/pageant/pageant-2.webp","/pageant/pageant-20.jpg","/pageant/pageant-21.jpg","/pageant/pageant-22.jpg","/pageant/pageant-23.jpg","/pageant/pageant-24.jpg","/pageant/pageant-25.jpg","/pageant/pageant-26.jpg","/pageant/pageant-27.jpg","/pageant/pageant-28.jpg","/pageant/pageant-3.webp","/pageant/pageant-4.webp","/pageant/pageant-5.webp","/pageant/pageant-6.webp","/pageant/pageant-7.webp","/pageant/pageant-8.webp","/pageant/pageant-9.webp"]
-  },
-  {
-    id: 2,
-    title: "NASS LASU DINNER AND AWARD NIGHT",
-    category: "Awards and Recognitions",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80",
-    images: ["/awards/awards-1.jpg","/awards/awards-10.jpg","/awards/awards-11.jpg","/awards/awards-12.jpg","/awards/awards-13.jpg","/awards/awards-14.jpg","/awards/awards-15.jpg","/awards/awards-2.jpg","/awards/awards-3.jpg","/awards/awards-4.jpg","/awards/awards-5.jpg","/awards/awards-6.jpg","/awards/awards-7.jpg","/awards/awards-8.jpg","/awards/awards-9.jpg","/awards/cover.jpg"]
-  },
-  {
-    id: 3,
-    title: "SCIENCE VS FOOD 3.0",
-    category: "Science Vs Food",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
-    images: ["/science-vs-food/svf-1.jpg","/science-vs-food/svf-10.jpg","/science-vs-food/svf-11.jpg","/science-vs-food/svf-2.jpg","/science-vs-food/svf-3.jpg","/science-vs-food/svf-4.jpg","/science-vs-food/svf-5.jpg","/science-vs-food/svf-6.jpg","/science-vs-food/svf-7.jpg","/science-vs-food/svf-8.jpg","/science-vs-food/svf-9.jpg"]
-  }
+  {
+    id: 1,
+    title: "MR AND MISS NASS LASU FRESHER",
+    category: "Science Week",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
+    images: ["/pageant/cover.jpg","/pageant/pageant-1.webp","/pageant/pageant-10.webp","/pageant/pageant-11.webp","/pageant/pageant-12.jpg","/pageant/pageant-13.jpg","/pageant/pageant-14.jpg","/pageant/pageant-15.jpg","/pageant/pageant-16.jpg","/pageant/pageant-17.jpg","/pageant/pageant-18.jpg","/pageant/pageant-19.jpg","/pageant/pageant-2.webp","/pageant/pageant-20.jpg","/pageant/pageant-21.jpg","/pageant/pageant-22.jpg","/pageant/pageant-23.jpg","/pageant/pageant-24.jpg","/pageant/pageant-25.jpg","/pageant/pageant-26.jpg","/pageant/pageant-27.jpg","/pageant/pageant-28.jpg","/pageant/pageant-3.webp","/pageant/pageant-4.webp","/pageant/pageant-5.webp","/pageant/pageant-6.webp","/pageant/pageant-7.webp","/pageant/pageant-8.webp","/pageant/pageant-9.webp"]
+  },
+  {
+    id: 2,
+    title: "NASS LASU DINNER AND AWARD NIGHT",
+    category: "Awards and Recognitions",
+    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80",
+    images: ["/awards/awards-1.jpg","/awards/awards-10.jpg","/awards/awards-11.jpg","/awards/awards-12.jpg","/awards/awards-13.jpg","/awards/awards-14.jpg","/awards/awards-15.jpg","/awards/awards-2.jpg","/awards/awards-3.jpg","/awards/awards-4.jpg","/awards/awards-5.jpg","/awards/awards-6.jpg","/awards/awards-7.jpg","/awards/awards-8.jpg","/awards/awards-9.jpg","/awards/cover.jpg"]
+  },
+  {
+    id: 3,
+    title: "SCIENCE VS FOOD 3.0",
+    category: "Science Vs Food",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
+    images: ["/science-vs-food/svf-1.jpg","/science-vs-food/svf-10.jpg","/science-vs-food/svf-11.jpg","/science-vs-food/svf-2.jpg","/science-vs-food/svf-3.jpg","/science-vs-food/svf-4.jpg","/science-vs-food/svf-5.jpg","/science-vs-food/svf-6.jpg","/science-vs-food/svf-7.jpg","/science-vs-food/svf-8.jpg","/science-vs-food/svf-9.jpg"]
+  }
 ];
 
 const DEFAULT_MARQUEE = "Powered By The Digitalized And Innovative Secretariat. Get premium visibility for your business by advertising on the website, send a message to 08141693252 or nasslasu@gmail.com (30% discount for Nass Lasu Students)";
 
 function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMap: Record<string, string>, isDarkMode: boolean }) {
-  const { addToast } = useToast();
-  const [isOpen, setIsOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
-    secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
-    secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
-    secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
-    secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
-    secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
-    secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
-    secretariat_signatory_title: siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary',
-    secretariat_image_url: siteContentMap.secretariat_image_url || '',
-  });
+  const { addToast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
+    secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
+    secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
+    secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
+    secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
+    secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
+    secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
+    secretariat_signatory_title: siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary',
+    secretariat_image_url: siteContentMap.secretariat_image_url || '',
+  });
 
-  useEffect(() => {
-    setFormData({
-      secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
-      secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
-      secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
-      secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
-      secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
-      secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
-      secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
-      secretariat_signatory_title: siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary',
-      secretariat_image_url: siteContentMap.secretariat_image_url || '',
-    });
-  }, [siteContentMap]);
+  useEffect(() => {
+    setFormData({
+      secretariat_title: siteContentMap.secretariat_title || 'The Secretariat',
+      secretariat_subtitle: siteContentMap.secretariat_subtitle || 'Faculty of Science',
+      secretariat_description_1: siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities.",
+      secretariat_description_2: siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student.",
+      secretariat_phone: siteContentMap.secretariat_phone || '+234 814 169 3252',
+      secretariat_email: siteContentMap.secretariat_email || 'nasslasu@gmail.com',
+      secretariat_signatory_name: siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome',
+      secretariat_signatory_title: siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary',
+      secretariat_image_url: siteContentMap.secretariat_image_url || '',
+    });
+  }, [siteContentMap]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      for (const [key, value] of Object.entries(formData)) {
-        await setDoc(doc(db, 'siteContent', key), {
-          contentKey: key,
-          value: value
-        }, { merge: true });
-      }
-      addToast('Secretariat content updated successfully!', 'success');
-      setIsOpen(false);
-    } catch (err: any) {
-      console.error(err);
-      addToast('Failed to update Secretariat content: ' + err.message, 'error');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      for (const [key, value] of Object.entries(formData)) {
+        await setDoc(doc(db, 'siteContent', key), {
+          contentKey: key,
+          value: value
+        }, { merge: true });
+      }
+      addToast('Secretariat content updated successfully!', 'success');
+      setIsOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      addToast('Failed to update Secretariat content: ' + err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  return (
-    <div className="w-full mt-6 flex flex-col items-center">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-      >
-        <Settings size={14} />
-        <span>{isOpen ? 'Close Secretariat Editor' : 'Edit Secretariat Details (Admin)'}</span>
-      </button>
+  return (
+    <div className="w-full mt-6 flex flex-col items-center">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+      >
+        <Settings size={14} />
+        <span>{isOpen ? 'Close Secretariat Editor' : 'Edit Secretariat Details (Admin)'}</span>
+      </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="w-full mt-6"
-          >
-            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
-              <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-white/10">
-                <span className="text-2xl">🏛️</span>
-                <div>
-                  <h4 className="font-space-grotesk text-lg font-black text-yellow-400 uppercase tracking-wider">Secretariat Live Editor</h4>
-                  <p className="text-xs text-slate-400">Save changes below to update the live website immediately.</p>
-                </div>
-              </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="w-full mt-6"
+          >
+            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
+              <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-white/10">
+                <span className="text-2xl">🏛️</span>
+                <div>
+                  <h4 className="font-space-grotesk text-lg font-black text-yellow-400 uppercase tracking-wider">Secretariat Live Editor</h4>
+                  <p className="text-xs text-slate-400">Save changes below to update the live website immediately.</p>
+                </div>
+              </div>
 
-              <form onSubmit={handleSave} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Section Title</label>
-                    <input
-                      type="text"
-                      name="secretariat_title"
-                      value={formData.secretariat_title}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Subtitle</label>
-                    <input
-                      type="text"
-                      name="secretariat_subtitle"
-                      value={formData.secretariat_subtitle}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                    />
-                  </div>
-                </div>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Section Title</label>
+                    <input
+                      type="text"
+                      name="secretariat_title"
+                      value={formData.secretariat_title}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Subtitle</label>
+                    <input
+                      type="text"
+                      name="secretariat_subtitle"
+                      value={formData.secretariat_subtitle}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Paragraph 1 (Administrative Role)</label>
-                  <textarea
-                    name="secretariat_description_1"
-                    rows={3}
-                    value={formData.secretariat_description_1}
-                    onChange={handleChange}
-                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                  />
-                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Paragraph 1 (Administrative Role)</label>
+                  <textarea
+                    name="secretariat_description_1"
+                    rows={3}
+                    value={formData.secretariat_description_1}
+                    onChange={handleChange}
+                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Paragraph 2 (Digital Transformation)</label>
-                  <textarea
-                    name="secretariat_description_2"
-                    rows={3}
-                    value={formData.secretariat_description_2}
-                    onChange={handleChange}
-                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                  />
-                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Paragraph 2 (Digital Transformation)</label>
+                  <textarea
+                    name="secretariat_description_2"
+                    rows={3}
+                    value={formData.secretariat_description_2}
+                    onChange={handleChange}
+                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Image URL (Optional - leave blank for text only)</label>
-                  <input
-                    type="text"
-                    name="secretariat_image_url"
-                    placeholder="https://... image link"
-                    value={formData.secretariat_image_url}
-                    onChange={handleChange}
-                    className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                  />
-                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Image URL (Optional - leave blank for text only)</label>
+                  <input
+                    type="text"
+                    name="secretariat_image_url"
+                    placeholder="https://... image link"
+                    value={formData.secretariat_image_url}
+                    onChange={handleChange}
+                    className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Phone</label>
-                    <input
-                      type="text"
-                      name="secretariat_phone"
-                      value={formData.secretariat_phone}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Email</label>
-                    <input
-                      type="email"
-                      name="secretariat_email"
-                      value={formData.secretariat_email}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                    />
-                  </div>
-                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Phone</label>
+                    <input
+                      type="text"
+                      name="secretariat_phone"
+                      value={formData.secretariat_phone}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Email</label>
+                    <input
+                      type="email"
+                      name="secretariat_email"
+                      value={formData.secretariat_email}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signatory Name</label>
-                    <input
-                      type="text"
-                      name="secretariat_signatory_name"
-                      value={formData.secretariat_signatory_name}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signatory Title</label>
-                    <input
-                      type="text"
-                      name="secretariat_signatory_title"
-                      value={formData.secretariat_signatory_title}
-                      onChange={handleChange}
-                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                    />
-                  </div>
-                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signatory Name</label>
+                    <input
+                      type="text"
+                      name="secretariat_signatory_name"
+                      value={formData.secretariat_signatory_name}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signatory Title</label>
+                    <input
+                      type="text"
+                      name="secretariat_signatory_title"
+                      value={formData.secretariat_signatory_title}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
 
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
-                  >
-                    {saving ? 'Publishing Updates...' : 'Publish Secretariat Updates'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
+                  >
+                    {saving ? 'Publishing Updates...' : 'Publish Secretariat Updates'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export default function App() {
-  const { addToast } = useToast();
-  const { scrollYProgress } = useScroll();
-  const eventsScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollEvents = (direction: 'left' | 'right') => {
-    if (eventsScrollRef.current) {
-      const { scrollLeft, clientWidth } = eventsScrollRef.current;
-      const scrollAmount = clientWidth * 0.8;
-      eventsScrollRef.current.scrollTo({
-        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-  const [vaultSearchQuery, setVaultSearchQuery] = useState('');
-  const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
-  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const [isRsvpOpen, setIsRsvpOpen] = useState(false);
-  const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
-  const [executivesData, setExecutivesData] = useState<any[]>([]);
-  const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
-  const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
-  const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
-  const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
-  const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
-  const [studentBrandsData, setStudentBrandsData] = useState<any[]>([]);
-  const [ssrcMembersData, setSsrcMembersData] = useState<any[]>([]);
-  const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
-  const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
-  const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
-  
-  // States for Sponsors and Partners
-  const [partnersData, setPartnersData] = useState<any[]>([]);
-  const [sponsorsData, setSponsorsData] = useState<any[]>([]);
-
-  const [lastViewedResources, setLastViewedResources] = useState<any[]>(() => {
-    try {
-      const stored = localStorage.getItem('lastViewedResources');
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      return [];
-    }
-  });
-  const [announcementsData, setAnnouncementsData] = useState<any[]>([
-    {
-      id: "a1",
-      tag: "New Deadline",
-      title: "Course Registration Closing Soon",
-      description: "Ensure your courses are properly registered before Nov 15th to avoid penalties.",
-      event1Date: "NOV 15",
-      event1Text: "Portal Closes",
-      event2Date: "DEC 02",
-      event2Text: "Exams Begin"
-    }
-  ]);
-
-  useEffect(() => {
-    const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
-      if (!snap.empty) {
-        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setStudentBrandsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (studentBrands):", error.message);
-    });
-    
-    const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
-      if (!snap.empty) {
-        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setExecutivesData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (executives):", error.message);
-    });
-
-    const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
-      if (!snap.empty) {
-        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSsrcMembersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (ssrcMembers):", error.message);
-    });
-
-    const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
-      if (!snap.empty) {
-        setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setAnnouncementsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (announcements):", error.message);
-    });
-
-    const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
-      if (!snap.empty) {
-        setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setPartnersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (partners):", error.message);
-    });
-
-    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
-      if (!snap.empty) {
-        setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSponsorsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (sponsors):", error.message);
-    });
-
-    const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
-      if (!snap.empty) {
-        const fetchedEvents = snap.docs.map(doc => {
-          const data = doc.data();
-          const initialMatch = INITIAL_EVENTS_DATA.find(i => i.id.toString() === doc.id || i.title?.toUpperCase() === (data.title || '').toUpperCase());
-          const rawImages = data.images || initialMatch?.images || [];
-          const cleanImages = (Array.isArray(rawImages) ? rawImages : String(rawImages).split(','))
-            .map((s: any) => String(s).trim())
-            .filter((s: string) => s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:'));
-          return {
-            ...initialMatch,
-            ...data,
-            id: doc.id,
-            images: cleanImages
-          };
-        });
-        setEventsData(fetchedEvents.sort(sortByOrder));
-      } else {
-        setEventsData(INITIAL_EVENTS_DATA);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (events):", error.message);
-    });
-
-    const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
-      if (!snap.empty) {
-        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setVaultItemsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (vaultItems):", error.message);
-    });
-
-    const unsubLegislativeDocs = onSnapshot(collection(db, 'legislative_documents'), (snap) => {
-      if (!snap.empty) {
-        setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } else {
-        setLegislativeDocsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (legislative_documents):", error.message);
-    });
-
-    const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
-      setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (corePillars):", error.message);
-    });
-
-    const unsubHallOfFame = onSnapshot(collection(db, 'hallOfFame'), (snap) => {
-      setHallOfFameData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (hallOfFame):", error.message);
-    });
-
-    const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
-      const map = { ...existingMap };
-      snap.docs.forEach((doc: any) => {
-        const d = doc.data();
-        const key = d.contentKey || doc.id;
-        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || d.imageUrl || d.name || d.bio || '');
-        if (key) map[key] = val;
-      });
-      return map;
-    };
-
-    let combinedMap: Record<string, string> = {};
-    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
-      combinedMap = updateMapFromSnap(snap, combinedMap);
-      setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (siteContent):", error.message);
-    });
-
-    const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
-      combinedMap = updateMapFromSnap(snap, combinedMap);
-      setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (site_content):", error.message);
-    });
-
-    return () => {
-      unsubBrands();
-      unsubExecs();
-      unsubSsrc();
-      unsubAnnouncements();
-      unsubEvents();
-      unsubVaultItems();
-      unsubLegislativeDocs();
-      unsubCorePillars();
-      unsubHallOfFame();
-      unsubSiteContent();
-      unsubSiteContentAlt();
-      unsubPartners();
-      unsubSponsors();
-    };
-  }, []);
-
-  const handleDownloadDocument = async (docType: 'constitution' | 'standing_orders') => {
-    const isConstitution = docType === 'constitution';
-    const docName = isConstitution ? 'NASS LASU Constitution' : 'NASS LASU Standing Orders';
-    const defaultFileName = isConstitution ? 'NASS_LASU_CONSTITUTION.pdf' : 'NASS_LASU_STANDING_ORDERS.docx';
-    
-    setDownloadingDocType(docType);
-    addToast(`Downloading ${docName}... Please wait a bit`, 'info');
-
-    let downloadUrl: string | null = null;
-
-    const legMatch = legislativeDocsData.find(item => {
-      const typeStr = (item.type || item.docType || item.title || item.name || '').toLowerCase();
-      return isConstitution ? typeStr.includes('constitution') : (typeStr.includes('standing') || typeStr.includes('order'));
-    });
-    if (legMatch && (legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link)) {
-      downloadUrl = legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link;
-    }
-
-    if (!downloadUrl) {
-      const vaultMatch = vaultItemsData.find(item => {
-        const titleStr = (item.title || item.name || item.department || '').toLowerCase();
-        return isConstitution ? titleStr.includes('constitution') : (titleStr.includes('standing') || titleStr.includes('order'));
-      });
-      if (vaultMatch && (vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl)) {
-        downloadUrl = vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl;
-      }
-    }
-
-    if (!downloadUrl && storage) {
-      const candidatePaths = isConstitution ? [
-        'documents/NASS_LASU_CONSTITUTION.pdf',
-        'documents/nass_lasu_constitution.pdf',
-        'documents/constitution.pdf',
-        'documents/Nass_Lasu_Constitution.pdf',
-        'nass_lasu_constitution.pdf',
-        'constitution.pdf',
-        'NASS_LASU_CONSTITUTION.pdf'
-      ] : [
-        'documents/NASS_LASU_STANDING_ORDERS.docx',
-        'documents/NASS_LASU_STANDING_ORDERS.doc',
-        'documents/NASS_LASU_STANDING_ORDERS.pdf',
-        'documents/nass_lasu_standing_orders.docx',
-        'documents/standing_orders.docx',
-        'documents/Nass_Lasu_Standing_Orders.docx',
-        'nass_lasu_standing_orders.docx',
-        'standing_orders.docx',
-        'NASS_LASU_STANDING_ORDERS.docx'
-      ];
-
-      for (const path of candidatePaths) {
-        try {
-          const fileRef = ref(storage, path);
-          const url = await getDownloadURL(fileRef);
-          if (url) {
-            downloadUrl = url;
-            break;
-          }
-        } catch (e) {}
-      }
-
-      if (!downloadUrl) {
-        try {
-          const folderRef = ref(storage, 'documents');
-          const res = await listAll(folderRef);
-          for (const itemRef of res.items) {
-            const nameLower = itemRef.name.toLowerCase();
-            const matches = isConstitution ? nameLower.includes('constitution') : (nameLower.includes('standing') || nameLower.includes('order'));
-            if (matches) {
-              downloadUrl = await getDownloadURL(itemRef);
-              break;
-            }
-          }
-        } catch (e) {}
-      }
-    }
-
-    setDownloadingDocType(null);
-
-    if (downloadUrl) {
-      try {
-        const response = await fetch(downloadUrl);
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = defaultFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-        
-        addToast(`Successfully downloaded ${docName}!`, 'success');
-      } catch (err) {
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = defaultFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        addToast(`Successfully downloaded ${docName}!`, 'success');
-      }
-    } else {
-      addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > window.innerHeight * 0.8) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleResourceClick = (e: React.MouseEvent<HTMLAnchorElement>, item: any) => {
-    e.preventDefault();
-    if (item.link) {
-      window.open(item.link, '_blank');
-    }
-
-    setLastViewedResources(prev => {
-      const filtered = prev.filter(p => p.id !== item.id);
-      const updated = [item, ...filtered].slice(0, 5);
-      localStorage.setItem('lastViewedResources', JSON.stringify(updated));
-      return updated;
-    });
-
-    if (item.id) {
-      const docRef = doc(db, 'vaultItems', item.id);
-      updateDoc(docRef, {
-        viewCount: increment(1)
-      }).catch(err => console.error("Error updating view count:", err));
-    }
-  };
-
-  const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
-
-  return (
-    <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
-      <BackgroundEngine />
-      <CursorTrail />
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-yellow-400 z-[100] origin-left"
-        style={{ scaleX: scrollYProgress }}
-      />
-      
-      <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
-        
-        <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
-          <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
-            <div className="flex items-center gap-2 md:gap-3 shrink-0">
-              <img referrerPolicy="no-referrer" src="/nass_logo.jpg" alt="NASS Logo" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-yellow-400/50" />
-              <div>
-                <h1 className={`text-xs md:text-sm font-bold tracking-tighter font-space-grotesk uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>NASS LASU</h1>
-                <p className={`text-[9px] md:text-[10px] uppercase tracking-widest font-semibold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>36th Administration</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
-              <a 
-                href="#vision" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Sparkles size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">WebApp Story</span>
-              </a>
-              <a 
-                href="#executives" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <UserIcon size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Excos</span>
-              </a>
-              <a 
-                href="#vault" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <BookOpen size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Vault</span>
-              </a>
-              <a 
-                href="#brands" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <ShoppingBag size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Market</span>
-              </a>
-              <a 
-                href="#partners" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Handshake size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Partners</span>
-              </a>
-              <a 
-                href="#sponsors" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Award size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Sponsors</span>
-              </a>
-              <a 
-                href="#events" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Eye size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Events</span>
-              </a>
-              <a 
-                href="#map" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Navigation size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Map</span>
-              </a>
-              <a 
-                href="#hotline" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Siren size={14} className="text-slate-900 animate-pulse" />
-                <span className="hidden lg:inline">Hotline</span>
-              </a>
-              <a 
-                href="#sports" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Trophy size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Sports</span>
-              </a>
-
-              {/* Crescent Moon Theme Toggle Button */}
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 cursor-pointer ${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-yellow-400 hover:bg-white/20' 
-                    : 'bg-slate-200 border-slate-300 text-slate-800 hover:bg-slate-300'
-                }`}
-                aria-label="Toggle Theme"
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              >
-                {isDarkMode ? '🌙' : '☀️'}
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
-          
-          {/* HERO SECTION WITH TOP ROYAL NAVY & GOLD RIBBON */}
-          <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
-            <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
-              
-              {/* TOP ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
-              <div className="relative inline-flex items-center justify-center mb-1">
-                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
-                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
-                  <span className="text-yellow-400 text-xs">🏛️</span>
-                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    ABIODUN LED ADMINISTRATION
-                  </span>
-                  <span className="text-yellow-400 text-xs">🏛️</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h1 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] bg-gradient-to-r ${isDarkMode ? 'from-white via-white to-yellow-400' : 'from-slate-900 via-slate-800 to-yellow-600'} bg-clip-text text-transparent uppercase`}>
-                  NIGERIAN ASSOCIATION OF SCIENCE STUDENTS<br />
-                  <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
-                </h1>
-                
-                {/* GLASSMORPHIC CRYSTALLINE RAY TAGLINE WITH PEN ICON */}
-                <div className="relative inline-flex items-center justify-center mt-4 group">
-                  <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-xl -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
-                  
-                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_25px_rgba(250,204,21,0.25)] flex items-center gap-3">
-                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-
-                    <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
-                      <PenTool size={14} className="text-yellow-400" />
-                    </div>
-
-                    <span className="font-mono tracking-[0.25em] text-[11px] sm:text-xs md:text-sm font-black uppercase text-yellow-300 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)]">
-                      {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <a 
-                  href="#vision" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <Sparkles size={16} />
-                  <span>The WebApp Vision</span>
-                </a>
-                <a 
-                  href="#vault" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <BookOpen size={16} />
-                  <span>Get Started</span>
-                </a>
-                <a 
-                  href="#brands" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <ShoppingBag size={16} />
-                  <span>Marketplace</span>
-                </a>
-              </div>
-            </div>
-          </section>
-
-          {/* NASS LASU WEBAPP (THE VISION • THE PROCESS • THE BIRTH) SECTION */}
-          <section id="vision" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="text-center mb-14 space-y-3">
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
-                36TH ADMINISTRATION
-              </span>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                NASS LASU WEBAPP
-              </h2>
-              <p className="text-yellow-400 font-mono text-xs sm:text-sm md:text-base font-bold tracking-[0.25em] uppercase">
-                THE VISION • THE PROCESS • THE BIRTH
-              </p>
-              
-              <div className="relative inline-flex items-center justify-center pt-2 group">
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                  <PenTool size={12} className="text-yellow-400" />
-                  <span className="font-mono tracking-[0.2em] text-[10px] sm:text-xs font-semibold italic text-yellow-300">
-                    Initiative of a Digitalized and Innovative Secretariat
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Introductory Lead Card */}
-            <div className={`p-8 md:p-12 rounded-3xl border backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
-              isDarkMode 
-                ? 'bg-gradient-to-br from-white/5 via-slate-900/60 to-slate-950 border-yellow-400/30 shadow-[0_0_50px_rgba(250,204,21,0.08)]' 
-                : 'bg-white border-slate-200 shadow-xl'
-            }`}>
-              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative z-10 max-w-4xl mx-auto space-y-6 text-sm md:text-base leading-relaxed">
-                <p className="text-base md:text-lg font-medium leading-relaxed">
-                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>NASS LASU WebApp</strong> is one of the flagship initiatives of the <strong className="text-yellow-500">DIGITALIZED AND INNOVATIVE SECRETARIAT</strong> under the Office of the 36th NASS LASU General Secretary, <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Comr. Onovwiome Honourable Onome</strong>.
-                </p>
-                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
-                  It was conceived from a simple but transformative vision: <span className="text-yellow-400 font-semibold">to bring the Faculty of Science into a new era of digital accessibility, visibility, connectivity, and innovation.</span>
-                </p>
-                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
-                  In an age where technology has become an essential part of education, communication, administration, and institutional development, the Faculty of Science must have a digital presence that reflects the calibre, creativity, and technological potential of its students.
-                </p>
-                <div className={`p-4 rounded-2xl border-l-4 border-yellow-500 font-semibold ${isDarkMode ? 'bg-yellow-400/10 text-yellow-200' : 'bg-yellow-50 text-slate-800'}`}>
-                  The WebApp is therefore envisioned not merely as a website, but as a living digital ecosystem for the Faculty of Science.
-                </div>
-              </div>
-            </div>
-
-            {/* The 3 Pillars: Vision, Process, Birth */}
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
-              {/* THE VISION */}
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                isDarkMode 
-                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
-                    <Compass size={24} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 01</span>
-                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    THE VISION
-                  </h3>
-                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <p>
-                      To create a centralized digital platform where Science students can easily access academic materials, faculty information, opportunities, announcements, events, departmental resources, student services, and other essential resources.
-                    </p>
-                    <p>
-                      It seeks to reduce the gap between students and information by eliminating total dependence on scattered WhatsApp messages, physical notices, or word-of-mouth.
-                    </p>
-                    <p>
-                      Beyond accessibility, it is designed to rebrand the Faculty of Science in the digital age—presenting it as a community capable of embracing technology, creativity, and modern administration.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* THE PROCESS */}
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                isDarkMode 
-                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
-                    <Cpu size={24} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 02</span>
-                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    THE PROCESS
-                  </h3>
-                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <p>
-                      The development of the WebApp represents a deliberate effort to transform an idea into a functional digital system capable of serving the Faculty.
-                    </p>
-                    <p>
-                      The process involves identifying relevant services, organizing them into an accessible digital structure, developing the platform, and creating systems for continuous updates that future administrations can build upon.
-                    </p>
-                    <p>
-                      It serves as a digital extension of the Secretariat to progressively document activities, preserve institutional records, and maintain a direct connection with students.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* THE BIRTH */}
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                isDarkMode 
-                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
-                    <Sparkles size={24} />
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 03</span>
-                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    THE BIRTH
-                  </h3>
-                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <p>
-                      The birth of the NASS LASU WebApp marks a significant step in the journey toward a more digitalized Faculty of Science.
-                    </p>
-                    <p>
-                      It is a product of the belief that student leadership should not only respond to the needs of the present, but must build systems that remain useful beyond a single administration.
-                    </p>
-                    <p>
-                      The platform is architected with continuity and institutional memory in mind—allowing future administrations to expand and improve rather than rebuilding from ground zero.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* MORE THAN A WEBSITE GRID */}
-            <div className="space-y-8">
-              <div className="text-center space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500">FACULTY ECOSYSTEM</span>
-                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  MORE THAN A WEBSITE
-                </h3>
-                <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  The NASS LASU WebApp serves 11 multi-dimensional strategic functions across student and administrative life:
-                </p>
-              </div>
-
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {[
-                  { icon: '📚', title: 'Academic Resource Centre', desc: 'Learning materials, past questions, guides, and educational resources.' },
-                  { icon: '📢', title: 'Faculty Communication Hub', desc: 'Real-time announcements, official notices, events, and important updates.' },
-                  { icon: '🎓', title: 'Student Opportunity Centre', desc: 'Scholarships, internships, fellowships, competitions, grants, and career pipelines.' },
-                  { icon: '🏛️', title: 'Digital Faculty Identity', desc: 'Presents the Faculty of Science professionally to students and the wider global world.' },
-                  { icon: '🧑🏽‍💻', title: 'Student Engagement Platform', desc: 'Connecting students directly with initiatives, services, representatives, and activities.' },
-                  { icon: '🗂️', title: 'Institutional Memory System', desc: 'Documenting faculty achievements, programmes, reports, projects, and milestones.' },
-                  { icon: '🌐', title: 'Departmental Visibility Platform', desc: 'Giving all departments and student societies a stronger, unified digital presence.' },
-                  { icon: '🤝', title: 'Partnership & Sponsorship Gateway', desc: 'Enabling organizations, alumni, brands, and tech partners to discover and engage with Science students.' },
-                  { icon: '🚀', title: 'Innovation Showcase', desc: 'Highlighting exceptional students, cutting-edge projects, scientific research, and startups.' },
-                  { icon: '📰', title: 'Digital News & Events Platform', desc: 'Documenting and publicizing active events, summits, dinners, and Science Week activities.' },
-                  { icon: '🔗', title: 'A Bridge to the Outside World', desc: 'Connecting the faculty with alumni, industry professionals, and the wider technology ecosystem.' }
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-6 rounded-2xl border backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_8px_20px_rgba(250,204,21,0.1)]' 
-                        : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
-                    }`}
-                  >
-                    <div className="text-3xl mb-3">{item.icon}</div>
-                    <h4 className={`text-sm md:text-base font-bold mb-1.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                      {item.title}
-                    </h4>
-                    <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {item.desc}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Manifesto Closer Pill Banner */}
-              <div className={`p-8 md:p-10 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl mt-12 ${
-                isDarkMode 
-                  ? 'bg-gradient-to-b from-yellow-400/10 via-slate-950/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
-                  : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
-              }`}>
-                <div className="relative z-10 max-w-3xl mx-auto space-y-4">
-                  <p className={`text-xs md:text-sm leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                    "Ultimately, the NASS LASU WebApp represents a shift from information being scattered to information being centralized; from physical dependency to digital accessibility; from temporary documentation to institutional memory; and from simply managing a Secretariat to building digital infrastructure for the future."
-                  </p>
-                  <div className="pt-2">
-                    <p className="font-space-grotesk font-black text-sm md:text-base text-yellow-400 uppercase tracking-widest">
-                      This is the vision of the 36th Administration. This is the process. This is the birth of a digital Faculty of Science.
-                    </p>
-                    <p className="text-[11px] font-mono uppercase tracking-[0.3em] font-extrabold text-yellow-500 mt-2">
-                      DIGITALIZED AND INNOVATIVE SECRETARIAT
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section id="about" className="px-4 max-w-5xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
-              ABOUT NASS-LASU
-            </h2>
-            <div className={`border rounded-3xl p-8 md:p-12 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
-              <div className="prose max-w-none space-y-6">
-                <p className="text-lg leading-relaxed">
-                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
-                </p>
-                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
-                <p className="leading-relaxed">
-                  The association represents students across three main academic branches:
-                </p>
-                <ul className={`list-disc pl-6 space-y-2 marker:text-yellow-500 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Biological Science:</strong> Biochemistry, Botany, Fisheries and Aquatic Biology, Microbiology, SLT, Zoology and Environment Biology</li>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Chemical Science:</strong> Chemistry</li>
-                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Physical Science:</strong> Physics, Mathematics</li>
-                </ul>
-                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
-                <p className="leading-relaxed">
-                  NASS-LASU is structured like a formal micro-government, governed by a strict constitution with distinct branches of power:
-                </p>
-                <ul className="space-y-4">
-                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Executive Arm</strong>
-                    {siteContentMap.executive_arm_text ? renderWithBold(siteContentMap.executive_arm_text, isDarkMode) : (
-                      <>Led by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students' Executive Council (DSEC).</>
-                    )}
-                  </li>
-                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Legislative Arm</strong>
-                    {siteContentMap.legislative_arm_text ? renderWithBold(siteContentMap.legislative_arm_text, isDarkMode) : (
-                      <>Headed by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.</>
-                    )}
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          <section id="digitalized" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-              CORE PILLARS
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {(corePillarsData.length > 0 ? corePillarsData : [
-                { icon: '📚', title: "PDF Vault", desc: "Instant access to academic past questions & materials." },
-                { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." },
-                { icon: '🛍️', title: "Marketplace", desc: "Showcasing student-owned brands and campus businesses." }
-              ]).map((F, i) => (
-                <div key={i} className={`border p-5 md:p-6 rounded-2xl backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <div className="text-yellow-500 text-2xl md:text-3xl mb-4">{F.icon}</div>
-                  <h3 className={`text-xs font-bold uppercase mb-2 tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{F.title}</h3>
-                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{F.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section id="executives" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="flex items-end justify-between mb-8">
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                TOP EXECUTIVES
-              </h2>
-              <span className="text-[10px] text-yellow-500 underline cursor-pointer font-bold tracking-widest uppercase">View All</span>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {executivesData.map((ex, idx) => {
-                const borderClasses = "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]";
-                
-                return (
-                  <div 
-                    key={ex.id} 
-                    onClick={() => setSelectedExecutive(ex)}
-                    className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer ${borderClasses} ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
-                  >
-                    <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      <div className="absolute bottom-6 left-6 right-6 z-20">
-                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                          {ex.office}
-                        </div>
-                        <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
-                          {ex.nickname ? (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
-                              <span className="text-base font-normal text-yellow-200">{ex.name}</span>
-                            </div>
-                          ) : (
-                            ex.name
-                          )}
-                        </h4>
-                        <div className="mt-3 flex items-center justify-between">
-                          <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
-                          <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
-                            Read More <ArrowRight size={10} />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          <section id="ssrc" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-              SCIENCE STUDENT REPRESENTATIVE COUNCIL<br />
-              <span className={`text-xl md:text-2xl block mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{'(36th Legislative Council)'}</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {ssrcMembersData.map((mem) => (
-                <div 
-                  key={mem.id} 
-                  className={`group relative rounded-3xl border overflow-hidden transition-all cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}
-                >
-                  <div className="aspect-[4/5] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                    <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                      <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                        {mem.duty}
-                      </div>
-                      <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
-                      <p className="text-[11px] text-slate-300 uppercase tracking-widest font-semibold">{mem.department}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className={`mt-12 p-8 border rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
-              <div>
-                <h3 className={`font-space-grotesk text-xl font-bold mb-2 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  <span>Legislative Documents</span>
-                </h3>
-                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Download the official constitution and standing orders of NASS LASU directly to your device.</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <button 
-                  onClick={() => handleDownloadDocument('constitution')}
-                  disabled={downloadingDocType === 'constitution'}
-                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
-                >
-                  <Download size={16} className={downloadingDocType === 'constitution' ? 'animate-bounce' : ''} />
-                  <span>{downloadingDocType === 'constitution' ? 'Downloading...' : 'NASS LASU CONSTITUTION'}</span>
-                </button>
-                <button 
-                  onClick={() => handleDownloadDocument('standing_orders')}
-                  disabled={downloadingDocType === 'standing_orders'}
-                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
-                >
-                  <Download size={16} className={downloadingDocType === 'standing_orders' ? 'animate-bounce' : ''} />
-                  <span>{downloadingDocType === 'standing_orders' ? 'Downloading...' : 'NASS LASU STANDING ORDERS'}</span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
-            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
-              DEPARTMENTS
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { title: "A. Biological Science", items: ["Department of Biochemistry", "Department of Botany", "Department of Fisheries and Aquatic Biology", "Department of Microbiology", "Department of Science Laboratory Technology", "Department of Zoology and Environment Biology"] },
-                { title: "B. Chemical Science", items: ["Department of Chemistry"] },
-                { title: "C. Physical Science", items: ["Department of Physics", "Department of Mathematics"] }
-              ].map((branch, idx) => (
-                <div key={idx} className={`border rounded-3xl p-8 backdrop-blur-xl transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <h3 className="font-space-grotesk text-xl font-bold text-yellow-500 uppercase tracking-widest mb-6">{branch.title}</h3>
-                  <ul className="space-y-4">
-                    {branch.items.map((dept, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mt-2 shrink-0" />
-                        <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dept}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
-            <div className="text-center mb-10">
-              <div className="text-yellow-500 text-4xl mb-4">📚</div>
-              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                The Office Of The 36th Vice President (Dami PR)
-              </h3>
-              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Initiative Of A Digitalized and Innovative Secretariat
-              </p>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
-                ACADEMIC VAULT
-              </h2>
-              <p className={`text-xs uppercase tracking-widest font-bold mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Secure access to past questions & syllabi</p>
-              
-              <div className="relative max-w-md mx-auto mb-6">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className={`h-5 w-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search by department or year..."
-                  value={vaultSearchQuery}
-                  onChange={(e) => setVaultSearchQuery(e.target.value)}
-                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
-                />
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {['All Levels', '100 Level', '200 Level', '300 Level', '400 Level'].map((level) => {
-                  const isActive = level === 'All Levels' ? vaultLevelFilter === null : vaultLevelFilter === level;
-                  return (
-                    <button
-                      key={level}
-                      onClick={() => setVaultLevelFilter(level === 'All Levels' ? null : level)}
-                      className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors border ${
-                        isActive 
-                          ? 'bg-yellow-400 text-slate-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
-                          : isDarkMode ? 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200' : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {lastViewedResources.length > 0 && !vaultSearchQuery && (
-              <div className="mb-8 space-y-3">
-                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
-                <div className={`border rounded-2xl p-4 space-y-2 backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-                  {lastViewedResources.map((item, index) => (
-                    <div 
-                      key={`recent-${item.id}-${index}`}
-                      className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                          <span className="text-yellow-500 text-sm">📄</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title || 'Past Questions'}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[9px] text-slate-400 font-mono">{item.year || ''} Session</span>
-                            {item.department && <span className="text-[9px] text-slate-500 font-mono hidden sm:inline-block truncate max-w-[150px]">{item.department}</span>}
-                            {(item.viewCount || 0) > 50 && (
-                              <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-                                <Flame size={10} /> Trending
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
-                        View Material
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {[
-                'Department of Biochemistry',
-                'Department of Botany',
-                'Department of Fisheries and Aquatic Biology',
-                'Department of Microbiology',
-                'Department of Science Laboratory Technology',
-                'Department of Zoology and Environment Biology',
-                'Department of Chemistry',
-                'Department of Physics',
-                'Department of Mathematics'
-              ].map((dept, i) => {
-                const query = vaultSearchQuery.toLowerCase();
-                const deptMatches = dept.toLowerCase().includes(query);
-                
-                const deptItems = vaultItemsData.filter(item => item.department === dept);
-                
-                const levels = ['100 Level', '200 Level', '300 Level', '400 Level'];
-                const filteredLevels = vaultLevelFilter ? levels.filter(l => l === vaultLevelFilter) : levels;
-
-                const hasMatchingItems = deptItems.some(item => 
-                  filteredLevels.includes(item.level) && 
-                  (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query)))
-                );
-
-                if (query) {
-                  if (!hasMatchingItems && !deptMatches) return null;
-                }
-
-                return (
-                  <details key={i} className={`group border rounded-2xl overflow-hidden backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
-                      <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
-                      <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
-                    </summary>
-                    <div className={`p-4 pt-0 border-t space-y-3 mt-4 ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
-                      {deptItems.length === 0 ? (
-                        <div className={`flex flex-col items-center justify-center py-10 text-center space-y-3 rounded-xl border ${isDarkMode ? 'bg-slate-900/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
-                            <BookOpen className="w-5 h-5 text-slate-500" />
-                          </div>
-                          <p className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No resources uploaded yet</p>
-                          <p className="text-slate-500 text-xs max-w-[250px] leading-relaxed">
-                            Check back later. The academic team is currently gathering materials for this department.
-                          </p>
-                        </div>
-                      ) : (
-                        filteredLevels.map(level => {
-                          const levelItems = deptItems.filter(item => item.level === level && (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query))));
-                          if (levelItems.length === 0) return null;
-
-                          return (
-                            <details key={level} className={`group/level rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border ${isDarkMode ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                              <summary className={`flex justify-between items-center p-4 cursor-pointer transition-colors group/summary ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
-                                <div className="flex items-center gap-3">
-                                  <span className={`font-semibold text-xs tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{level}</span>
-                                </div>
-                                <span className="text-yellow-500/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
-                              </summary>
-                              <div className={`p-4 pt-0 space-y-4 border-t mt-2 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
-                                {['First Semester', 'Second Semester'].map(semester => {
-                                  const semesterItems = levelItems.filter(item => item.semester === semester);
-                                  if (semesterItems.length === 0) return null;
-
-                                  return (
-                                    <div key={semester} className="space-y-2">
-                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
-                                      <div className="space-y-2">
-                                        {semesterItems.map((item, index) => (
-                                          <div 
-                                            key={item.id} 
-                                            className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
-                                          >
-                                            <div className="flex items-center gap-3">
-                                              <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                                                <span className="text-yellow-500 text-sm">📄</span>
-                                              </div>
-                                              <div className="flex flex-col">
-                                                <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{highlightText(item.title || 'Past Questions', vaultSearchQuery, isDarkMode)}</span>
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery, isDarkMode)}</span>
-                                                  {(item.viewCount !== undefined) && (
-                                                    <span className="flex items-center gap-1 text-[9px] text-slate-500 font-mono" title={`${item.viewCount} views`}>
-                                                      <Eye size={10} /> {item.viewCount}
-                                                    </span>
-                                                  )}
-                                                  {(item.viewCount || 0) > 50 && (
-                                                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-                                                      <Flame size={10} /> Trending
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
-                                              View Material
-                                            </a>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </details>
-                          );
-                        })
-                      )}
-                    </div>
-                  </details>
-                );
-              })}
-              
-              {vaultSearchQuery && [
-                'Department of Biochemistry',
-                'Department of Botany',
-                'Department of Fisheries and Aquatic Biology',
-                'Department of Microbiology',
-                'Department of Science Laboratory Technology',
-                'Department of Zoology and Environment Biology',
-                'Department of Chemistry',
-                'Department of Physics',
-                'Department of Mathematics'
-              ].every(dept => {
-                const query = vaultSearchQuery.toLowerCase();
-                const deptMatches = dept.toLowerCase().includes(query);
-                const years = [2021, 2022];
-                return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
-              }) && (
-                <div className={`text-center py-8 text-sm border rounded-2xl backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
-                  No past questions found matching "{vaultSearchQuery}"
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
-            <div className="text-center mb-10">
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                NASS LASU ONLINE MARKETPLACE
-              </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                NASS LASU is committed to empowering student-owned businesses by providing visibility and promotional opportunities through the faculty website. By showcasing student brands, products, and services on this platform, we aim to increase their reach, enhance brand awareness, and drive sales. This initiative reflects our dedication to fostering innovation, entrepreneurship, and economic growth within the student community, ensuring that student entrepreneurs have the support they need to thrive.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {studentBrandsData.map((brand) => (
-                <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
-                  <div className="aspect-[4/3] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
-                    <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
-                      {brand.productImageUrl && (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/20 shrink-0 shadow-lg">
-                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" loading="lazy" />
-                        </div>
-                      )}
-                      <div>
-                        <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                          {brand.category}
-                        </div>
-                        <h4 className="text-xl font-bold text-white tracking-tight">{brand.name}</h4>
-                        <p className="text-xs text-slate-200 font-medium">Owned by: <span className="text-yellow-400">{brand.owner}</span></p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <p className={`text-sm mb-4 leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{brand.description}</p>
-                    {brand.price && (
-                      <p className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Price: <span className="text-yellow-500 font-mono">{brand.price}</span></p>
-                    )}
-                    <div className="mt-auto space-y-3">
-                      {brand.website && (
-                        <a href={brand.website} target="_blank" rel="noopener noreferrer" className={`block w-full text-center py-2 border rounded-xl text-sm font-bold transition-colors ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'}`}>
-                          Visit Website
-                        </a>
-                      )}
-                      {brand.whatsappNumber && (
-                        <a href={`https://wa.me/${brand.whatsappNumber}?text=Hello%20${encodeURIComponent(brand.name || '')}%2C%20I%20saw%20your%20brand%20on%20the%20NASS%20LASU%20Online%20Marketplace%20and%20I%20would%20like%20to%20place%20an%20order.`} target="_blank" rel="noopener noreferrer" className="block w-full text-center py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded-xl text-sm font-bold transition-colors">
-                          Place an Order (WhatsApp)
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* MEET OUR PARTNERS SECTION */}
-          <section id="partners" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="text-center mb-12">
-              <div className="text-yellow-500 text-4xl mb-4">🤝</div>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                MEET OUR PARTNERS
-              </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Strategic organizations, student initiatives, and ecosystem enablers collaborating with NASS-LASU toward scientific and career advancement.
-              </p>
-            </div>
-
-            {partnersData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
-                Partners directory will be announced soon.
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {partnersData.map((partner) => (
-                  <div 
-                    key={partner.id} 
-                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-                    }`}
-                  >
-                    <div>
-                      {/* Big, Prominent Logo Showcase Banner */}
-                      <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
-                        isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
-                      }`}>
-                        <div className="absolute inset-0 bg-radial from-yellow-400/10 to-transparent pointer-events-none" />
-                        <img 
-                          referrerPolicy="no-referrer" 
-                          src={partner.logoUrl || '/nass_logo.jpg'} 
-                          alt={partner.name} 
-                          className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500" 
-                          loading="lazy" 
-                        />
-                      </div>
-
-                      {/* Content Area */}
-                      <div className="p-6">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
-                          {partner.partnershipType || 'Official Partner'}
-                        </span>
-                        <h3 className={`text-2xl font-extrabold mb-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                          {partner.name}
-                        </h3>
-                        <p className={`text-xs leading-relaxed mb-5 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                          {partner.bio}
-                        </p>
-                        
-                        {partner.services && (
-                          <div className="mb-4">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                              Focus & Services
-                            </span>
-                            <div className="flex flex-wrap gap-2">
-                              {partner.services.split(',').map((srv: string, i: number) => (
-                                <span 
-                                  key={i} 
-                                  className="text-[11px] px-3 py-1 rounded-lg bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold"
-                                >
-                                  {srv.trim()}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Social / External Links Bar */}
-                    <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
-                      {partner.website && (
-                        <a 
-                          href={partner.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="p-2.5 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" 
-                          title="Website"
-                        >
-                          <Globe size={18} />
-                        </a>
-                      )}
-                      {partner.instagram && (
-                        <a 
-                          href={partner.instagram} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
-                          title="Instagram"
-                        >
-                          IG
-                        </a>
-                      )}
-                      {partner.twitter && (
-                        <a 
-                          href={partner.twitter} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
-                          title="X / Twitter"
-                        >
-                          X
-                        </a>
-                      )}
-                      {partner.linkedin && (
-                        <a 
-                          href={partner.linkedin} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
-                          title="LinkedIn"
-                        >
-                          IN
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* MEET OUR SPONSORS SECTION */}
-          <section id="sponsors" className="px-4 max-w-7xl mx-auto w-full">
-            <div className="text-center mb-12">
-              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                MEET OUR SPONSORS
-              </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Our generous corporate brands and benefactors powering student projects, faculty events, and educational drives across the faculty.
-              </p>
-            </div>
-
-            {sponsorsData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
-                Sponsors will be updated soon.
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sponsorsData.map((sponsor) => (
-                  <div 
-                    key={sponsor.id} 
-                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
-                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
-                    }`}
-                  >
-                    <div>
-                      {/* Big, Prominent Logo Showcase Banner */}
-                      <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
-                        isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
-                      }`}>
-                        <div className="absolute inset-0 bg-radial from-yellow-400/10 to-transparent pointer-events-none" />
-                        <img 
-                          referrerPolicy="no-referrer" 
-                          src={sponsor.logoUrl || '/nass_logo.jpg'} 
-                          alt={sponsor.name} 
-                          className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500" 
-                          loading="lazy" 
-                        />
-                      </div>
-
-                      {/* Content Area */}
-                      <div className="p-6">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
-                          {sponsor.tier || 'Official Sponsor'}
-                        </span>
-                        <h3 className={`text-2xl font-extrabold mb-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                          {sponsor.name}
-                        </h3>
-                        <p className={`text-xs leading-relaxed mb-5 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                          {sponsor.bio}
-                        </p>
-                        
-                        {sponsor.products && (
-                          <div className="mb-4">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                              Highlighted Products & Student Offers
-                            </span>
-                            <div className="flex flex-wrap gap-2">
-                              {sponsor.products.split(',').map((prd: string, i: number) => (
-                                <span 
-                                  key={i} 
-                                  className="text-[11px] px-3 py-1 rounded-lg bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold"
-                                >
-                                  {prd.trim()}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Social / External Links Bar */}
-                    <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
-                      {sponsor.website && (
-                        <a 
-                          href={sponsor.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="p-2.5 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" 
-                          title="Website"
-                        >
-                          <Globe size={18} />
-                        </a>
-                      )}
-                      {sponsor.instagram && (
-                        <a 
-                          href={sponsor.instagram} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
-                          title="Instagram"
-                        >
-                          IG
-                        </a>
-                      )}
-                      {sponsor.twitter && (
-                        <a 
-                          href={sponsor.twitter} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
-                          title="X / Twitter"
-                        >
-                          X
-                        </a>
-                      )}
-                      {sponsor.linkedin && (
-                        <a 
-                          href={sponsor.linkedin} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
-                          title="LinkedIn"
-                        >
-                          IN
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* PARTNERSHIP & SPONSORSHIP CALL-TO-ACTION CARD */}
-            <div className={`mt-16 p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.15)]' 
-                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
-            }`}>
-              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3.5 py-1 rounded-full inline-block">
-                  Collaborate With Us
-                </span>
-                
-                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Do you want to be part of our Partners / Sponsors?
-                </h3>
-                
-                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                  Send a message to our official liaison desk or send an email to lock in your brand's presence on our digital platform and events.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                  {/* WhatsApp Direct Chat Button */}
-                  <a 
-                    href="https://wa.me/2348141693252?text=Hello%20NASS%20LASU%2C%20we%20are%20interested%20in%20becoming%20an%20official%20Partner%20%2F%20Sponsor%20with%20the%20association." 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <MessageCircle size={18} />
-                    <span>Chat on WhatsApp (+234 814 169 3252)</span>
-                  </a>
-
-                  {/* Email Direct Link Button */}
-                  <a 
-                    href="mailto:nasslasu@gmail.com?subject=Partnership%20%2F%20Sponsorship%20Inquiry%20-%20NASS%20LASU" 
-                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-extrabold uppercase tracking-widest transition-all border hover:scale-105 active:scale-95 cursor-pointer ${
-                      isDarkMode 
-                        ? 'bg-white/10 hover:bg-white/20 text-white border-white/20' 
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
-                    }`}
-                  >
-                    <MessageSquare size={18} className="text-yellow-500" />
-                    <span>Send an Email (nasslasu@gmail.com)</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* FACULTY HOTLINE & EMERGENCY SECTION WITH WHATSAPP CHAT BUTTON */}
-          <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-4">
-            <div className="text-center">
-              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                The Office of The 36th Welfare Director (Comrade Awe Oba)
-              </h3>
-              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Initiative Of A Digitalized and Innovative Secretariat
-              </p>
-            </div>
-            <EmergencyHotline />
-            <div className={`mt-6 p-6 rounded-3xl border text-center backdrop-blur-xl shadow-lg max-w-3xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-              <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                For quick responses, chat with us on WhatsApp or call any of the numbers displayed above.
-              </p>
-              <a 
-                href="https://wa.me/2347074351819?text=Hello%20NASS%20LASU%20Welfare%20Office%2C%20I%20am%20reaching%20out%20from%20the%20website." 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-              >
-                <MessageCircle size={18} />
-                <span>Chat via WhatsApp (+234 707 435 1819)</span>
-              </a>
-            </div>
-          </section>
-
-          {/* NASS LASU SPORTS SECTION (COMES DIRECTLY AFTER HOTLINES) */}
-          <section id="sports" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <div className="text-center mb-10">
-              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
-              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                The Office of The 36th Sport Director (Comrade Wolex)
-              </h3>
-              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Initiative Of A Digitalized and Innovative Secretariat
-              </p>
-
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-4`}>
-                NASS LASU SPORTS
-              </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                Sports at Lagos State University are more than just games—they form the backbone of unity, mental wellness, and discipline across the Faculty of Science. Engaging in competitive and intramural athletics builds teamwork, sharpens cognitive focus away from academic pressure, and showcases talent for university and national stages.
-              </p>
-            </div>
-
-            {/* Popular LASU Sports Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {[
-                {
-                  icon: '⚽',
-                  title: 'Football (Soccer)',
-                  desc: 'The heartbeat of campus sports—from the Dean’s Cup and Science Inter-Departmental derbies to the VC Cup.'
-                },
-                {
-                  icon: '🏀',
-                  title: 'Basketball',
-                  desc: 'Fast-paced matches at the LASU outdoor courts, drawing intense rivalry between faculty teams.'
-                },
-                {
-                  icon: '🏃‍♂️',
-                  title: 'Track & Field',
-                  desc: '100m–400m sprints, relays, and long-distance athletics that produce regional and university-wide champions.'
-                },
-                {
-                  icon: '🏓',
-                  title: 'Indoor Games',
-                  desc: 'Table Tennis, Chess, Scrabble, and Badminton testing strategic agility and tactical precision.'
-                }
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
-                    isDarkMode
-                      ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_10px_25px_rgba(250,204,21,0.1)]'
-                      : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
-                  }`}
-                >
-                  <div className="text-3xl mb-3">{item.icon}</div>
-                  <h4 className={`text-base font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title}</h4>
-                  <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* WhatsApp Community Call-To-Action Card */}
-            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
-                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
-            }`}>
-              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3 py-1 rounded-full inline-block">
-                  Join The Squad
-                </span>
-                
-                <h3 className={`font-space-grotesk text-2xl md:text-3xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Join the NASS LASU Sports Community
-                </h3>
-                
-                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                  Stay updated on training schedules, trials for the Faculty of Science teams, Dean's Cup fixtures, and intramural matches. Connect with fellow student-athletes and fans across all departments.
-                </p>
-
-                <div className="pt-3">
-                  <a 
-                    href="https://chat.whatsapp.com/GCIUzdrLVXI9QKeuWuQlHb?s=cl&p=a&mlu=4&ilr=4" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <MessageCircle size={18} />
-                    <span>Join NASS LASU Sports WhatsApp Group</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* EDITABLE SECRETARIAT SECTION */}
-          <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
-            <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              {/* Optional dynamic picture editable via Admin Panel (renders only if uploaded) */}
-              {siteContentMap.secretariat_image_url && (
-                <div className="relative z-10 w-full flex justify-center items-center">
-                  <div className="max-w-md w-full aspect-video rounded-2xl overflow-hidden border border-yellow-400/30 shadow-xl">
-                    <img 
-                      src={siteContentMap.secretariat_image_url} 
-                      alt="Secretariat" 
-                      className="w-full h-full object-cover" 
-                      loading="lazy" 
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
-                <h2 className={`font-space-grotesk text-3xl md:text-5xl font-black mb-2 flex items-center justify-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  <span className="text-yellow-500 text-4xl">🏛️</span> {siteContentMap.secretariat_title || 'The Secretariat'}
-                </h2>
-                <p className="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-6">
-                  {siteContentMap.secretariat_subtitle || 'Faculty of Science'}
-                </p>
-                
-                <div className={`space-y-6 leading-relaxed text-sm md:text-base ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                  <p>
-                    {siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities."}
-                  </p>
-                  <p>
-                    {siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student."}
-                  </p>
-                  
-                  <div className={`mt-8 p-6 rounded-2xl border text-left w-full mx-auto max-w-2xl ${isDarkMode ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                    <p className="text-yellow-500 font-bold mb-4 text-center sm:text-left">For all official correspondence, inquiries, requests, or submissions to the Association, kindly contact:</p>
-                    
-                    <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-6 mb-6">
-                      <a href={`tel:${siteContentMap.secretariat_phone || '+2348141693252'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
-                          <PhoneCall size={18} />
-                        </div>
-                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
-                      </a>
-                      
-                      <a href={`mailto:${siteContentMap.secretariat_email || 'nasslasu@gmail.com'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
-                          <MessageSquare size={18} />
-                        </div>
-                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'nasslasu@gmail.com'}</span>
-                      </a>
-                    </div>
-
-                    {/* WhatsApp Direct Chat Button */}
-                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-center sm:justify-start">
-                      <a 
-                        href={`https://wa.me/${(siteContentMap.secretariat_phone || '2348141693252').replace(/[^0-9]/g, '')}?text=Hello%20Secretariat%2C%20I%20am%20reaching%20out%20from%20the%20NASS%20LASU%20website.`}
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
-                      >
-                        <MessageCircle size={16} />
-                        <span>Chat on WhatsApp ({siteContentMap.secretariat_phone || '+234 814 169 3252'})</span>
-                      </a>
-                    </div>
-                    
-                    <div className={`pt-6 border-t text-center sm:text-left mt-4 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                      <p className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
-                      <p className="text-yellow-500 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
-            </div>
-
-            {/* BE A PART OF THE DIGITALIZED AND INNOVATIVE SECRETARIAT CALL-TO-ACTION CARD */}
-            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/95 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.18)]' 
-                : 'bg-gradient-to-b from-yellow-50 via-white to-white border-yellow-500/50 shadow-xl'
-            }`}>
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 max-w-3xl mx-auto space-y-5">
-                {/* Pill Tagline with Crystalline Sheen */}
-                <div className="relative inline-flex items-center justify-center group">
-                  <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
-                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                    <Users size={14} className="text-yellow-400" />
-                    <span className="font-mono tracking-[0.25em] text-[10px] sm:text-xs font-black uppercase text-yellow-300">
-                      Join The Innovation Network
-                    </span>
-                  </div>
-                </div>
-
-                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Be A Part Of The Digitalized And Innovative Secretariat
-                </h3>
-
-                <p className={`text-xs md:text-sm leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                  Great leadership is built by active students working together. By joining our official community, you gain direct access to our initiatives, contribute your ideas to faculty development, collaborate on digital innovation projects, and stay informed on key student affairs before anyone else. Step forward and help build a stronger, forward-thinking Faculty of Science.
-                </p>
-
-                <p className="text-[11px] font-bold uppercase tracking-widest text-yellow-500">
-                  Join the group below
-                </p>
-
-                <div className="pt-2">
-                  <a 
-                    href="https://chat.whatsapp.com/LC45W4oPBq15tnbYeoxM1I?s=cl&p=a&mlu=4&ilr=4" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 bg-green-600 hover:bg-green-500 text-white font-black rounded-full text-xs sm:text-sm uppercase tracking-widest transition-all shadow-[0_0_25px_rgba(34,197,94,0.45)] hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <MessageCircle size={20} />
-                    <span>Join Secretariat WhatsApp Group</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ADMIN PANEL WITH INLINE SECRETARIAT LIVE EDITOR */}
-          <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <AdminGate>
-              <div className="space-y-8">
-                <AdminPanel />
-                <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
-              </div>
-            </AdminGate>
-          </section>
-
-          <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
-            <SecretariatFeedback />
-            
-            {/* WhatsApp Button under Secretariat Feedback */}
-            <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-              <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                For quick responses, send a message using the button below.
-              </p>
-              <a 
-                href="https://wa.me/2348141693252?text=Hello%20Secretariat%2C%20I%20have%20an%20urgent%20inquiry%20from%20the%20feedback%20portal." 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-              >
-                <MessageCircle size={18} />
-                <span>Quick Chat on WhatsApp</span>
-              </a>
-            </div>
-            
-            {/* BOTTOM ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
-            <div className="w-full flex justify-center px-4 mt-16 mb-4">
-              <div className="relative inline-flex items-center justify-center">
-                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
-                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
-                  <span className="text-yellow-400 text-xs">🏛️</span>
-                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    ABIODUN LED ADMINISTRATION
-                  </span>
-                  <span className="text-yellow-400 text-xs">🏛️</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              <div className="flex gap-6 mb-2">
-                <a href="#" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
-                <a href="#" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
-                <a href="#" className="hover:text-yellow-500 transition-colors">Instagram</a>
-              </div>
-              <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
-              
-              {/* GLASSMORPHIC CRYSTALLINE RAY FOOTER BADGE WITH PEN ICON */}
-              <div className="relative inline-flex items-center justify-center mt-3 group">
-                <div className="absolute -inset-1 bg-yellow-400/15 rounded-full blur-lg -z-10 group-hover:bg-yellow-400/25 transition-all duration-500" />
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/85 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2.5">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-
-                  <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
-                    <PenTool size={13} className="text-yellow-400" />
-                  </div>
-
-                  <span className="text-yellow-400 font-bold tracking-wider text-[10px] sm:text-xs uppercase drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]">
-                    Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.
-                  </span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-        </main>
-      </div>
-
-      {/* Sticky Bottom Persistent Marquee */}
-      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
-        <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4 shrink-0">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shrink-0" />
-              <span>{activeMarqueeText}</span>
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      <Chatbot />
-
-      <AnimatePresence>
-        {isRsvpOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className={`border rounded-3xl p-6 md:p-8 max-w-md w-full relative shadow-2xl ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
-            >
-              <button
-                onClick={() => setIsRsvpOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-              
-              <div className="text-yellow-500 text-3xl mb-4">🎟️</div>
-              <h3 className="text-2xl font-bold mb-2">RSVP for Events</h3>
-              <p className="text-slate-400 text-sm mb-6">Register your attendance for upcoming faculty events. An email confirmation will be sent to you.</p>
-              
-              <form className="space-y-4" onSubmit={(e) => { 
-                e.preventDefault(); 
-                setIsRsvpOpen(false); 
-                addToast('RSVP submitted successfully! Check your email for confirmation.', 'success');
-              }}>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Select Event</label>
-                  <select className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 appearance-none ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
-                    <option value="science-week" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Science Week 2024</option>
-                    <option value="inauguration" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Inauguration Event</option>
-                    <option value="tech-fair" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Tech Fair & Exhibition</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Full Name</label>
-                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. John Doe" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Matric Number</label>
-                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. 18/555... " />
-                </div>
-                
-                <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest py-4 rounded-xl transition-colors mt-4 text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] cursor-pointer">
-                  Confirm Attendance
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="fixed bottom-14 left-6 z-50 flex flex-col items-start gap-4">
-        <AnimatePresence>
-          {isQuickActionsOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col gap-3"
-            >
-              <button 
-                onClick={() => {
-                  document.getElementById('hotline')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Siren size={18} className="text-slate-900 animate-pulse" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Emergency Hotline</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('sports')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Trophy size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Sports Directorate</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('brands')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <ShoppingBag size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Online Marketplace</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('vault')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <BookOpen size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Academic Vault</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Sparkles size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Story</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Navigation size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Faculty Map</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('feedback')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <MessageSquare size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Feedback Form</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <button
-          onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-          className="p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50 cursor-pointer"
-          aria-label="Quick Actions"
-        >
-          {isQuickActionsOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {selectedExecutive && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedExecutive(null)}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
-            >
-              <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-                <div className="relative aspect-[3/2] w-full shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
-                  <img 
-                    src={selectedExecutive.imageUrl || undefined} 
-                    alt={selectedExecutive.name} 
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <button
-                    onClick={() => setSelectedExecutive(null)}
-                    className="absolute top-4 right-4 z-20 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors cursor-pointer"
-                  >
-                    <X size={20} />
-                  </button>
-                  <div className="absolute bottom-4 left-6 right-6 z-20">
-                    <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                      {selectedExecutive.office}
-                    </div>
-                    <h3 className="text-2xl font-bold text-yellow-400 tracking-tight">
-                      {selectedExecutive.name}
-                    </h3>
-                    {selectedExecutive.nickname && (
-                      <p className="text-yellow-400 font-space-grotesk font-bold uppercase mt-1">'{selectedExecutive.nickname}'</p>
-                    )}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-500 font-semibold uppercase tracking-widest">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                    {selectedExecutive.department}
-                  </div>
-                  <div className={`leading-relaxed text-sm p-4 rounded-xl border whitespace-pre-wrap ${isDarkMode ? 'text-yellow-100 bg-white/5 border-white/5' : 'text-slate-700 bg-slate-50 border-slate-200'}`}>
-                    {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary, isDarkMode) : "No profile summary available."}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
-          aria-label="Back to top"
-        >
-          <ArrowUp size={24} />
-        </button>
-      )}
-
-      {selectedEventGallery && (
-        <PageantGallery
-          title={selectedEventGallery.title}
-          images={selectedEventGallery.images}
-          onClose={() => setSelectedEventGallery(null)}
-        />
-      )}
-      
-      <style>{`
-        html {
-          scroll-behavior: smooth;
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior-y: none;
-          touch-action: pan-y;
-        }
-        body {
-          -webkit-overflow-scrolling: touch;
-          overflow-x: hidden;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-rendering: optimizeLegibility;
-        }
-        .backdrop-blur-xl,
-        .backdrop-blur-2xl,
-        .backdrop-blur-md {
-          transform: translateZ(0);
-          -webkit-transform: translateZ(0);
-          will-change: transform;
-        }
-        .font-space-grotesk { font-family: 'Space Grotesk', system-ui, sans-serif; }
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes shine {
-          0% { transform: translateX(-100%); }
-          50%, 100% { transform: translateX(200%); }
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(250, 204, 21, 0.3);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(250, 200, 21, 0.5);
-        }
-      `}</style>
-    </div>
-  );
+  const { addToast } = useToast();
+  const { scrollYProgress } = useScroll();
+  const eventsScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollEvents = (direction: 'left' | 'right') => {
+    if (eventsScrollRef.current) {
+      const { scrollLeft, clientWidth } = eventsScrollRef.current;
+      const scrollAmount = clientWidth * 0.8;
+      eventsScrollRef.current.scrollTo({
+        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [vaultSearchQuery, setVaultSearchQuery] = useState('');
+  const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [isRsvpOpen, setIsRsvpOpen] = useState(false);
+  const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
+  const [executivesData, setExecutivesData] = useState<any[]>([]);
+  const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
+  const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
+  const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
+  const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
+  const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
+  const [studentBrandsData, setStudentBrandsData] = useState<any[]>([]);
+  const [ssrcMembersData, setSsrcMembersData] = useState<any[]>([]);
+  const [vaultItemsData, setVaultItemsData] = useState<any[]>([]);
+  const [legislativeDocsData, setLegislativeDocsData] = useState<any[]>([]);
+  const [downloadingDocType, setDownloadingDocType] = useState<string | null>(null);
+  
+  // States for Sponsors and Partners
+  const [partnersData, setPartnersData] = useState<any[]>([]);
+  const [sponsorsData, setSponsorsData] = useState<any[]>([]);
+
+  const [lastViewedResources, setLastViewedResources] = useState<any[]>(() => {
+    try {
+      const stored = localStorage.getItem('lastViewedResources');
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [announcementsData, setAnnouncementsData] = useState<any[]>([
+    {
+      id: "a1",
+      tag: "New Deadline",
+      title: "Course Registration Closing Soon",
+      description: "Ensure your courses are properly registered before Nov 15th to avoid penalties.",
+      event1Date: "NOV 15",
+      event1Text: "Portal Closes",
+      event2Date: "DEC 02",
+      event2Text: "Exams Begin"
+    }
+  ]);
+
+  useEffect(() => {
+    const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
+      if (!snap.empty) {
+        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setStudentBrandsData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (studentBrands):", error.message);
+    });
+    
+    const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
+      if (!snap.empty) {
+        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setExecutivesData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (executives):", error.message);
+    });
+
+    const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
+      if (!snap.empty) {
+        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setSsrcMembersData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (ssrcMembers):", error.message);
+    });
+
+    const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snap) => {
+      if (!snap.empty) {
+        setAnnouncementsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setAnnouncementsData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (announcements):", error.message);
+    });
+
+    const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
+      if (!snap.empty) {
+        setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setPartnersData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (partners):", error.message);
+    });
+
+    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
+      if (!snap.empty) {
+        setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setSponsorsData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (sponsors):", error.message);
+    });
+
+    const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
+      if (!snap.empty) {
+        const fetchedEvents = snap.docs.map(doc => {
+          const data = doc.data();
+          const initialMatch = INITIAL_EVENTS_DATA.find(i => i.id.toString() === doc.id || i.title?.toUpperCase() === (data.title || '').toUpperCase());
+          const rawImages = data.images || initialMatch?.images || [];
+          const cleanImages = (Array.isArray(rawImages) ? rawImages : String(rawImages).split(','))
+            .map((s: any) => String(s).trim())
+            .filter((s: string) => s.startsWith('/') || s.startsWith('./') || s.startsWith('http') || s.startsWith('blob:') || s.startsWith('data:'));
+          return {
+            ...initialMatch,
+            ...data,
+            id: doc.id,
+            images: cleanImages
+          };
+        });
+        setEventsData(fetchedEvents.sort(sortByOrder));
+      } else {
+        setEventsData(INITIAL_EVENTS_DATA);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (events):", error.message);
+    });
+
+    const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
+      if (!snap.empty) {
+        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setVaultItemsData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (vaultItems):", error.message);
+    });
+
+    const unsubLegislativeDocs = onSnapshot(collection(db, 'legislative_documents'), (snap) => {
+      if (!snap.empty) {
+        setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setLegislativeDocsData([]);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (legislative_documents):", error.message);
+    });
+
+    const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
+      setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => {
+      console.warn("Firestore listener warning (corePillars):", error.message);
+    });
+
+    const unsubHallOfFame = onSnapshot(collection(db, 'hallOfFame'), (snap) => {
+      setHallOfFameData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+    }, (error) => {
+      console.warn("Firestore listener warning (hallOfFame):", error.message);
+    });
+
+    const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
+      const map = { ...existingMap };
+      snap.docs.forEach((doc: any) => {
+        const d = doc.data();
+        const key = d.contentKey || doc.id;
+        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || d.imageUrl || d.name || d.bio || '');
+        if (key) map[key] = val;
+      });
+      return map;
+    };
+
+    let combinedMap: Record<string, string> = {};
+    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
+      combinedMap = updateMapFromSnap(snap, combinedMap);
+      setSiteContentMap({ ...combinedMap });
+    }, (error) => {
+      console.warn("Firestore listener warning (siteContent):", error.message);
+    });
+
+    const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
+      combinedMap = updateMapFromSnap(snap, combinedMap);
+      setSiteContentMap({ ...combinedMap });
+    }, (error) => {
+      console.warn("Firestore listener warning (site_content):", error.message);
+    });
+
+    return () => {
+      unsubBrands();
+      unsubExecs();
+      unsubSsrc();
+      unsubAnnouncements();
+      unsubEvents();
+      unsubVaultItems();
+      unsubLegislativeDocs();
+      unsubCorePillars();
+      unsubHallOfFame();
+      unsubSiteContent();
+      unsubSiteContentAlt();
+      unsubPartners();
+      unsubSponsors();
+    };
+  }, []);
+
+  const handleDownloadDocument = async (docType: 'constitution' | 'standing_orders') => {
+    const isConstitution = docType === 'constitution';
+    const docName = isConstitution ? 'NASS LASU Constitution' : 'NASS LASU Standing Orders';
+    const defaultFileName = isConstitution ? 'NASS_LASU_CONSTITUTION.pdf' : 'NASS_LASU_STANDING_ORDERS.docx';
+    
+    setDownloadingDocType(docType);
+    addToast(`Downloading ${docName}... Please wait a bit`, 'info');
+
+    let downloadUrl: string | null = null;
+
+    const legMatch = legislativeDocsData.find(item => {
+      const typeStr = (item.type || item.docType || item.title || item.name || '').toLowerCase();
+      return isConstitution ? typeStr.includes('constitution') : (typeStr.includes('standing') || typeStr.includes('order'));
+    });
+    if (legMatch && (legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link)) {
+      downloadUrl = legMatch.url || legMatch.downloadUrl || legMatch.fileUrl || legMatch.link;
+    }
+
+    if (!downloadUrl) {
+      const vaultMatch = vaultItemsData.find(item => {
+        const titleStr = (item.title || item.name || item.department || '').toLowerCase();
+        return isConstitution ? titleStr.includes('constitution') : (titleStr.includes('standing') || titleStr.includes('order'));
+      });
+      if (vaultMatch && (vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl)) {
+        downloadUrl = vaultMatch.link || vaultMatch.url || vaultMatch.downloadUrl || vaultMatch.fileUrl;
+      }
+    }
+
+    if (!downloadUrl && storage) {
+      const candidatePaths = isConstitution ? [
+        'documents/NASS_LASU_CONSTITUTION.pdf',
+        'documents/nass_lasu_constitution.pdf',
+        'documents/constitution.pdf',
+        'documents/Nass_Lasu_Constitution.pdf',
+        'nass_lasu_constitution.pdf',
+        'constitution.pdf',
+        'NASS_LASU_CONSTITUTION.pdf'
+      ] : [
+        'documents/NASS_LASU_STANDING_ORDERS.docx',
+        'documents/NASS_LASU_STANDING_ORDERS.doc',
+        'documents/NASS_LASU_STANDING_ORDERS.pdf',
+        'documents/nass_lasu_standing_orders.docx',
+        'documents/standing_orders.docx',
+        'documents/Nass_Lasu_Standing_Orders.docx',
+        'nass_lasu_standing_orders.docx',
+        'standing_orders.docx',
+        'NASS_LASU_STANDING_ORDERS.docx'
+      ];
+
+      for (const path of candidatePaths) {
+        try {
+          const fileRef = ref(storage, path);
+          const url = await getDownloadURL(fileRef);
+          if (url) {
+            downloadUrl = url;
+            break;
+          }
+        } catch (e) {}
+      }
+
+      if (!downloadUrl) {
+        try {
+          const folderRef = ref(storage, 'documents');
+          const res = await listAll(folderRef);
+          for (const itemRef of res.items) {
+            const nameLower = itemRef.name.toLowerCase();
+            const matches = isConstitution ? nameLower.includes('constitution') : (nameLower.includes('standing') || nameLower.includes('order'));
+            if (matches) {
+              downloadUrl = await getDownloadURL(itemRef);
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    setDownloadingDocType(null);
+
+    if (downloadUrl) {
+      try {
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = defaultFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+        
+        addToast(`Successfully downloaded ${docName}!`, 'success');
+      } catch (err) {
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = defaultFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        addToast(`Successfully downloaded ${docName}!`, 'success');
+      }
+    } else {
+      addToast(`Could not locate ${docName} download URL in backend. Please verify document upload in Admin Panel.`, 'error');
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > window.innerHeight * 0.8) {
+        setShowBackToTop(true);
+      } else {
+        setShowBackToTop(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleResourceClick = (e: React.MouseEvent<HTMLAnchorElement>, item: any) => {
+    e.preventDefault();
+    if (item.link) {
+      window.open(item.link, '_blank');
+    }
+
+    setLastViewedResources(prev => {
+      const filtered = prev.filter(p => p.id !== item.id);
+      const updated = [item, ...filtered].slice(0, 5);
+      localStorage.setItem('lastViewedResources', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (item.id) {
+      const docRef = doc(db, 'vaultItems', item.id);
+      updateDoc(docRef, {
+        viewCount: increment(1)
+      }).catch(err => console.error("Error updating view count:", err));
+    }
+  };
+
+  const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
+
+  return (
+    <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+      <BackgroundEngine />
+      <CursorTrail />
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-yellow-400 z-[100] origin-left"
+        style={{ scaleX: scrollYProgress }}
+      />
+      
+      <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
+        
+        <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
+          <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              <img referrerPolicy="no-referrer" src="/nass_logo.jpg" alt="NASS Logo" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-yellow-400/50" />
+              <div>
+                <h1 className={`text-xs md:text-sm font-bold tracking-tighter font-space-grotesk uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>NASS LASU</h1>
+                <p className={`text-[9px] md:text-[10px] uppercase tracking-widest font-semibold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>36th Administration</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
+              <a 
+                href="#vision" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Sparkles size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">WebApp Story</span>
+              </a>
+              <a 
+                href="#executives" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <UserIcon size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Excos</span>
+              </a>
+              <a 
+                href="#vault" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <BookOpen size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Vault</span>
+              </a>
+              <a 
+                href="#brands" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <ShoppingBag size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Market</span>
+              </a>
+              <a 
+                href="#partners" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Handshake size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Partners</span>
+              </a>
+              <a 
+                href="#sponsors" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Award size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Sponsors</span>
+              </a>
+              <a 
+                href="#events" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Eye size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Events</span>
+              </a>
+              <a 
+                href="#map" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Navigation size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Map</span>
+              </a>
+              <a 
+                href="#hotline" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Siren size={14} className="text-slate-900 animate-pulse" />
+                <span className="hidden lg:inline">Hotline</span>
+              </a>
+              <a 
+                href="#sports" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Trophy size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Sports</span>
+              </a>
+
+              {/* Crescent Moon Theme Toggle Button */}
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`p-2 rounded-full border transition-all flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 cursor-pointer ${
+                  isDarkMode 
+                    ? 'bg-white/10 border-white/20 text-yellow-400 hover:bg-white/20' 
+                    : 'bg-slate-200 border-slate-300 text-slate-800 hover:bg-slate-300'
+                }`}
+                aria-label="Toggle Theme"
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isDarkMode ? '🌙' : '☀️'}
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
+          
+          {/* HERO SECTION WITH TOP ROYAL NAVY & GOLD RIBBON */}
+          <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
+            <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
+              
+              {/* TOP ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
+              <div className="relative inline-flex items-center justify-center mb-1">
+                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
+                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-yellow-400 text-xs">🏛️</span>
+                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    ABIODUN LED ADMINISTRATION
+                  </span>
+                  <span className="text-yellow-400 text-xs">🏛️</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h1 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] bg-gradient-to-r ${isDarkMode ? 'from-white via-white to-yellow-400' : 'from-slate-900 via-slate-800 to-yellow-600'} bg-clip-text text-transparent uppercase`}>
+                  NIGERIAN ASSOCIATION OF SCIENCE STUDENTS<br />
+                  <span className="text-xl md:text-3xl lg:text-4xl text-yellow-500">LAGOS STATE UNIVERSITY</span>
+                </h1>
+                
+                {/* GLASSMORPHIC CRYSTALLINE RAY TAGLINE WITH PEN ICON */}
+                <div className="relative inline-flex items-center justify-center mt-4 group">
+                  <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-xl -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
+                  
+                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_25px_rgba(250,204,21,0.25)] flex items-center gap-3">
+                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
+                    <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+                      <PenTool size={14} className="text-yellow-400" />
+                    </div>
+
+                    <span className="font-mono tracking-[0.25em] text-[11px] sm:text-xs md:text-sm font-black uppercase text-yellow-300 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)]">
+                      {siteContentMap.hero_tagline || 'Initiative Of A Digitalized Secretariat'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
+              </p>
+
+              <div className="flex flex-wrap justify-center gap-4 pt-4">
+                <a 
+                  href="#vision" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <Sparkles size={16} />
+                  <span>The WebApp Vision</span>
+                </a>
+                <a 
+                  href="#vault" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <BookOpen size={16} />
+                  <span>Get Started</span>
+                </a>
+                <a 
+                  href="#brands" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <ShoppingBag size={16} />
+                  <span>Marketplace</span>
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* NASS LASU WEBAPP (THE VISION • THE PROCESS • THE BIRTH) SECTION */}
+          <section id="vision" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-14 space-y-3">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                36TH ADMINISTRATION
+              </span>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                NASS LASU WEBAPP
+              </h2>
+              <p className="text-yellow-400 font-mono text-xs sm:text-sm md:text-base font-bold tracking-[0.25em] uppercase">
+                THE VISION • THE PROCESS • THE BIRTH
+              </p>
+              
+              <div className="relative inline-flex items-center justify-center pt-2 group">
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
+                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                  <PenTool size={12} className="text-yellow-400" />
+                  <span className="font-mono tracking-[0.2em] text-[10px] sm:text-xs font-semibold italic text-yellow-300">
+                    Initiative of a Digitalized and Innovative Secretariat
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Introductory Lead Card */}
+            <div className={`p-8 md:p-12 rounded-3xl border backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
+              isDarkMode 
+                ? 'bg-gradient-to-br from-white/5 via-slate-900/60 to-slate-950 border-yellow-400/30 shadow-[0_0_50px_rgba(250,204,21,0.08)]' 
+                : 'bg-white border-slate-200 shadow-xl'
+            }`}>
+              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="relative z-10 max-w-4xl mx-auto space-y-6 text-sm md:text-base leading-relaxed">
+                <p className="text-base md:text-lg font-medium leading-relaxed">
+                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>NASS LASU WebApp</strong> is one of the flagship initiatives of the <strong className="text-yellow-500">DIGITALIZED AND INNOVATIVE SECRETARIAT</strong> under the Office of the 36th NASS LASU General Secretary, <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Comr. Onovwiome Honourable Onome</strong>.
+                </p>
+                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
+                  It was conceived from a simple but transformative vision: <span className="text-yellow-400 font-semibold">to bring the Faculty of Science into a new era of digital accessibility, visibility, connectivity, and innovation.</span>
+                </p>
+                <p className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
+                  In an age where technology has become an essential part of education, communication, administration, and institutional development, the Faculty of Science must have a digital presence that reflects the calibre, creativity, and technological potential of its students.
+                </p>
+                <div className={`p-4 rounded-2xl border-l-4 border-yellow-500 font-semibold ${isDarkMode ? 'bg-yellow-400/10 text-yellow-200' : 'bg-yellow-50 text-slate-800'}`}>
+                  The WebApp is therefore envisioned not merely as a website, but as a living digital ecosystem for the Faculty of Science.
+                </div>
+              </div>
+            </div>
+
+            {/* The 3 Pillars: Vision, Process, Birth */}
+            <div className="grid md:grid-cols-3 gap-8 mb-16">
+              {/* THE VISION */}
+              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                isDarkMode 
+                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+              }`}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
+                    <Compass size={24} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 01</span>
+                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    THE VISION
+                  </h3>
+                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p>
+                      To create a centralized digital platform where Science students can easily access academic materials, faculty information, opportunities, announcements, events, departmental resources, student services, and other essential resources.
+                    </p>
+                    <p>
+                      It seeks to reduce the gap between students and information by eliminating total dependence on scattered WhatsApp messages, physical notices, or word-of-mouth.
+                    </p>
+                    <p>
+                      Beyond accessibility, it is designed to rebrand the Faculty of Science in the digital age—presenting it as a community capable of embracing technology, creativity, and modern administration.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* THE PROCESS */}
+              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                isDarkMode 
+                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+              }`}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
+                    <Cpu size={24} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 02</span>
+                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    THE PROCESS
+                  </h3>
+                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p>
+                      The development of the WebApp represents a deliberate effort to transform an idea into a functional digital system capable of serving the Faculty.
+                    </p>
+                    <p>
+                      The process involves identifying relevant services, organizing them into an accessible digital structure, developing the platform, and creating systems for continuous updates that future administrations can build upon.
+                    </p>
+                    <p>
+                      It serves as a digital extension of the Secretariat to progressively document activities, preserve institutional records, and maintain a direct connection with students.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* THE BIRTH */}
+              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                isDarkMode 
+                  ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                  : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+              }`}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mb-6 shadow-md">
+                    <Sparkles size={24} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-yellow-500 block mb-1">Pillar 03</span>
+                  <h3 className={`font-space-grotesk text-2xl font-black mb-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    THE BIRTH
+                  </h3>
+                  <div className={`text-xs md:text-sm leading-relaxed space-y-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p>
+                      The birth of the NASS LASU WebApp marks a significant step in the journey toward a more digitalized Faculty of Science.
+                    </p>
+                    <p>
+                      It is a product of the belief that student leadership should not only respond to the needs of the present, but must build systems that remain useful beyond a single administration.
+                    </p>
+                    <p>
+                      The platform is architected with continuity and institutional memory in mind—allowing future administrations to expand and improve rather than rebuilding from ground zero.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MORE THAN A WEBSITE GRID */}
+            <div className="space-y-8">
+              <div className="text-center space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500">FACULTY ECOSYSTEM</span>
+                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  MORE THAN A WEBSITE
+                </h3>
+                <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  The NASS LASU WebApp serves 11 multi-dimensional strategic functions across student and administrative life:
+                </p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[
+                  { icon: '📚', title: 'Academic Resource Centre', desc: 'Learning materials, past questions, guides, and educational resources.' },
+                  { icon: '📢', title: 'Faculty Communication Hub', desc: 'Real-time announcements, official notices, events, and important updates.' },
+                  { icon: '🎓', title: 'Student Opportunity Centre', desc: 'Scholarships, internships, fellowships, competitions, grants, and career pipelines.' },
+                  { icon: '🏛️', title: 'Digital Faculty Identity', desc: 'Presents the Faculty of Science professionally to students and the wider global world.' },
+                  { icon: '🧑🏽‍💻', title: 'Student Engagement Platform', desc: 'Connecting students directly with initiatives, services, representatives, and activities.' },
+                  { icon: '🗂️', title: 'Institutional Memory System', desc: 'Documenting faculty achievements, programmes, reports, projects, and milestones.' },
+                  { icon: '🌐', title: 'Departmental Visibility Platform', desc: 'Giving all departments and student societies a stronger, unified digital presence.' },
+                  { icon: '🤝', title: 'Partnership & Sponsorship Gateway', desc: 'Enabling organizations, alumni, brands, and tech partners to discover and engage with Science students.' },
+                  { icon: '🚀', title: 'Innovation Showcase', desc: 'Highlighting exceptional students, cutting-edge projects, scientific research, and startups.' },
+                  { icon: '📰', title: 'Digital News & Events Platform', desc: 'Documenting and publicizing active events, summits, dinners, and Science Week activities.' },
+                  { icon: '🔗', title: 'A Bridge to the Outside World', desc: 'Connecting the faculty with alumni, industry professionals, and the wider technology ecosystem.' }
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-6 rounded-2xl border backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_8px_20px_rgba(250,204,21,0.1)]' 
+                        : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
+                    }`}
+                  >
+                    <div className="text-3xl mb-3">{item.icon}</div>
+                    <h4 className={`text-sm md:text-base font-bold mb-1.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {item.title}
+                    </h4>
+                    <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Manifesto Closer Pill Banner */}
+              <div className={`p-8 md:p-10 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl mt-12 ${
+                isDarkMode 
+                  ? 'bg-gradient-to-b from-yellow-400/10 via-slate-950/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
+                  : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
+              }`}>
+                <div className="relative z-10 max-w-3xl mx-auto space-y-4">
+                  <p className={`text-xs md:text-sm leading-relaxed italic ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                    "Ultimately, the NASS LASU WebApp represents a shift from information being scattered to information being centralized; from physical dependency to digital accessibility; from temporary documentation to institutional memory; and from simply managing a Secretariat to building digital infrastructure for the future."
+                  </p>
+                  <div className="pt-2">
+                    <p className="font-space-grotesk font-black text-sm md:text-base text-yellow-400 uppercase tracking-widest">
+                      This is the vision of the 36th Administration. This is the process. This is the birth of a digital Faculty of Science.
+                    </p>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.3em] font-extrabold text-yellow-500 mt-2">
+                      DIGITALIZED AND INNOVATIVE SECRETARIAT
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="about" className="px-4 max-w-5xl mx-auto w-full">
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
+              ABOUT NASS-LASU
+            </h2>
+            <div className={`border rounded-3xl p-8 md:p-12 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
+              <div className="prose max-w-none space-y-6">
+                <p className="text-lg leading-relaxed">
+                  The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
+                </p>
+                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
+                <p className="leading-relaxed">
+                  The association represents students across three main academic branches:
+                </p>
+                <ul className={`list-disc pl-6 space-y-2 marker:text-yellow-500 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Biological Science:</strong> Biochemistry, Botany, Fisheries and Aquatic Biology, Microbiology, SLT, Zoology and Environment Biology</li>
+                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Chemical Science:</strong> Chemistry</li>
+                  <li><strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Physical Science:</strong> Physics, Mathematics</li>
+                </ul>
+                <div className={`h-px w-full my-8 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
+                <p className="leading-relaxed">
+                  NASS-LASU is structured like a formal micro-government, governed by a strict constitution with distinct branches of power:
+                </p>
+                <ul className="space-y-4">
+                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Executive Arm</strong>
+                    {siteContentMap.executive_arm_text ? renderWithBold(siteContentMap.executive_arm_text, isDarkMode) : (
+                      <>Led by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Executive Council (SSEC)</strong>, this body handles the day-to-day administration, organizes activities, and initiates policies and projects. Each individual department also has its own Departmental Students' Executive Council (DSEC).</>
+                    )}
+                  </li>
+                  <li className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                    <strong className="text-yellow-500 font-bold text-lg block mb-2">The Legislative Arm</strong>
+                    {siteContentMap.legislative_arm_text ? renderWithBold(siteContentMap.legislative_arm_text, isDarkMode) : (
+                      <>Headed by the <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Science Students' Representative Council (SSRC)</strong>, this body serves as a strict check and balance on the SSEC.</>
+                    )}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="digitalized" className="px-4 max-w-7xl mx-auto w-full">
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+              CORE PILLARS
+            </h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {(corePillarsData.length > 0 ? corePillarsData : [
+                { icon: '📚', title: "PDF Vault", desc: "Instant access to academic past questions & materials." },
+                { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." },
+                { icon: '🛍️', title: "Marketplace", desc: "Showcasing student-owned brands and campus businesses." }
+              ]).map((F, i) => (
+                <div key={i} className={`border p-5 md:p-6 rounded-2xl backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <div className="text-yellow-500 text-2xl md:text-3xl mb-4">{F.icon}</div>
+                  <h3 className={`text-xs font-bold uppercase mb-2 tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{F.title}</h3>
+                  <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{F.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="executives" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="flex items-end justify-between mb-8">
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                TOP EXECUTIVES
+              </h2>
+              <span className="text-[10px] text-yellow-500 underline cursor-pointer font-bold tracking-widest uppercase">View All</span>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {executivesData.map((ex, idx) => {
+                const borderClasses = "border-[3px] border-t-yellow-300 border-l-yellow-400 border-b-yellow-700 border-r-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.4)]";
+                
+                return (
+                  <div 
+                    key={ex.id} 
+                    onClick={() => setSelectedExecutive(ex)}
+                    className={`group relative rounded-3xl overflow-hidden transition-all cursor-pointer ${borderClasses} ${isDarkMode ? 'bg-white/5' : 'bg-white'} hover:scale-[1.02]`}
+                  >
+                    <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
+                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      <div className="absolute bottom-6 left-6 right-6 z-20">
+                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                          {ex.office}
+                        </div>
+                        <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
+                          {ex.nickname ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-3xl font-extrabold uppercase font-space-grotesk text-yellow-400">'{ex.nickname}'</span>
+                              <span className="text-base font-normal text-yellow-200">{ex.name}</span>
+                            </div>
+                          ) : (
+                            ex.name
+                          )}
+                        </h4>
+                        <div className="mt-3 flex items-center justify-between">
+                          <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
+                          <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
+                            Read More <ArrowRight size={10} />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section id="ssrc" className="px-4 max-w-7xl mx-auto w-full">
+            <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+              SCIENCE STUDENT REPRESENTATIVE COUNCIL<br />
+              <span className={`text-xl md:text-2xl block mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{'(36th Legislative Council)'}</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {ssrcMembersData.map((mem) => (
+                <div 
+                  key={mem.id} 
+                  className={`group relative rounded-3xl border overflow-hidden transition-all cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}
+                >
+                  <div className="aspect-[4/5] overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
+                    <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                    <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
+                      <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
+                        {mem.duty}
+                      </div>
+                      <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
+                      <p className="text-[11px] text-slate-300 uppercase tracking-widest font-semibold">{mem.department}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className={`mt-12 p-8 border rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
+              <div>
+                <h3 className={`font-space-grotesk text-xl font-bold mb-2 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  <span>Legislative Documents</span>
+                </h3>
+                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Download the official constitution and standing orders of NASS LASU directly to your device.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                <button 
+                  onClick={() => handleDownloadDocument('constitution')}
+                  disabled={downloadingDocType === 'constitution'}
+                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  <Download size={16} className={downloadingDocType === 'constitution' ? 'animate-bounce' : ''} />
+                  <span>{downloadingDocType === 'constitution' ? 'Downloading...' : 'NASS LASU CONSTITUTION'}</span>
+                </button>
+                <button 
+                  onClick={() => handleDownloadDocument('standing_orders')}
+                  disabled={downloadingDocType === 'standing_orders'}
+                  className="px-6 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-extrabold text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  <Download size={16} className={downloadingDocType === 'standing_orders' ? 'animate-bounce' : ''} />
+                  <span>{downloadingDocType === 'standing_orders' ? 'Downloading...' : 'NASS LASU STANDING ORDERS'}</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section id="departments" className="px-4 max-w-7xl mx-auto w-full">
+            <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
+              DEPARTMENTS
+            </h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { title: "A. Biological Science", items: ["Department of Biochemistry", "Department of Botany", "Department of Fisheries and Aquatic Biology", "Department of Microbiology", "Department of Science Laboratory Technology", "Department of Zoology and Environment Biology"] },
+                { title: "B. Chemical Science", items: ["Department of Chemistry"] },
+                { title: "C. Physical Science", items: ["Department of Physics", "Department of Mathematics"] }
+              ].map((branch, idx) => (
+                <div key={idx} className={`border rounded-3xl p-8 backdrop-blur-xl transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <h3 className="font-space-grotesk text-xl font-bold text-yellow-500 uppercase tracking-widest mb-6">{branch.title}</h3>
+                  <ul className="space-y-4">
+                    {branch.items.map((dept, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mt-2 shrink-0" />
+                        <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dept}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* EVENTS & GALLERY SECTION */}
+          <section id="events" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500 block mb-1">
+                  FACULTY ACTIVITIES & MEMORIES
+                </span>
+                <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                  EVENTS & GALLERIES
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => scrollEvents('left')}
+                  className={`p-3 rounded-full border transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-900'} hover:scale-105 active:scale-95 cursor-pointer`}
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={() => scrollEvents('right')}
+                  className={`p-3 rounded-full border transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-900'} hover:scale-105 active:scale-95 cursor-pointer`}
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div 
+              ref={eventsScrollRef} 
+              className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory"
+            >
+              {eventsData.map((ev) => (
+                <div
+                  key={ev.id}
+                  onClick={() => setSelectedEventGallery({ title: ev.title, images: ev.images })}
+                  className={`min-w-[300px] sm:min-w-[360px] md:min-w-[400px] snap-start group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between ${
+                    isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'
+                  }`}
+                >
+                  <div className="aspect-[16/10] overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
+                    <img 
+                      referrerPolicy="no-referrer" 
+                      src={ev.image || (ev.images && ev.images[0]) || undefined} 
+                      alt={ev.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                      loading="lazy" 
+                    />
+                    <div className="absolute top-4 right-4 z-20">
+                      <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
+                        {ev.images ? ev.images.length : 0} Photos
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500 mb-2 block">
+                      {ev.category || 'Faculty Event'}
+                    </span>
+                    <h3 className={`text-lg font-black tracking-tight uppercase line-clamp-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {ev.title}
+                    </h3>
+                    <div className="mt-4 flex items-center justify-between text-xs font-bold text-yellow-400">
+                      <span>Explore Gallery</span>
+                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
+            <div className="text-center mb-10">
+              <div className="text-yellow-500 text-4xl mb-4">📚</div>
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office Of The 36th Vice President (Dami PR)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
+                ACADEMIC VAULT
+              </h2>
+              <p className={`text-xs uppercase tracking-widest font-bold mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Secure access to past questions & syllabi</p>
+              
+              <div className="relative max-w-md mx-auto mb-6">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className={`h-5 w-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by department or year..."
+                  value={vaultSearchQuery}
+                  onChange={(e) => setVaultSearchQuery(e.target.value)}
+                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
+                />
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
+                {['All Levels', '100 Level', '200 Level', '300 Level', '400 Level'].map((level) => {
+                  const isActive = level === 'All Levels' ? vaultLevelFilter === null : vaultLevelFilter === level;
+                  return (
+                    <button
+                      key={level}
+                      onClick={() => setVaultLevelFilter(level === 'All Levels' ? null : level)}
+                      className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors border ${
+                        isActive 
+                          ? 'bg-yellow-400 text-slate-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
+                          : isDarkMode ? 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200' : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {lastViewedResources.length > 0 && !vaultSearchQuery && (
+              <div className="mb-8 space-y-3">
+                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
+                <div className={`border rounded-2xl p-4 space-y-2 backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+                  {lastViewedResources.map((item, index) => (
+                    <div 
+                      key={`recent-${item.id}-${index}`}
+                      className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
+                          <span className="text-yellow-500 text-sm">📄</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title || 'Past Questions'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] text-slate-400 font-mono">{item.year || ''} Session</span>
+                            {item.department && <span className="text-[9px] text-slate-500 font-mono hidden sm:inline-block truncate max-w-[150px]">{item.department}</span>}
+                            {(item.viewCount || 0) > 50 && (
+                              <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
+                                <Flame size={10} /> Trending
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                        View Material
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {[
+                'Department of Biochemistry',
+                'Department of Botany',
+                'Department of Fisheries and Aquatic Biology',
+                'Department of Microbiology',
+                'Department of Science Laboratory Technology',
+                'Department of Zoology and Environment Biology',
+                'Department of Chemistry',
+                'Department of Physics',
+                'Department of Mathematics'
+              ].map((dept, i) => {
+                const query = vaultSearchQuery.toLowerCase();
+                const deptMatches = dept.toLowerCase().includes(query);
+                
+                const deptItems = vaultItemsData.filter(item => item.department === dept);
+                
+                const levels = ['100 Level', '200 Level', '300 Level', '400 Level'];
+                const filteredLevels = vaultLevelFilter ? levels.filter(l => l === vaultLevelFilter) : levels;
+
+                const hasMatchingItems = deptItems.some(item => 
+                  filteredLevels.includes(item.level) && 
+                  (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query)))
+                );
+
+                if (query) {
+                  if (!hasMatchingItems && !deptMatches) return null;
+                }
+
+                return (
+                  <details key={i} className={`group border rounded-2xl overflow-hidden backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
+                      <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
+                      <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div className={`p-4 pt-0 border-t space-y-3 mt-4 ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
+                      {deptItems.length === 0 ? (
+                        <div className={`flex flex-col items-center justify-center py-10 text-center space-y-3 rounded-xl border ${isDarkMode ? 'bg-slate-900/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
+                            <BookOpen className="w-5 h-5 text-slate-500" />
+                          </div>
+                          <p className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No resources uploaded yet</p>
+                          <p className="text-slate-500 text-xs max-w-[250px] leading-relaxed">
+                            Check back later. The academic team is currently gathering materials for this department.
+                          </p>
+                        </div>
+                      ) : (
+                        filteredLevels.map(level => {
+                          const levelItems = deptItems.filter(item => item.level === level && (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query))));
+                          if (levelItems.length === 0) return null;
+
+                          return (
+                            <details key={level} className={`group/level rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border ${isDarkMode ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                              <summary className={`flex justify-between items-center p-4 cursor-pointer transition-colors group/summary ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
+                                <div className="flex items-center gap-3">
+                                  <span className={`font-semibold text-xs tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{level}</span>
+                                </div>
+                                <span className="text-yellow-500/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
+                              </summary>
+                              <div className={`p-4 pt-0 space-y-4 border-t mt-2 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
+                                {['First Semester', 'Second Semester'].map(semester => {
+                                  const semesterItems = levelItems.filter(item => item.semester === semester);
+                                  if (semesterItems.length === 0) return null;
+
+                                  return (
+                                    <div key={semester} className="space-y-2">
+                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
+                                      <div className="space-y-2">
+                                        {semesterItems.map((item, index) => (
+                                          <div 
+                                            key={item.id} 
+                                            className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
+                                                <span className="text-yellow-500 text-sm">📄</span>
+                                              </div>
+                                              <div className="flex flex-col">
+                                                <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{highlightText(item.title || 'Past Questions', vaultSearchQuery, isDarkMode)}</span>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery, isDarkMode)}</span>
+                                                  {(item.viewCount !== undefined) && (
+                                                    <span className="flex items-center gap-1 text-[9px] text-slate-500 font-mono" title={`${item.viewCount} views`}>
+                                                      <Eye size={10} /> {item.viewCount}
+                                                    </span>
+                                                  )}
+                                                  {(item.viewCount || 0) > 50 && (
+                                                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
+                                                      <Flame size={10} /> Trending
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                                              View Material
+                                            </a>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </details>
+                          );
+                        })
+                      )}
+                    </div>
+                  </details>
+                );
+              })}
+              
+              {vaultSearchQuery && [
+                'Department of Biochemistry',
+                'Department of Botany',
+                'Department of Fisheries and Aquatic Biology',
+                'Department of Microbiology',
+                'Department of Science Laboratory Technology',
+                'Department of Zoology and Environment Biology',
+                'Department of Chemistry',
+                'Department of Physics',
+                'Department of Mathematics'
+              ].every(dept => {
+                const query = vaultSearchQuery.toLowerCase();
+                const deptMatches = dept.toLowerCase().includes(query);
+                const years = [2021, 2022];
+                return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
+              }) && (
+                <div className={`text-center py-8 text-sm border rounded-2xl backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
+                  No past questions found matching "{vaultSearchQuery}"
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
+            <div className="text-center mb-10">
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                NASS LASU ONLINE MARKETPLACE
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                NASS LASU is committed to empowering student-owned businesses by providing visibility and promotional opportunities through the faculty website. By showcasing student brands, products, and services on this platform, we aim to increase their reach, enhance brand awareness, and drive sales. This initiative reflects our dedication to fostering innovation, entrepreneurship, and economic growth within the student community, ensuring that student entrepreneurs have the support they need to thrive.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {studentBrandsData.map((brand) => (
+                <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                  <div className="aspect-[4/3] overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
+                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                    <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
+                      {brand.productImageUrl && (
+                        <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/20 shrink-0 shadow-lg">
+                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
+                          {brand.category}
+                        </div>
+                        <h4 className="text-xl font-bold text-white tracking-tight">{brand.name}</h4>
+                        <p className="text-xs text-slate-200 font-medium">Owned by: <span className="text-yellow-400">{brand.owner}</span></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6 flex flex-col flex-1">
+                    <p className={`text-sm mb-4 leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{brand.description}</p>
+                    {brand.price && (
+                      <p className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Price: <span className="text-yellow-500 font-mono">{brand.price}</span></p>
+                    )}
+                    <div className="mt-auto space-y-3">
+                      {brand.website && (
+                        <a href={brand.website} target="_blank" rel="noopener noreferrer" className={`block w-full text-center py-2 border rounded-xl text-sm font-bold transition-colors ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'}`}>
+                          Visit Website
+                        </a>
+                      )}
+                      {brand.whatsappNumber && (
+                        <a href={`https://wa.me/${brand.whatsappNumber}?text=Hello%20${encodeURIComponent(brand.name || '')}%2C%20I%20saw%20your%20brand%20on%20the%20NASS%20LASU%20Online%20Marketplace%20and%20I%20would%20like%20to%20place%20an%20order.`} target="_blank" rel="noopener noreferrer" className="block w-full text-center py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded-xl text-sm font-bold transition-colors">
+                          Place an Order (WhatsApp)
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* MEET OUR PARTNERS SECTION */}
+          <section id="partners" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">🤝</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                MEET OUR PARTNERS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Strategic organizations, student initiatives, and ecosystem enablers collaborating with NASS-LASU toward scientific and career advancement.
+              </p>
+            </div>
+
+            {partnersData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Partners directory will be announced soon.
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {partnersData.map((partner) => (
+                  <div 
+                    key={partner.id} 
+                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+                    }`}
+                  >
+                    <div>
+                      {/* Big, Prominent Logo Showcase Banner */}
+                      <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
+                        isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="absolute inset-0 bg-radial from-yellow-400/10 to-transparent pointer-events-none" />
+                        <img 
+                          referrerPolicy="no-referrer" 
+                          src={partner.logoUrl || '/nass_logo.jpg'} 
+                          alt={partner.name} 
+                          className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500" 
+                          loading="lazy" 
+                        />
+                      </div>
+
+                      {/* Content Area */}
+                      <div className="p-6">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
+                          {partner.partnershipType || 'Official Partner'}
+                        </span>
+                        <h3 className={`text-2xl font-extrabold mb-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {partner.name}
+                        </h3>
+                        <p className={`text-xs leading-relaxed mb-5 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {partner.bio}
+                        </p>
+                        
+                        {partner.services && (
+                          <div className="mb-4">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                              Focus & Services
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {partner.services.split(',').map((srv: string, i: number) => (
+                                <span 
+                                  key={i} 
+                                  className="text-[11px] px-3 py-1 rounded-lg bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold"
+                                >
+                                  {srv.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Social / External Links Bar */}
+                    <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
+                      {partner.website && (
+                        <a 
+                          href={partner.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="p-2.5 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" 
+                          title="Website"
+                        >
+                          <Globe size={18} />
+                        </a>
+                      )}
+                      {partner.instagram && (
+                        <a 
+                          href={partner.instagram} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="Instagram"
+                        >
+                          IG
+                        </a>
+                      )}
+                      {partner.twitter && (
+                        <a 
+                          href={partner.twitter} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="X / Twitter"
+                        >
+                          X
+                        </a>
+                      )}
+                      {partner.linkedin && (
+                        <a 
+                          href={partner.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="LinkedIn"
+                        >
+                          IN
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* MEET OUR SPONSORS SECTION */}
+          <section id="sponsors" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                MEET OUR SPONSORS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Our generous corporate brands and benefactors powering student projects, faculty events, and educational drives across the faculty.
+              </p>
+            </div>
+
+            {sponsorsData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Sponsors will be updated soon.
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {sponsorsData.map((sponsor) => (
+                  <div 
+                    key={sponsor.id} 
+                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
+                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+                    }`}
+                  >
+                    <div>
+                      {/* Big, Prominent Logo Showcase Banner */}
+                      <div className={`w-full aspect-[16/9] p-6 flex items-center justify-center relative overflow-hidden border-b ${
+                        isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="absolute inset-0 bg-radial from-yellow-400/10 to-transparent pointer-events-none" />
+                        <img 
+                          referrerPolicy="no-referrer" 
+                          src={sponsor.logoUrl || '/nass_logo.jpg'} 
+                          alt={sponsor.name} 
+                          className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500" 
+                          loading="lazy" 
+                        />
+                      </div>
+
+                      {/* Content Area */}
+                      <div className="p-6">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500 mb-1.5 block">
+                          {sponsor.tier || 'Official Sponsor'}
+                        </span>
+                        <h3 className={`text-2xl font-extrabold mb-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {sponsor.name}
+                        </h3>
+                        <p className={`text-xs leading-relaxed mb-5 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {sponsor.bio}
+                        </p>
+                        
+                        {sponsor.products && (
+                          <div className="mb-4">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                              Highlighted Products & Student Offers
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {sponsor.products.split(',').map((prd: string, i: number) => (
+                                <span 
+                                  key={i} 
+                                  className="text-[11px] px-3 py-1 rounded-lg bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold"
+                                >
+                                  {prd.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Social / External Links Bar */}
+                    <div className={`p-6 pt-4 border-t flex items-center gap-3 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
+                      {sponsor.website && (
+                        <a 
+                          href={sponsor.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="p-2.5 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300" 
+                          title="Website"
+                        >
+                          <Globe size={18} />
+                        </a>
+                      )}
+                      {sponsor.instagram && (
+                        <a 
+                          href={sponsor.instagram} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="Instagram"
+                        >
+                          IG
+                        </a>
+                      )}
+                      {sponsor.twitter && (
+                        <a 
+                          href={sponsor.twitter} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="X / Twitter"
+                        >
+                          X
+                        </a>
+                      )}
+                      {sponsor.linkedin && (
+                        <a 
+                          href={sponsor.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="px-3 py-2 rounded-xl bg-white/5 hover:bg-yellow-400 hover:text-slate-900 transition-colors text-slate-300 text-xs font-bold" 
+                          title="LinkedIn"
+                        >
+                          IN
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* PARTNERSHIP & SPONSORSHIP CALL-TO-ACTION CARD */}
+            <div className={`mt-16 p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+              isDarkMode 
+                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.15)]' 
+                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
+            }`}>
+              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3.5 py-1 rounded-full inline-block">
+                  Collaborate With Us
+                </span>
+                
+                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Do you want to be part of our Partners / Sponsors?
+                </h3>
+                
+                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  Send a message to our official liaison desk or send an email to lock in your brand's presence on our digital platform and events.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                  {/* WhatsApp Direct Chat Button */}
+                  <a 
+                    href="https://wa.me/2348141693252?text=Hello%20NASS%20LASU%2C%20we%20are%20interested%20in%20becoming%20an%20official%20Partner%20%2F%20Sponsor%20with%20the%20association." 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Chat on WhatsApp (+234 814 169 3252)</span>
+                  </a>
+
+                  {/* Email Direct Link Button */}
+                  <a 
+                    href="mailto:nasslasu@gmail.com?subject=Partnership%20%2F%20Sponsorship%20Inquiry%20-%20NASS%20LASU" 
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-extrabold uppercase tracking-widest transition-all border hover:scale-105 active:scale-95 cursor-pointer ${
+                      isDarkMode 
+                        ? 'bg-white/10 hover:bg-white/20 text-white border-white/20' 
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                    }`}
+                  >
+                    <MessageSquare size={18} className="text-yellow-500" />
+                    <span>Send an Email (nasslasu@gmail.com)</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* FACULTY HOTLINE & EMERGENCY SECTION WITH WHATSAPP CHAT BUTTON */}
+          <section id="hotline" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-4">
+            <div className="text-center">
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office of The 36th Welfare Director (Comrade Awe Oba)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
+            </div>
+            <EmergencyHotline />
+            <div className={`mt-6 p-6 rounded-3xl border text-center backdrop-blur-xl shadow-lg max-w-3xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+              <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                For quick responses, chat with us on WhatsApp or call any of the numbers displayed above.
+              </p>
+              <a 
+                href="https://wa.me/2347074351819?text=Hello%20NASS%20LASU%20Welfare%20Office%2C%20I%20am%20reaching%20out%20from%20the%20website." 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <MessageCircle size={18} />
+                <span>Chat via WhatsApp (+234 707 435 1819)</span>
+              </a>
+            </div>
+          </section>
+
+          {/* NASS LASU SPORTS SECTION (COMES DIRECTLY AFTER HOTLINES) */}
+          <section id="sports" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <div className="text-center mb-10">
+              <div className="text-yellow-500 text-4xl mb-4">🏆</div>
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office of The 36th Sport Director (Comrade Wolex)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
+
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-4`}>
+                NASS LASU SPORTS
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                Sports at Lagos State University are more than just games—they form the backbone of unity, mental wellness, and discipline across the Faculty of Science. Engaging in competitive and intramural athletics builds teamwork, sharpens cognitive focus away from academic pressure, and showcases talent for university and national stages.
+              </p>
+            </div>
+
+            {/* Popular LASU Sports Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {[
+                {
+                  icon: '⚽',
+                  title: 'Football (Soccer)',
+                  desc: 'The heartbeat of campus sports—from the Dean’s Cup and Science Inter-Departmental derbies to the VC Cup.'
+                },
+                {
+                  icon: '🏀',
+                  title: 'Basketball',
+                  desc: 'Fast-paced matches at the LASU outdoor courts, drawing intense rivalry between faculty teams.'
+                },
+                {
+                  icon: '🏃‍♂️',
+                  title: 'Track & Field',
+                  desc: '100m–400m sprints, relays, and long-distance athletics that produce regional and university-wide champions.'
+                },
+                {
+                  icon: '🏓',
+                  title: 'Indoor Games',
+                  desc: 'Table Tennis, Chess, Scrabble, and Badminton testing strategic agility and tactical precision.'
+                }
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+                    isDarkMode
+                      ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_10px_25px_rgba(250,204,21,0.1)]'
+                      : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
+                  }`}
+                >
+                  <div className="text-3xl mb-3">{item.icon}</div>
+                  <h4 className={`text-base font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title}</h4>
+                  <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* WhatsApp Community Call-To-Action Card */}
+            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+              isDarkMode 
+                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
+                : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
+            }`}>
+              <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3 py-1 rounded-full inline-block">
+                  Join The Squad
+                </span>
+                
+                <h3 className={`font-space-grotesk text-2xl md:text-3xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Join the NASS LASU Sports Community
+                </h3>
+                
+                <p className={`text-xs md:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  Stay updated on training schedules, trials for the Faculty of Science teams, Dean's Cup fixtures, and intramural matches. Connect with fellow student-athletes and fans across all departments.
+                </p>
+
+                <div className="pt-3">
+                  <a 
+                    href="https://chat.whatsapp.com/GCIUzdrLVXI9QKeuWuQlHb?s=cl&p=a&mlu=4&ilr=4" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Join NASS LASU Sports WhatsApp Group</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* EDITABLE SECRETARIAT SECTION */}
+          <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
+            <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Optional dynamic picture editable via Admin Panel (renders only if uploaded) */}
+              {siteContentMap.secretariat_image_url && (
+                <div className="relative z-10 w-full flex justify-center items-center">
+                  <div className="max-w-md w-full aspect-video rounded-2xl overflow-hidden border border-yellow-400/30 shadow-xl">
+                    <img 
+                      src={siteContentMap.secretariat_image_url} 
+                      alt="Secretariat" 
+                      className="w-full h-full object-cover" 
+                      loading="lazy" 
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
+                <h2 className={`font-space-grotesk text-3xl md:text-5xl font-black mb-2 flex items-center justify-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  <span className="text-yellow-500 text-4xl">🏛️</span> {siteContentMap.secretariat_title || 'The Secretariat'}
+                </h2>
+                <p className="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-6">
+                  {siteContentMap.secretariat_subtitle || 'Faculty of Science'}
+                </p>
+                
+                <div className={`space-y-6 leading-relaxed text-sm md:text-base ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <p>
+                    {siteContentMap.secretariat_description_1 || "The Secretariat is the administrative backbone of the Faculty of Science Students' Association, serving as the custodian of the Association's records, official documents, and institutional memory. It is responsible for managing official correspondence, maintaining accurate records, documenting proceedings, and ensuring the continuity of the Association's activities."}
+                  </p>
+                  <p>
+                    {siteContentMap.secretariat_description_2 || "As the backbone of innovation within the Faculty, the Secretariat is committed to driving digital transformation, improving communication, and implementing technology-driven systems that promote efficiency, transparency, and better service delivery for every science student."}
+                  </p>
+                  
+                  <div className={`mt-8 p-6 rounded-2xl border text-left w-full mx-auto max-w-2xl ${isDarkMode ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                    <p className="text-yellow-500 font-bold mb-4 text-center sm:text-left">For all official correspondence, inquiries, requests, or submissions to the Association, kindly contact:</p>
+                    
+                    <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-6 mb-6">
+                      <a href={`tel:${siteContentMap.secretariat_phone || '+2348141693252'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
+                          <PhoneCall size={18} />
+                        </div>
+                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_phone || '+234 814 169 3252'}</span>
+                      </a>
+                      
+                      <a href={`mailto:${siteContentMap.secretariat_email || 'nasslasu@gmail.com'}`} className={`flex items-center gap-3 transition-colors group/link w-fit ${isDarkMode ? 'text-white hover:text-yellow-400' : 'text-slate-900 hover:text-yellow-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/10 group-hover/link:bg-yellow-400/20 group-hover/link:text-yellow-400' : 'bg-slate-200 group-hover/link:bg-yellow-500/20 group-hover/link:text-yellow-600'}`}>
+                          <MessageSquare size={18} />
+                        </div>
+                        <span className="font-bold tracking-wider">{siteContentMap.secretariat_email || 'nasslasu@gmail.com'}</span>
+                      </a>
+                    </div>
+
+                    {/* WhatsApp Direct Chat Button */}
+                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-center sm:justify-start">
+                      <a 
+                        href={`https://wa.me/${(siteContentMap.secretariat_phone || '2348141693252').replace(/[^0-9]/g, '')}?text=Hello%20Secretariat%2C%20I%20am%20reaching%20out%20from%20the%20NASS%20LASU%20website.`}
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        <MessageCircle size={16} />
+                        <span>Chat on WhatsApp ({siteContentMap.secretariat_phone || '+234 814 169 3252'})</span>
+                      </a>
+                    </div>
+                    
+                    <div className={`pt-6 border-t text-center sm:text-left mt-4 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+                      <p className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{siteContentMap.secretariat_signatory_name || 'Comr. Onovwiome Honourable Onome'}</p>
+                      <p className="text-yellow-500 text-sm font-semibold tracking-widest uppercase mt-1">{siteContentMap.secretariat_signatory_title || '36th NASS LASU General Secretary'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
+            </div>
+
+            {/* BE A PART OF THE DIGITALIZED AND INNOVATIVE SECRETARIAT CALL-TO-ACTION CARD */}
+            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+              isDarkMode 
+                ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/95 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.18)]' 
+                : 'bg-gradient-to-b from-yellow-50 via-white to-white border-yellow-500/50 shadow-xl'
+            }`}>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 max-w-3xl mx-auto space-y-5">
+                {/* Pill Tagline with Crystalline Sheen */}
+                <div className="relative inline-flex items-center justify-center group">
+                  <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
+                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
+                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                    <Users size={14} className="text-yellow-400" />
+                    <span className="font-mono tracking-[0.25em] text-[10px] sm:text-xs font-black uppercase text-yellow-300">
+                      Join The Innovation Network
+                    </span>
+                  </div>
+                </div>
+
+                <h3 className={`font-space-grotesk text-2xl md:text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Be A Part Of The Digitalized And Innovative Secretariat
+                </h3>
+
+                <p className={`text-xs md:text-sm leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Great leadership is built by active students working together. By joining our official community, you gain direct access to our initiatives, contribute your ideas to faculty development, collaborate on digital innovation projects, and stay informed on key student affairs before anyone else. Step forward and help build a stronger, forward-thinking Faculty of Science.
+                </p>
+
+                <p className="text-[11px] font-bold uppercase tracking-widest text-yellow-500">
+                  Join the group below
+                </p>
+
+                <div className="pt-2">
+                  <a 
+                    href="https://chat.whatsapp.com/LC45W4oPBq15tnbYeoxM1I?s=cl&p=a&mlu=4&ilr=4" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 bg-green-600 hover:bg-green-500 text-white font-black rounded-full text-xs sm:text-sm uppercase tracking-widest transition-all shadow-[0_0_25px_rgba(34,197,94,0.45)] hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <MessageCircle size={20} />
+                    <span>Join Secretariat WhatsApp Group</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ADMIN PANEL WITH INLINE SECRETARIAT LIVE EDITOR */}
+          <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <AdminGate>
+              <div className="space-y-8">
+                <AdminPanel />
+                <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
+              </div>
+            </AdminGate>
+          </section>
+
+          <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
+            <SecretariatFeedback />
+            
+            {/* WhatsApp Button under Secretariat Feedback */}
+            <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                For quick responses, send a message using the button below.
+              </p>
+              <a 
+                href="https://wa.me/2348141693252?text=Hello%20Secretariat%2C%20I%20have%20an%20urgent%20inquiry%20from%20the%20feedback%20portal." 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-extrabold uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <MessageCircle size={18} />
+                <span>Quick Chat on WhatsApp</span>
+              </a>
+            </div>
+            
+            {/* BOTTOM ROYAL MIDNIGHT NAVY & GOLD EXECUTIVE SEAL */}
+            <div className="w-full flex justify-center px-4 mt-16 mb-4">
+              <div className="relative inline-flex items-center justify-center">
+                <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
+                <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white border-y border-x-2 border-yellow-400/70 px-5 sm:px-8 py-1.5 sm:py-2 rounded-full shadow-[0_0_25px_rgba(30,58,138,0.5)] flex items-center gap-2.5 transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-yellow-400 text-xs">🏛️</span>
+                  <span className="text-[11px] sm:text-xs md:text-sm font-extrabold uppercase tracking-[0.25em] font-space-grotesk text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    ABIODUN LED ADMINISTRATION
+                  </span>
+                  <span className="text-yellow-400 text-xs">🏛️</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+              <div className="flex gap-6 mb-2">
+                <a href="#" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
+                <a href="#" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
+                <a href="#" className="hover:text-yellow-500 transition-colors">Instagram</a>
+              </div>
+              <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
+              
+              {/* GLASSMORPHIC CRYSTALLINE RAY FOOTER BADGE WITH PEN ICON */}
+              <div className="relative inline-flex items-center justify-center mt-3 group">
+                <div className="absolute -inset-1 bg-yellow-400/15 rounded-full blur-lg -z-10 group-hover:bg-yellow-400/25 transition-all duration-500" />
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/85 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2.5">
+                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
+                  <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+                    <PenTool size={13} className="text-yellow-400" />
+                  </div>
+
+                  <span className="text-yellow-400 font-bold tracking-wider text-[10px] sm:text-xs uppercase drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]">
+                    Initiated by the Office of the General Secretary, Comr. Onovwiome Honourable.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </main>
+      </div>
+
+      {/* Sticky Bottom Persistent Marquee */}
+      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
+        <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 shrink-0">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shrink-0" />
+              <span>{activeMarqueeText}</span>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <Chatbot />
+
+      <AnimatePresence>
+        {isRsvpOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className={`border rounded-3xl p-6 md:p-8 max-w-md w-full relative shadow-2xl ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+            >
+              <button
+                onClick={() => setIsRsvpOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="text-yellow-500 text-3xl mb-4">🎟️</div>
+              <h3 className="text-2xl font-bold mb-2">RSVP for Events</h3>
+              <p className="text-slate-400 text-sm mb-6">Register your attendance for upcoming faculty events. An email confirmation will be sent to you.</p>
+              
+              <form className="space-y-4" onSubmit={(e) => { 
+                e.preventDefault(); 
+                setIsRsvpOpen(false); 
+                addToast('RSVP submitted successfully! Check your email for confirmation.', 'success');
+              }}>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Select Event</label>
+                  <select className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 appearance-none ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
+                    <option value="science-week" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Science Week 2024</option>
+                    <option value="inauguration" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Inauguration Event</option>
+                    <option value="tech-fair" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Tech Fair & Exhibition</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Full Name</label>
+                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. John Doe" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Matric Number</label>
+                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. 18/555... " />
+                </div>
+                
+                <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest py-4 rounded-xl transition-colors mt-4 text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] cursor-pointer">
+                  Confirm Attendance
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="fixed bottom-14 left-6 z-50 flex flex-col items-start gap-4">
+        <AnimatePresence>
+          {isQuickActionsOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-3"
+            >
+              <button 
+                onClick={() => {
+                  document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Eye size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Events & Galleries</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('hotline')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Siren size={18} className="text-slate-900 animate-pulse" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Emergency Hotline</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('sports')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Trophy size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Sports Directorate</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('brands')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <ShoppingBag size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Online Marketplace</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('vault')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <BookOpen size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Academic Vault</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Sparkles size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Story</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Navigation size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Faculty Map</span>
+              </button>
+              <button 
+                onClick={() => {
+                  document.getElementById('feedback')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <MessageSquare size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Feedback Form</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+          className="p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50 cursor-pointer"
+          aria-label="Quick Actions"
+        >
+          {isQuickActionsOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {selectedExecutive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedExecutive(null)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+            >
+              <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
+                <div className="relative aspect-[3/2] w-full shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
+                  <img 
+                    src={selectedExecutive.imageUrl || undefined} 
+                    alt={selectedExecutive.name} 
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <button
+                    onClick={() => setSelectedExecutive(null)}
+                    className="absolute top-4 right-4 z-20 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors cursor-pointer"
+                  >
+                    <X size={20} />
+                  </button>
+                  <div className="absolute bottom-4 left-6 right-6 z-20">
+                    <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
+                      {selectedExecutive.office}
+                    </div>
+                    <h3 className="text-2xl font-bold text-yellow-400 tracking-tight">
+                      {selectedExecutive.name}
+                    </h3>
+                    {selectedExecutive.nickname && (
+                      <p className="text-yellow-400 font-space-grotesk font-bold uppercase mt-1">'{selectedExecutive.nickname}'</p>
+                    )}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-500 font-semibold uppercase tracking-widest">
+                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                    {selectedExecutive.department}
+                  </div>
+                  <div className={`leading-relaxed text-sm p-4 rounded-xl border whitespace-pre-wrap ${isDarkMode ? 'text-yellow-100 bg-white/5 border-white/5' : 'text-slate-700 bg-slate-50 border-slate-200'}`}>
+                    {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary, isDarkMode) : "No profile summary available."}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
+          aria-label="Back to top"
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
+
+      {selectedEventGallery && (
+        <PageantGallery
+          title={selectedEventGallery.title}
+          images={selectedEventGallery.images}
+          onClose={() => setSelectedEventGallery(null)}
+        />
+      )}
+      
+      <style>{`
+        html {
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: none;
+          touch-action: pan-y;
+        }
+        body {
+          -webkit-overflow-scrolling: touch;
+          overflow-x: hidden;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+        }
+        .backdrop-blur-xl,
+        .backdrop-blur-2xl,
+        .backdrop-blur-md {
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          will-change: transform;
+        }
+        .font-space-grotesk { font-family: 'Space Grotesk', system-ui, sans-serif; }
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes shine {
+          0% { transform: translateX(-100%); }
+          50%, 100% { transform: translateX(200%); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(250, 204, 21, 0.3);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(250, 200, 21, 0.5);
+        }
+      `}</style>
+    </div>
+  );
 }
