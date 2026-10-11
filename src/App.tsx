@@ -132,7 +132,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
     } catch (err: any) {
       console.error(err);
       addToast('Failed to update Secretariat content: ' + err.message, 'error');
-    } fontally {
+    } finally {
       setSaving(false);
     }
   };
