@@ -1,3 +1,9 @@
+Here is the updated React code incorporating both requested additions:
+
+1. **Animated SWIPE RIGHT Badge**: Added a floating, animated badge with a sliding arrow (`motion.div`) in the **Events & Galleries** section header to guide users to swipe/scroll through the event cards.
+2. **Direct Logo/Image Upload for Secretariat**: Updated the `SecretariatInlineEditor` component to include a file input (`<input type="file" accept="image/*" />`) that converts selected image files directly into Base64 Data URLs and updates state for immediate Firestore synchronization.
+
+```tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll } from 'motion/react';
 import { BackgroundEngine } from './components/BackgroundEngine';
@@ -8,7 +14,7 @@ import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -99,6 +105,22 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        addToast('Image file size should be less than 2MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, secretariat_image_url: reader.result as string }));
+        addToast('Logo/Image uploaded successfully as preview!', 'info');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -194,16 +216,28 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Image URL (Optional - leave blank for text only)</label>
-                  <input
-                    type="text"
-                    name="secretariat_image_url"
-                    placeholder="https://... image link"
-                    value={formData.secretariat_image_url}
-                    onChange={handleChange}
-                    className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
-                  />
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Banner Logo/Image</label>
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <input
+                      type="text"
+                      name="secretariat_image_url"
+                      placeholder="https://... image link or upload file below"
+                      value={formData.secretariat_image_url}
+                      onChange={handleChange}
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                    <label className="w-full sm:w-auto shrink-0 px-4 py-2 bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-colors rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
+                      <Upload size={14} />
+                      <span>Upload Logo</span>
+                      <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                    </label>
+                  </div>
+                  {formData.secretariat_image_url && (
+                    <div className="mt-2 w-20 h-20 rounded-xl overflow-hidden border border-yellow-400/30">
+                      <img src={formData.secretariat_image_url} alt="Secretariat preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -1215,9 +1249,22 @@ export default function App() {
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500 block mb-1">
                   FACULTY ACTIVITIES & MEMORIES
                 </span>
-                <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                  EVENTS & GALLERIES
-                </h2>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                    EVENTS & GALLERIES
+                  </h2>
+                  
+                  {/* ANIMATED SWIPE RIGHT BADGE */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40 text-yellow-400 text-[10px] font-extrabold uppercase tracking-widest shadow-md">
+                    <span>Swipe Right</span>
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                    >
+                      <ArrowRight size={12} />
+                    </motion.div>
+                  </div>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -2482,3 +2529,5 @@ export default function App() {
     </div>
   );
 }
+
+```
