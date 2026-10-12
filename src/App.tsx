@@ -133,7 +133,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
     } catch (err: any) {
       console.error('Error uploading image to storage:', err);
       addToast('Failed to upload image: ' + err.message, 'error');
-    } fontally {
+    } finally {
       setUploadingImage(false);
     }
   };
