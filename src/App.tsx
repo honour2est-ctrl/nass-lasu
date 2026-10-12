@@ -8,7 +8,7 @@ import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone } from 'lucide-react';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll, uploadBytes } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
@@ -133,7 +133,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
     } catch (err: any) {
       console.error('Error uploading image to storage:', err);
       addToast('Failed to upload image: ' + err.message, 'error');
-    } finally {
+    } fontally {
       setUploadingImage(false);
     }
   };
@@ -699,6 +699,13 @@ export default function App() {
                 <span className="hidden lg:inline">Excos</span>
               </a>
               <a 
+                href="#hall-of-fame" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Crown size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Hall of Fame</span>
+              </a>
+              <a 
                 href="#vault" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -732,13 +739,6 @@ export default function App() {
               >
                 <Eye size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Events</span>
-              </a>
-              <a 
-                href="#map" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Navigation size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Map</span>
               </a>
               <a 
                 href="#hotline" 
@@ -1150,6 +1150,77 @@ export default function App() {
                 );
               })}
             </div>
+          </section>
+
+          {/* HALL OF FAME SECTION */}
+          <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full">
+            <div className="text-center mb-12">
+              <div className="text-yellow-500 text-4xl mb-4">👑</div>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                HALL OF FAME
+              </h2>
+              <p className={`text-sm md:text-base leading-relaxed max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Celebrating distinguished past leaders, academic achievers, and iconic figures who have left an indelible legacy in the Faculty of Science.
+              </p>
+            </div>
+
+            {hallOfFameData.length === 0 ? (
+              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                Hall of Fame records are being updated. Check back soon!
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {hallOfFameData.map((inductee) => (
+                  <div
+                    key={inductee.id}
+                    className={`group relative rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                      isDarkMode
+                        ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
+                        : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
+                    }`}
+                  >
+                    <div>
+                      <div className="aspect-[4/5] overflow-hidden relative">
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
+                        <img
+                          referrerPolicy="no-referrer"
+                          src={inductee.imageUrl || inductee.image || '/nass_logo.jpg'}
+                          alt={inductee.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-4 right-4 z-20">
+                          <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
+                            {inductee.year || inductee.session || 'Honoree'}
+                          </span>
+                        </div>
+                        <div className="absolute bottom-6 left-6 right-6 z-20">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500 mb-1 block">
+                            {inductee.title || inductee.award || inductee.office || 'NASS LASU Legend'}
+                          </span>
+                          <h3 className="text-2xl font-black text-white tracking-tight">
+                            {inductee.name}
+                          </h3>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        {inductee.department && (
+                          <p className="text-xs font-bold text-yellow-400 uppercase tracking-widest mb-3">
+                            {inductee.department}
+                          </p>
+                        )}
+                        {inductee.bio || inductee.description ? (
+                          <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {inductee.bio || inductee.description}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section id="ssrc" className="px-4 max-w-7xl mx-auto w-full">
@@ -2310,6 +2381,18 @@ export default function App() {
             >
               <button 
                 onClick={() => {
+                  document.getElementById('hall-of-fame')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Crown size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Hall of Fame</span>
+              </button>
+              <button 
+                onClick={() => {
                   document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
                   setIsQuickActionsOpen(false);
                 }}
@@ -2391,18 +2474,6 @@ export default function App() {
                   <Sparkles size={18} className="text-slate-900" />
                 </div>
                 <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Story</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <Navigation size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Faculty Map</span>
               </button>
               <button 
                 onClick={() => {
