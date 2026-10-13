@@ -1043,13 +1043,6 @@ export default function App() {
                 <span className="hidden lg:inline">WebApp Story</span>
               </a>
               <a 
-                href="#landmarks" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Building2 size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Landmarks</span>
-              </a>
-              <a 
                 href="#executives" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -1118,6 +1111,13 @@ export default function App() {
               >
                 <Megaphone size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">News Flash</span>
+              </a>
+              <a 
+                href="#landmarks" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Building2 size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Landmarks</span>
               </a>
 
               {/* Theme Toggle Button */}
@@ -1190,13 +1190,6 @@ export default function App() {
                   <span>The WebApp Vision</span>
                 </a>
                 <a 
-                  href="#landmarks" 
-                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
-                >
-                  <Building2 size={16} />
-                  <span>Landmarks</span>
-                </a>
-                <a 
                   href="#vault" 
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
@@ -1210,132 +1203,14 @@ export default function App() {
                   <Megaphone size={16} />
                   <span>News Flash</span>
                 </a>
+                <a 
+                  href="#landmarks" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <Building2 size={16} />
+                  <span>Landmarks</span>
+                </a>
               </div>
-            </div>
-          </section>
-
-          {/* DEDICATED LANDMARK SHOWCASE SECTION */}
-          <section id="landmarks" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <div className="text-center mb-12 space-y-3">
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
-                FACULTY INFRASTRUCTURE & LEGACY
-              </span>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                FACULTY LANDMARKS
-              </h2>
-              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Celebrating key historical student projects, infrastructure builds, and iconic relaxation grounds across the Faculty of Science.
-              </p>
-            </div>
-
-            <div className="grid gap-12">
-              {landmarksData.filter(lm => lm.published !== false).map((landmark) => {
-                const landmarkImages = landmark.images && Array.isArray(landmark.images) && landmark.images.length > 0 
-                  ? landmark.images 
-                  : (landmark.coverImage ? [landmark.coverImage] : []);
-
-                return (
-                  <div
-                    key={landmark.id}
-                    className={`rounded-3xl border overflow-hidden backdrop-blur-xl shadow-2xl transition-all ${
-                      isDarkMode 
-                        ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
-                        : 'bg-white border-slate-200 shadow-xl'
-                    }`}
-                  >
-                    <div className="grid lg:grid-cols-12 gap-0">
-                      {/* Left: Interactive Image Gallery */}
-                      <div className="lg:col-span-7 relative min-h-[320px] sm:min-h-[400px] bg-slate-950 flex flex-col justify-between overflow-hidden group">
-                        <img
-                          referrerPolicy="no-referrer"
-                          src={landmark.coverImage || landmarkImages[0] || '/nass_logo.jpg'}
-                          alt={landmark.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
-
-                        {/* Top Badge Overlay */}
-                        <div className="relative z-20 p-6 flex flex-wrap gap-2 items-center justify-between">
-                          <span className="px-4 py-1.5 rounded-full bg-yellow-400/90 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg backdrop-blur-md flex items-center gap-1.5">
-                            <Users size={14} />
-                            <span>{landmark.capacityBadge || '100-Seat Capacity'}</span>
-                          </span>
-                          
-                          {landmarkImages.length > 1 && (
-                            <button
-                              onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
-                              className="px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white font-extrabold text-[11px] uppercase tracking-wider backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <ImageIcon size={14} />
-                              <span>View Gallery ({landmarkImages.length})</span>
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Bottom Thumbnail Strip */}
-                        {landmarkImages.length > 1 && (
-                          <div className="relative z-20 p-6 pt-0 flex gap-3 overflow-x-auto no-scrollbar">
-                            {landmarkImages.map((imgUrl: string, idx: number) => (
-                              <button
-                                key={idx}
-                                onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
-                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-yellow-400/60 shadow-lg shrink-0 hover:scale-105 transition-transform cursor-pointer"
-                              >
-                                <img src={imgUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right: Content & Historical Attribution */}
-                      <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between space-y-6">
-                        <div className="space-y-4">
-                          <div className="inline-flex items-center gap-2 text-yellow-500 font-bold text-xs uppercase tracking-widest">
-                            <Building2 size={16} />
-                            <span>Official Science Landmark</span>
-                          </div>
-
-                          <h3 className={`font-space-grotesk text-2xl sm:text-3xl font-black uppercase tracking-tight leading-snug ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                            {landmark.title}
-                          </h3>
-
-                          <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                            {landmark.description}
-                          </p>
-
-                          <div className={`p-5 rounded-2xl border ${isDarkMode ? 'bg-yellow-400/10 border-yellow-400/30 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-slate-800'}`}>
-                            <p className="text-[11px] font-mono uppercase tracking-wider font-extrabold text-yellow-500 mb-1">
-                              HISTORICAL ATTRIBUTION & TENURE
-                            </p>
-                            <p className="text-xs font-bold leading-relaxed">
-                              {landmark.attribution || "Facilitated & Built under the tenure of Comr. Ajayi Aishat (35th NASS LASU President) & Rt. Hon. Ajibola Lala (Steppa Szn)"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                            <MapPin size={14} className="text-yellow-400" />
-                            <span>Faculty of Science Grounds</span>
-                          </div>
-                          
-                          {landmarkImages.length > 0 && (
-                            <button
-                              onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
-                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 cursor-pointer"
-                            >
-                              <span>Explore Landmark</span>
-                              <ArrowRight size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </section>
 
@@ -2563,7 +2438,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* NEWS FLASH SECTION (MOVED TO BOTTOM) */}
+          {/* NEWS FLASH SECTION */}
           <section id="news" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <div className="text-center mb-8 space-y-2">
               <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
@@ -2731,7 +2606,132 @@ export default function App() {
             </AdminGate>
           </section>
 
-          {/* FEEDBACK SECTION */}
+          {/* DEDICATED LANDMARK SHOWCASE SECTION (POSITIONED AS SECOND-TO-LAST SECTION) */}
+          <section id="landmarks" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <div className="text-center mb-12 space-y-3">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                FACULTY INFRASTRUCTURE & LEGACY
+              </span>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                FACULTY LANDMARKS
+              </h2>
+              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Celebrating key historical student projects, infrastructure builds, and iconic relaxation grounds across the Faculty of Science.
+              </p>
+            </div>
+
+            <div className="grid gap-12">
+              {landmarksData.filter(lm => lm.published !== false).map((landmark) => {
+                const landmarkImages = landmark.images && Array.isArray(landmark.images) && landmark.images.length > 0 
+                  ? landmark.images 
+                  : (landmark.coverImage ? [landmark.coverImage] : []);
+
+                return (
+                  <div
+                    key={landmark.id}
+                    className={`rounded-3xl border overflow-hidden backdrop-blur-xl shadow-2xl transition-all ${
+                      isDarkMode 
+                        ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
+                        : 'bg-white border-slate-200 shadow-xl'
+                    }`}
+                  >
+                    <div className="grid lg:grid-cols-12 gap-0">
+                      {/* Left: Interactive Image Gallery */}
+                      <div className="lg:col-span-7 relative min-h-[320px] sm:min-h-[400px] bg-slate-950 flex flex-col justify-between overflow-hidden group">
+                        <img
+                          referrerPolicy="no-referrer"
+                          src={landmark.coverImage || landmarkImages[0] || '/nass_logo.jpg'}
+                          alt={landmark.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
+
+                        {/* Top Badge Overlay */}
+                        <div className="relative z-20 p-6 flex flex-wrap gap-2 items-center justify-between">
+                          <span className="px-4 py-1.5 rounded-full bg-yellow-400/90 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg backdrop-blur-md flex items-center gap-1.5">
+                            <Users size={14} />
+                            <span>{landmark.capacityBadge || '100-Seat Capacity'}</span>
+                          </span>
+                          
+                          {landmarkImages.length > 1 && (
+                            <button
+                              onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
+                              className="px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white font-extrabold text-[11px] uppercase tracking-wider backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <ImageIcon size={14} />
+                              <span>View Gallery ({landmarkImages.length})</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Bottom Thumbnail Strip */}
+                        {landmarkImages.length > 1 && (
+                          <div className="relative z-20 p-6 pt-0 flex gap-3 overflow-x-auto no-scrollbar">
+                            {landmarkImages.map((imgUrl: string, idx: number) => (
+                              <button
+                                key={idx}
+                                onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-yellow-400/60 shadow-lg shrink-0 hover:scale-105 transition-transform cursor-pointer"
+                              >
+                                <img src={imgUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Content & Historical Attribution */}
+                      <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between space-y-6">
+                        <div className="space-y-4">
+                          <div className="inline-flex items-center gap-2 text-yellow-500 font-bold text-xs uppercase tracking-widest">
+                            <Building2 size={16} />
+                            <span>Official Science Landmark</span>
+                          </div>
+
+                          <h3 className={`font-space-grotesk text-2xl sm:text-3xl font-black uppercase tracking-tight leading-snug ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                            {landmark.title}
+                          </h3>
+
+                          <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {landmark.description}
+                          </p>
+
+                          <div className={`p-5 rounded-2xl border ${isDarkMode ? 'bg-yellow-400/10 border-yellow-400/30 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-slate-800'}`}>
+                            <p className="text-[11px] font-mono uppercase tracking-wider font-extrabold text-yellow-500 mb-1">
+                              HISTORICAL ATTRIBUTION & TENURE
+                            </p>
+                            <p className="text-xs font-bold leading-relaxed">
+                              {landmark.attribution || "Facilitated & Built under the tenure of Comr. Ajayi Aishat (35th NASS LASU President) & Rt. Hon. Ajibola Lala (Steppa Szn)"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                            <MapPin size={14} className="text-yellow-400" />
+                            <span>Faculty of Science Grounds</span>
+                          </div>
+                          
+                          {landmarkImages.length > 0 && (
+                            <button
+                              onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
+                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+                            >
+                              <span>Explore Landmark</span>
+                              <ArrowRight size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* FEEDBACK SECTION (LAST SECTION BEFORE FOOTER) */}
           <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
             <SecretariatFeedback />
             
