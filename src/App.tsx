@@ -8,8 +8,8 @@ import { SecretariatFeedback } from './components/SecretariatFeedback';
 import { AdminPanel } from './components/AdminPanel';
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
-import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown } from 'lucide-react';
-import { collection, onSnapshot, doc, updateDoc, increment, setDoc } from 'firebase/firestore';
+import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown, Building2, Plus, Trash2, Edit3, CheckCircle, Image as ImageIcon } from 'lucide-react';
+import { collection, onSnapshot, doc, updateDoc, increment, setDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll, uploadBytes } from 'firebase/storage';
 import { db, storage } from './lib/firebase';
 import { useToast } from './components/Toast';
@@ -62,6 +62,24 @@ const INITIAL_EVENTS_DATA = [
     category: "Science Vs Food",
     image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
     images: ["/science-vs-food/svf-1.jpg","/science-vs-food/svf-10.jpg","/science-vs-food/svf-11.jpg","/science-vs-food/svf-2.jpg","/science-vs-food/svf-3.jpg","/science-vs-food/svf-4.jpg","/science-vs-food/svf-5.jpg","/science-vs-food/svf-6.jpg","/science-vs-food/svf-7.jpg","/science-vs-food/svf-8.jpg","/science-vs-food/svf-9.jpg"]
+  }
+];
+
+const INITIAL_LANDMARKS_DATA = [
+  {
+    id: 'relaxation-center',
+    title: "Faculty of Science Relaxation Center",
+    capacityBadge: "100-Seat Capacity",
+    attribution: "Facilitated & Built under the tenure of Comr. Ajayi Aishat (35th NASS LASU President) & Rt. Hon. Ajibola Lala (Steppa Szn)",
+    description: "A state-of-the-art 100-seat outdoor relaxation and study hub designed to provide Faculty of Science students with a comfortable, conducive, and collaborative environment for academic revision, group discussions, and social interaction.",
+    coverImage: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80"
+    ],
+    published: true,
+    order: 1
   }
 ];
 
@@ -319,6 +337,327 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
   );
 }
 
+function LandmarkAdminManager({ landmarksData, isDarkMode }: { landmarksData: any[], isDarkMode: boolean }) {
+  const { addToast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [landmarkForm, setLandmarkForm] = useState({
+    title: 'Faculty of Science Relaxation Center',
+    capacityBadge: '100-Seat Capacity',
+    attribution: 'Facilitated & Built under the tenure of Comr. Ajayi Aishat (35th NASS LASU President) & Rt. Hon. Ajibola Lala (Steppa Szn)',
+    description: 'A state-of-the-art 100-seat outdoor relaxation and study hub designed to provide Faculty of Science students with a comfortable, conducive, and collaborative environment.',
+    coverImage: '',
+    imagesText: '',
+    published: true,
+    order: 1
+  });
+
+  const resetForm = () => {
+    setEditingId(null);
+    setLandmarkForm({
+      title: 'Faculty of Science Relaxation Center',
+      capacityBadge: '100-Seat Capacity',
+      attribution: 'Facilitated & Built under the tenure of Comr. Ajayi Aishat (35th NASS LASU President) & Rt. Hon. Ajibola Lala (Steppa Szn)',
+      description: 'A state-of-the-art 100-seat outdoor relaxation and study hub designed to provide Faculty of Science students with a comfortable, conducive, and collaborative environment.',
+      coverImage: '',
+      imagesText: '',
+      published: true,
+      order: landmarksData.length + 1
+    });
+  };
+
+  const handleEdit = (lm: any) => {
+    setEditingId(lm.id);
+    setLandmarkForm({
+      title: lm.title || '',
+      capacityBadge: lm.capacityBadge || '',
+      attribution: lm.attribution || '',
+      description: lm.description || '',
+      coverImage: lm.coverImage || lm.image || '',
+      imagesText: Array.isArray(lm.images) ? lm.images.join('\n') : (lm.images || ''),
+      published: lm.published !== false,
+      order: lm.order || 1
+    });
+    setIsOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'coverImage' | 'gallery') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImage(true);
+    addToast('Uploading image(s) to Firebase Storage...', 'info');
+
+    try {
+      if (storage) {
+        const uploadedUrls: string[] = [];
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileRef = ref(storage, `landmarks/${Date.now()}_${file.name}`);
+          await uploadBytes(fileRef, file);
+          const url = await getDownloadURL(fileRef);
+          uploadedUrls.push(url);
+        }
+
+        if (field === 'coverImage') {
+          setLandmarkForm(prev => ({ ...prev, coverImage: uploadedUrls[0] }));
+        } else {
+          setLandmarkForm(prev => {
+            const current = prev.imagesText.split('\n').map(s => s.trim()).filter(Boolean);
+            const combined = [...current, ...uploadedUrls].join('\n');
+            return { ...prev, imagesText: combined };
+          });
+        }
+        addToast('Uploaded image(s) successfully!', 'success');
+      } else {
+        addToast('Firebase Storage is not initialized.', 'error');
+      }
+    } catch (err: any) {
+      console.error(err);
+      addToast('Upload failed: ' + err.message, 'error');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const cleanImages = landmarkForm.imagesText
+        .split('\n')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const payload = {
+        title: landmarkForm.title,
+        capacityBadge: landmarkForm.capacityBadge,
+        attribution: landmarkForm.attribution,
+        description: landmarkForm.description,
+        coverImage: landmarkForm.coverImage || cleanImages[0] || '',
+        images: cleanImages,
+        published: landmarkForm.published,
+        order: Number(landmarkForm.order) || 1,
+        updatedAt: new Date().toISOString()
+      };
+
+      if (editingId) {
+        await setDoc(doc(db, 'landmarks', editingId), payload, { merge: true });
+        addToast('Landmark updated successfully!', 'success');
+      } else {
+        await addDoc(collection(db, 'landmarks'), {
+          ...payload,
+          createdAt: new Date().toISOString()
+        });
+        addToast('New landmark published successfully!', 'success');
+      }
+
+      resetForm();
+    } catch (err: any) {
+      console.error(err);
+      addToast('Failed to save landmark: ' + err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this landmark record?')) return;
+    try {
+      await deleteDoc(doc(db, 'landmarks', id));
+      addToast('Landmark record deleted', 'success');
+    } catch (err: any) {
+      addToast('Delete failed: ' + err.message, 'error');
+    }
+  };
+
+  return (
+    <div className="w-full mt-6 flex flex-col items-center">
+      <button
+        onClick={() => { setIsOpen(!isOpen); if (!isOpen) resetForm(); }}
+        className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+      >
+        <Building2 size={14} />
+        <span>{isOpen ? 'Close Landmarks Manager' : 'Manage Landmarks (Admin)'}</span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="w-full mt-6"
+          >
+            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">🏛️</span>
+                  <div>
+                    <h4 className="font-space-grotesk text-lg font-black text-yellow-400 uppercase tracking-wider">
+                      {editingId ? 'Edit Landmark Record' : 'Add New Landmark'}
+                    </h4>
+                    <p className="text-xs text-slate-400">Publish and sync landmark showcases in Firestore in real-time.</p>
+                  </div>
+                </div>
+                {editingId && (
+                  <button onClick={resetForm} className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-white">
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Landmark Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={landmarkForm.title}
+                      onChange={e => setLandmarkForm({ ...landmarkForm, title: e.target.value })}
+                      placeholder="e.g. Faculty of Science Relaxation Center"
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Capacity Badge</label>
+                    <input
+                      type="text"
+                      value={landmarkForm.capacityBadge}
+                      onChange={e => setLandmarkForm({ ...landmarkForm, capacityBadge: e.target.value })}
+                      placeholder="e.g. 100-Seat Capacity"
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Historical Attribution / Tenure</label>
+                  <input
+                    type="text"
+                    value={landmarkForm.attribution}
+                    onChange={e => setLandmarkForm({ ...landmarkForm, attribution: e.target.value })}
+                    placeholder="e.g. Built under tenure of Comr. Ajayi Aishat & Rt. Hon. Ajibola Lala"
+                    className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Description</label>
+                  <textarea
+                    rows={3}
+                    value={landmarkForm.description}
+                    onChange={e => setLandmarkForm({ ...landmarkForm, description: e.target.value })}
+                    placeholder="Detailed description of the landmark facility..."
+                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Cover Image URL / Upload</label>
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <input
+                      type="text"
+                      value={landmarkForm.coverImage}
+                      onChange={e => setLandmarkForm({ ...landmarkForm, coverImage: e.target.value })}
+                      placeholder="https://... image link or upload below"
+                      className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                    <label className="w-full sm:w-auto shrink-0 px-4 py-2 bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-colors rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
+                      <Upload size={14} />
+                      <span>Upload Cover</span>
+                      <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'coverImage')} disabled={uploadingImage} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Gallery Image URLs (One URL per line)</label>
+                  <textarea
+                    rows={3}
+                    value={landmarkForm.imagesText}
+                    onChange={e => setLandmarkForm({ ...landmarkForm, imagesText: e.target.value })}
+                    placeholder="https://image1.jpg&#10;https://image2.jpg"
+                    className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-yellow-400 ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                  />
+                  <label className="w-full sm:w-auto inline-flex items-center gap-2 px-4 py-2 bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-colors rounded-xl text-xs font-extrabold uppercase tracking-wider cursor-pointer">
+                    <Upload size={14} />
+                    <span>Upload Multiple Gallery Photos</span>
+                    <input type="file" accept="image/*" multiple onChange={e => handleImageUpload(e, 'gallery')} disabled={uploadingImage} className="hidden" />
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-6 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-wider text-yellow-400">
+                    <input
+                      type="checkbox"
+                      checked={landmarkForm.published}
+                      onChange={e => setLandmarkForm({ ...landmarkForm, published: e.target.checked })}
+                      className="w-4 h-4 rounded text-yellow-400 focus:ring-yellow-400"
+                    />
+                    <span>Publish Listing</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Order:</span>
+                    <input
+                      type="number"
+                      value={landmarkForm.order}
+                      onChange={e => setLandmarkForm({ ...landmarkForm, order: Number(e.target.value) })}
+                      className={`w-20 border rounded-xl px-2 py-1 text-xs text-center ${isDarkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={saving || uploadingImage}
+                    className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
+                  >
+                    {saving ? 'Saving Landmark...' : (editingId ? 'Update Landmark Listing' : 'Publish Landmark Listing')}
+                  </button>
+                </div>
+              </form>
+
+              {landmarksData.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
+                  <h5 className="text-xs font-bold uppercase tracking-wider text-slate-400">Existing Landmark Records</h5>
+                  <div className="grid gap-3">
+                    {landmarksData.map(lm => (
+                      <div key={lm.id} className={`p-4 rounded-2xl border flex items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-950 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          {lm.coverImage && (
+                            <img src={lm.coverImage} alt={lm.title} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                          )}
+                          <div className="truncate">
+                            <h6 className="font-bold text-sm text-yellow-400 truncate">{lm.title}</h6>
+                            <p className="text-[10px] text-slate-400 truncate">{lm.capacityBadge} • {lm.attribution}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button onClick={() => handleEdit(lm)} className="p-2 bg-yellow-400/20 hover:bg-yellow-400 text-yellow-400 hover:text-slate-900 rounded-lg transition-colors">
+                            <Edit3 size={14} />
+                          </button>
+                          <button onClick={() => handleDelete(lm.id)} className="p-2 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function App() {
   const { addToast } = useToast();
   const { scrollYProgress } = useScroll();
@@ -342,6 +681,7 @@ export default function App() {
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
+  const [landmarksData, setLandmarksData] = useState<any[]>(INITIAL_LANDMARKS_DATA);
   const [executivesData, setExecutivesData] = useState<any[]>([]);
   const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
   const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
@@ -367,6 +707,16 @@ export default function App() {
   });
 
   useEffect(() => {
+    const unsubLandmarks = onSnapshot(collection(db, 'landmarks'), (snap) => {
+      if (!snap.empty) {
+        setLandmarksData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
+      } else {
+        setLandmarksData(INITIAL_LANDMARKS_DATA);
+      }
+    }, (error) => {
+      console.warn("Firestore listener warning (landmarks):", error.message);
+    });
+
     const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
       if (!snap.empty) {
         setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
@@ -500,6 +850,7 @@ export default function App() {
     });
 
     return () => {
+      unsubLandmarks();
       unsubBrands();
       unsubExecs();
       unsubSsrc();
@@ -692,6 +1043,13 @@ export default function App() {
                 <span className="hidden lg:inline">WebApp Story</span>
               </a>
               <a 
+                href="#landmarks" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Building2 size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Landmarks</span>
+              </a>
+              <a 
                 href="#executives" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
@@ -832,6 +1190,13 @@ export default function App() {
                   <span>The WebApp Vision</span>
                 </a>
                 <a 
+                  href="#landmarks" 
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
+                >
+                  <Building2 size={16} />
+                  <span>Landmarks</span>
+                </a>
+                <a 
                   href="#vault" 
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
                 >
@@ -846,6 +1211,131 @@ export default function App() {
                   <span>News Flash</span>
                 </a>
               </div>
+            </div>
+          </section>
+
+          {/* DEDICATED LANDMARK SHOWCASE SECTION */}
+          <section id="landmarks" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <div className="text-center mb-12 space-y-3">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                FACULTY INFRASTRUCTURE & LEGACY
+              </span>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                FACULTY LANDMARKS
+              </h2>
+              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Celebrating key historical student projects, infrastructure builds, and iconic relaxation grounds across the Faculty of Science.
+              </p>
+            </div>
+
+            <div className="grid gap-12">
+              {landmarksData.filter(lm => lm.published !== false).map((landmark) => {
+                const landmarkImages = landmark.images && Array.isArray(landmark.images) && landmark.images.length > 0 
+                  ? landmark.images 
+                  : (landmark.coverImage ? [landmark.coverImage] : []);
+
+                return (
+                  <div
+                    key={landmark.id}
+                    className={`rounded-3xl border overflow-hidden backdrop-blur-xl shadow-2xl transition-all ${
+                      isDarkMode 
+                        ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
+                        : 'bg-white border-slate-200 shadow-xl'
+                    }`}
+                  >
+                    <div className="grid lg:grid-cols-12 gap-0">
+                      {/* Left: Interactive Image Gallery */}
+                      <div className="lg:col-span-7 relative min-h-[320px] sm:min-h-[400px] bg-slate-950 flex flex-col justify-between overflow-hidden group">
+                        <img
+                          referrerPolicy="no-referrer"
+                          src={landmark.coverImage || landmarkImages[0] || '/nass_logo.jpg'}
+                          alt={landmark.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
+
+                        {/* Top Badge Overlay */}
+                        <div className="relative z-20 p-6 flex flex-wrap gap-2 items-center justify-between">
+                          <span className="px-4 py-1.5 rounded-full bg-yellow-400/90 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg backdrop-blur-md flex items-center gap-1.5">
+                            <Users size={14} />
+                            <span>{landmark.capacityBadge || '100-Seat Capacity'}</span>
+                          </span>
+                          
+                          {landmarkImages.length > 1 && (
+                            <button
+                              onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
+                              className="px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white font-extrabold text-[11px] uppercase tracking-wider backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <ImageIcon size={14} />
+                              <span>View Gallery ({landmarkImages.length})</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Bottom Thumbnail Strip */}
+                        {landmarkImages.length > 1 && (
+                          <div className="relative z-20 p-6 pt-0 flex gap-3 overflow-x-auto no-scrollbar">
+                            {landmarkImages.map((imgUrl: string, idx: number) => (
+                              <button
+                                key={idx}
+                                onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-yellow-400/60 shadow-lg shrink-0 hover:scale-105 transition-transform cursor-pointer"
+                              >
+                                <img src={imgUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Content & Historical Attribution */}
+                      <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between space-y-6">
+                        <div className="space-y-4">
+                          <div className="inline-flex items-center gap-2 text-yellow-500 font-bold text-xs uppercase tracking-widest">
+                            <Building2 size={16} />
+                            <span>Official Science Landmark</span>
+                          </div>
+
+                          <h3 className={`font-space-grotesk text-2xl sm:text-3xl font-black uppercase tracking-tight leading-snug ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                            {landmark.title}
+                          </h3>
+
+                          <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {landmark.description}
+                          </p>
+
+                          <div className={`p-5 rounded-2xl border ${isDarkMode ? 'bg-yellow-400/10 border-yellow-400/30 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-slate-800'}`}>
+                            <p className="text-[11px] font-mono uppercase tracking-wider font-extrabold text-yellow-500 mb-1">
+                              HISTORICAL ATTRIBUTION & TENURE
+                            </p>
+                            <p className="text-xs font-bold leading-relaxed">
+                              {landmark.attribution || "Facilitated & Built under the tenure of Comr. Ajayi Aishat (35th NASS LASU President) & Rt. Hon. Ajibola Lala (Steppa Szn)"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                            <MapPin size={14} className="text-yellow-400" />
+                            <span>Faculty of Science Grounds</span>
+                          </div>
+                          
+                          {landmarkImages.length > 0 && (
+                            <button
+                              onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
+                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+                            >
+                              <span>Explore Landmark</span>
+                              <ArrowRight size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -2235,6 +2725,7 @@ export default function App() {
             <AdminGate>
               <div className="space-y-8">
                 <AdminPanel />
+                <LandmarkAdminManager landmarksData={landmarksData} isDarkMode={isDarkMode} />
                 <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
               </div>
             </AdminGate>
@@ -2379,6 +2870,18 @@ export default function App() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-3"
             >
+              <button 
+                onClick={() => {
+                  document.getElementById('landmarks')?.scrollIntoView({ behavior: 'smooth' });
+                  setIsQuickActionsOpen(false);
+                }}
+                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
+              >
+                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
+                  <Building2 size={18} className="text-slate-900" />
+                </div>
+                <span className="text-xs uppercase tracking-wider font-extrabold">Landmarks</span>
+              </button>
               <button 
                 onClick={() => {
                   document.getElementById('hall-of-fame')?.scrollIntoView({ behavior: 'smooth' });
