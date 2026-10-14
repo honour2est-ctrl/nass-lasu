@@ -1018,8 +1018,8 @@ export default function App() {
       <BackgroundEngine />
       <CursorTrail />
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-yellow-400 z-[100] origin-left"
-        style={{ scaleX: scrollYProgress }}
+        className="fixed top-0 left-0 right-0 h-1 bg-yellow-400 z-[100] origin-left pointer-events-none"
+        style={{ scaleX: scrollYProgress, translateZ: 0 }}
       />
       
       <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
@@ -2976,32 +2976,35 @@ export default function App() {
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <Sparkles size={18} className="text-slate-900" />
                 </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Story</span>
-              </button>
-              <button 
-                onClick={() => {
-                  document.getElementById('feedback')?.scrollIntoView({ behavior: 'smooth' });
-                  setIsQuickActionsOpen(false);
-                }}
-                className="flex items-center gap-3 px-5 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all group font-extrabold cursor-pointer"
-              >
-                <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
-                  <MessageSquare size={18} className="text-slate-900" />
-                </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">Feedback Form</span>
+                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Vision</span>
               </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <button
+        <button 
           onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-          className="p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50 cursor-pointer"
-          aria-label="Quick Actions"
+          className="p-4 bg-yellow-400 text-slate-900 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+          aria-label="Quick Actions Menu"
         >
-          {isQuickActionsOpen ? <X size={24} /> : <Menu size={24} />}
+          {isQuickActionsOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
+
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={scrollToTop}
+            className="fixed bottom-14 right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer"
+            aria-label="Back to Top"
+          >
+            <ArrowUp size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selectedExecutive && (
@@ -3009,120 +3012,67 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
             onClick={() => setSelectedExecutive(null)}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className={`border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+              className={`border rounded-3xl p-6 sm:p-8 max-w-xl w-full relative shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/30 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
             >
-              <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-                <div className="relative aspect-[3/2] w-full shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
-                  <img 
-                    src={selectedExecutive.imageUrl || undefined} 
-                    alt={selectedExecutive.name} 
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <button
-                    onClick={() => setSelectedExecutive(null)}
-                    className="absolute top-4 right-4 z-20 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors cursor-pointer"
-                  >
-                    <X size={20} />
-                  </button>
-                  <div className="absolute bottom-4 left-6 right-6 z-20">
-                    <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
-                      {selectedExecutive.office}
-                    </div>
-                    <h3 className="text-2xl font-bold text-yellow-400 tracking-tight">
-                      {selectedExecutive.name}
-                    </h3>
-                    {selectedExecutive.nickname && (
-                      <p className="text-yellow-400 font-space-grotesk font-bold uppercase mt-1">'{selectedExecutive.nickname}'</p>
-                    )}
-                  </div>
+              <button
+                onClick={() => setSelectedExecutive(null)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer z-10 p-2 bg-slate-900/50 rounded-full"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left mb-6">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-2 border-yellow-400/50 shrink-0 shadow-lg relative">
+                  <img referrerPolicy="no-referrer" src={selectedExecutive.imageUrl || undefined} alt={selectedExecutive.name} className="w-full h-full object-cover" />
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4 text-sm text-yellow-500 font-semibold uppercase tracking-widest">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                    {selectedExecutive.department}
-                  </div>
-                  <div className={`leading-relaxed text-sm p-4 rounded-xl border whitespace-pre-wrap ${isDarkMode ? 'text-yellow-100 bg-white/5 border-white/5' : 'text-slate-700 bg-slate-50 border-slate-200'}`}>
-                    {selectedExecutive.summary ? renderWithBold(selectedExecutive.summary, isDarkMode) : "No profile summary available."}
-                  </div>
+                <div className="space-y-2">
+                  <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">
+                    {selectedExecutive.office}
+                  </span>
+                  <h3 className="text-2xl font-black text-yellow-400 font-space-grotesk">{selectedExecutive.name}</h3>
+                  {selectedExecutive.nickname && (
+                    <p className="text-sm font-bold text-yellow-300">'{selectedExecutive.nickname}'</p>
+                  )}
+                  <p className="text-xs text-slate-400 uppercase font-semibold">{selectedExecutive.department}</p>
                 </div>
               </div>
+
+              {selectedExecutive.manifesto && (
+                <div className={`p-4 rounded-xl border mb-6 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 mb-2">Manifesto / Vision Statement</h4>
+                  <p className="text-xs leading-relaxed italic text-slate-300">{selectedExecutive.manifesto}</p>
+                </div>
+              )}
+
+              {selectedExecutive.bio && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Biography</h4>
+                  <p className="text-xs leading-relaxed text-slate-300">{selectedExecutive.bio}</p>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-50 p-3 bg-yellow-400/20 hover:bg-yellow-400/40 border border-yellow-400/50 backdrop-blur-xl text-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
-          aria-label="Back to top"
-        >
-          <ArrowUp size={24} />
-        </button>
-      )}
-
-      {selectedEventGallery && (
-        <PageantGallery
-          title={selectedEventGallery.title}
-          images={selectedEventGallery.images}
-          onClose={() => setSelectedEventGallery(null)}
-        />
-      )}
-      
-      <style>{`
-        html {
-          scroll-behavior: smooth;
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior-y: none;
-          touch-action: pan-y;
-        }
-        body {
-          -webkit-overflow-scrolling: touch;
-          overflow-x: hidden;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-rendering: optimizeLegibility;
-        }
-        .backdrop-blur-xl,
-        .backdrop-blur-2xl,
-        .backdrop-blur-md {
-          transform: translateZ(0);
-          -webkit-transform: translateZ(0);
-          will-change: transform;
-        }
-        .font-space-grotesk { font-family: 'Space Grotesk', system-ui, sans-serif; }
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes shine {
-          0% { transform: translateX(-100%); }
-          50%, 100% { transform: translateX(200%); }
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(250, 204, 21, 0.3);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(250, 200, 21, 0.5);
-        }
-      `}</style>
+      <AnimatePresence>
+        {selectedEventGallery && (
+          <PageantGallery
+            isOpen={!!selectedEventGallery}
+            onClose={() => setSelectedEventGallery(null)}
+            images={selectedEventGallery.images}
+            title={selectedEventGallery.title}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
