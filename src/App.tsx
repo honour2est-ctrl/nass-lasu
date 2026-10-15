@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { motion, AnimatePresence, useScroll } from 'motion/react';
 import { BackgroundEngine } from './components/BackgroundEngine';
 import { CursorTrail } from './components/CursorTrail';
-import { Chatbot } from './components/Chatbot';
+const Chatbot = lazy(() => import('./components/Chatbot').then(m => ({ default: m.Chatbot })));
 import { AdminGate } from './components/AdminGate';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
-import { AdminPanel } from './components/AdminPanel';
+const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 import { PageantGallery } from './components/PageantGallery';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown, Building2, Plus, Trash2, Edit3, CheckCircle, Image as ImageIcon } from 'lucide-react';
@@ -194,7 +194,7 @@ function SecretariatInlineEditor({ siteContentMap, isDarkMode }: { siteContentMa
             exit={{ opacity: 0, height: 0 }}
             className="w-full mt-6"
           >
-            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
+            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl md:backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
               <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-white/10">
                 <span className="text-2xl">🏛️</span>
                 <div>
@@ -491,7 +491,7 @@ function LandmarkAdminManager({ landmarksData, isDarkMode }: { landmarksData: an
             exit={{ opacity: 0, height: 0 }}
             className="w-full mt-6"
           >
-            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
+            <div className={`p-6 sm:p-8 rounded-3xl border text-left shadow-2xl md:backdrop-blur-xl ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/40 text-slate-100' : 'bg-white border-yellow-500/50 text-slate-800'}`}>
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
                 <div className="flex items-center gap-2.5">
                   <span className="text-2xl">🏛️</span>
@@ -661,7 +661,13 @@ function LandmarkAdminManager({ landmarksData, isDarkMode }: { landmarksData: an
 export default function App() {
   const { addToast } = useToast();
   const { scrollYProgress } = useScroll();
-  const eventsScrollRef = useRef<HTMLDivElement>(null);
+  const eventsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Phones get a lighter page: no animated canvas background, no cursor trail
+  const [isMobile] = useState(() =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 768px), (pointer: coarse)').matches
+  );
 
   const scrollEvents = (direction: 'left' | 'right') => {
     if (eventsScrollRef.current) {
@@ -1015,8 +1021,20 @@ export default function App() {
 
   return (
     <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
-      <BackgroundEngine />
-      <CursorTrail />
+      {isMobile ? (
+        <div
+          className={`fixed inset-0 z-0 pointer-events-none ${
+            isDarkMode
+              ? 'bg-gradient-to-b from-slate-950 via-blue-950/60 to-slate-950'
+              : 'bg-gradient-to-b from-slate-100 to-slate-200'
+          }`}
+        />
+      ) : (
+        <>
+          <BackgroundEngine />
+          <CursorTrail />
+        </>
+      )}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-yellow-400 z-[100] origin-left pointer-events-none"
         style={{ scaleX: scrollYProgress, translateZ: 0 }}
@@ -1024,7 +1042,7 @@ export default function App() {
       
       <div className="relative z-10 w-full overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
         
-        <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-white/70'}`}>
+        <nav className={`fixed top-0 w-full z-50 h-16 border-b px-3 md:px-8 flex items-center justify-between md:backdrop-blur-md ${isDarkMode ? 'border-white/10 bg-slate-950/90 md:bg-white/5' : 'border-slate-300 bg-white/95 md:bg-white/70'}`}>
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
               <img referrerPolicy="no-referrer" src="/nass_logo.jpg" alt="NASS Logo" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-yellow-400/50" />
@@ -1163,8 +1181,8 @@ export default function App() {
                 <div className="relative inline-flex items-center justify-center mt-4 group">
                   <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-xl -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
                   
-                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_25px_rgba(250,204,21,0.25)] flex items-center gap-3">
-                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-6 sm:px-8 py-2 md:backdrop-blur-xl shadow-[0_0_25px_rgba(250,204,21,0.25)] flex items-center gap-3">
+                    <div className="absolute inset-0 -translate-x-full md:animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
                     <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
                       <PenTool size={14} className="text-yellow-400" />
@@ -1228,8 +1246,8 @@ export default function App() {
               </p>
               
               <div className="relative inline-flex items-center justify-center pt-2 group">
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 md:backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
+                  <div className="absolute inset-0 -translate-x-full md:animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
                   <PenTool size={12} className="text-yellow-400" />
                   <span className="font-mono tracking-[0.2em] text-[10px] sm:text-xs font-semibold italic text-yellow-300">
                     Initiative of a Digitalized and Innovative Secretariat
@@ -1238,12 +1256,12 @@ export default function App() {
               </div>
             </div>
 
-            <div className={`p-8 md:p-12 rounded-3xl border backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
+            <div className={`p-8 md:p-12 rounded-3xl border md:backdrop-blur-xl mb-12 shadow-2xl relative overflow-hidden ${
               isDarkMode 
                 ? 'bg-gradient-to-br from-white/5 via-slate-900/60 to-slate-950 border-yellow-400/30 shadow-[0_0_50px_rgba(250,204,21,0.08)]' 
                 : 'bg-white border-slate-200 shadow-xl'
             }`}>
-              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-400/10 hidden md:block rounded-full blur-3xl pointer-events-none" />
               <div className="relative z-10 max-w-4xl mx-auto space-y-6 text-sm md:text-base leading-relaxed">
                 <p className="text-base md:text-lg font-medium leading-relaxed">
                   The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>NASS LASU WebApp</strong> is one of the flagship initiatives of the <strong className="text-yellow-500">DIGITALIZED AND INNOVATIVE SECRETARIAT</strong> under the Office of the 36th NASS LASU General Secretary, <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Comr. Onovwiome Honourable Onome</strong>.
@@ -1261,7 +1279,7 @@ export default function App() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 mb-16">
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+              <div className={`p-8 rounded-3xl border md:backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                 isDarkMode 
                   ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
                   : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
@@ -1288,7 +1306,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+              <div className={`p-8 rounded-3xl border md:backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                 isDarkMode 
                   ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
                   : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
@@ -1315,7 +1333,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`p-8 rounded-3xl border backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+              <div className={`p-8 rounded-3xl border md:backdrop-blur-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                 isDarkMode 
                   ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
                   : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
@@ -1370,7 +1388,7 @@ export default function App() {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className={`p-6 rounded-2xl border backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+                    className={`p-6 rounded-2xl border md:backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
                       isDarkMode 
                         ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_8px_20px_rgba(250,204,21,0.1)]' 
                         : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
@@ -1387,7 +1405,7 @@ export default function App() {
                 ))}
               </div>
 
-              <div className={`p-8 md:p-10 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl mt-12 ${
+              <div className={`p-8 md:p-10 rounded-3xl border text-center md:backdrop-blur-2xl relative overflow-hidden shadow-2xl mt-12 ${
                 isDarkMode 
                   ? 'bg-gradient-to-b from-yellow-400/10 via-slate-950/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
                   : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
@@ -1413,7 +1431,7 @@ export default function App() {
             <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-12 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight text-center`}>
               ABOUT NASS-LASU
             </h2>
-            <div className={`border rounded-3xl p-8 md:p-12 backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
+            <div className={`border rounded-3xl p-8 md:p-12 md:backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-xl'}`}>
               <div className="prose max-w-none space-y-6">
                 <p className="text-lg leading-relaxed">
                   The <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU)</strong> is the official, indivisible student body representing all duly matriculated, full-time undergraduate students within the LASU Faculty of Science. Operating under the motto <span className="text-yellow-500 italic">"Toward Scientific Advancement,"</span> the association is dedicated to promoting the educational development, welfare, and unity of its members, while also defending them against all forms of victimization and projecting a positive image of the association.
@@ -1459,7 +1477,7 @@ export default function App() {
                 { icon: '⚡', title: "Live Info", desc: "Real-time notifications and administrative updates." },
                 { icon: '🛍️', title: "Marketplace", desc: "Showcasing student-owned brands and campus businesses." }
               ]).map((F, i) => (
-                <div key={i} className={`border p-5 md:p-6 rounded-2xl backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                <div key={i} className={`border p-5 md:p-6 rounded-2xl md:backdrop-blur-xl transition-all hover:-translate-y-1 ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="text-yellow-500 text-2xl md:text-3xl mb-4">{F.icon}</div>
                   <h3 className={`text-xs font-bold uppercase mb-2 tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{F.title}</h3>
                   <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{F.desc}</p>
@@ -1488,9 +1506,9 @@ export default function App() {
                   >
                     <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
                       <div className="absolute bottom-6 left-6 right-6 z-20">
-                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                        <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded md:backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
                           {ex.office}
                         </div>
                         <h4 className="text-xl font-bold text-yellow-400 tracking-tight mb-1">
@@ -1505,7 +1523,7 @@ export default function App() {
                         </h4>
                         <div className="mt-3 flex items-center justify-between">
                           <p className="text-[11px] text-yellow-200/80 uppercase tracking-widest font-semibold">{ex.department}</p>
-                          <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
+                          <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded md:backdrop-blur-md transition-colors bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 group-hover:bg-yellow-400 group-hover:text-slate-900">
                             Read More <ArrowRight size={10} />
                           </span>
                         </div>
@@ -1530,7 +1548,7 @@ export default function App() {
             </div>
 
             {hallOfFameData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+              <div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
                 Hall of Fame records are being updated. Check back soon!
               </div>
             ) : (
@@ -1538,7 +1556,7 @@ export default function App() {
                 {hallOfFameData.map((inductee) => (
                   <div
                     key={inductee.id}
-                    className={`group relative rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                    className={`group relative rounded-3xl border overflow-hidden flex flex-col justify-between md:backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                       isDarkMode
                         ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
                         : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
@@ -1555,7 +1573,7 @@ export default function App() {
                           loading="lazy"
                         />
                         <div className="absolute top-4 right-4 z-20">
-                          <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
+                          <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full md:backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
                             {inductee.year || inductee.session || 'Honoree'}
                           </span>
                         </div>
@@ -1601,9 +1619,9 @@ export default function App() {
                 >
                   <div className="aspect-[4/5] overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                    <img referrerPolicy="no-referrer" src={mem.imageUrl || undefined} alt={mem.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
                     <div className="absolute bottom-6 left-6 right-6 z-20 text-left">
-                      <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
+                      <div className="inline-block px-3 py-1 mb-3 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded md:backdrop-blur-md">
                         {mem.duty}
                       </div>
                       <h4 className="text-lg font-bold text-white tracking-tight mb-1">{mem.name}</h4>
@@ -1614,7 +1632,7 @@ export default function App() {
               ))}
             </div>
 
-            <div className={`mt-12 p-8 border rounded-3xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
+            <div className={`mt-12 p-8 border rounded-3xl md:backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 shadow-[0_0_30px_rgba(250,204,21,0.05)]' : 'bg-white border-slate-200'}`}>
               <div>
                 <h3 className={`font-space-grotesk text-xl font-bold mb-2 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                   <span>Legislative Documents</span>
@@ -1652,7 +1670,7 @@ export default function App() {
                 { title: "B. Chemical Science", items: ["Department of Chemistry"] },
                 { title: "C. Physical Science", items: ["Department of Physics", "Department of Mathematics"] }
               ].map((branch, idx) => (
-                <div key={idx} className={`border rounded-3xl p-8 backdrop-blur-xl transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
+                <div key={idx} className={`border rounded-3xl p-8 md:backdrop-blur-xl transition-all ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <h3 className="font-space-grotesk text-xl font-bold text-yellow-500 uppercase tracking-widest mb-6">{branch.title}</h3>
                   <ul className="space-y-4">
                     {branch.items.map((dept, i) => (
@@ -1735,7 +1753,7 @@ export default function App() {
                         loading="lazy" 
                       />
                       <div className="absolute top-4 right-4 z-20">
-                        <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
+                        <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full md:backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
                           {imageCount} Photos
                         </span>
                       </div>
@@ -1781,7 +1799,7 @@ export default function App() {
                   placeholder="Search by department or year..."
                   value={vaultSearchQuery}
                   onChange={(e) => setVaultSearchQuery(e.target.value)}
-                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
+                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl md:backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
                 />
               </div>
 
@@ -1808,7 +1826,7 @@ export default function App() {
             {lastViewedResources.length > 0 && !vaultSearchQuery && (
               <div className="mb-8 space-y-3">
                 <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
-                <div className={`border rounded-2xl p-4 space-y-2 backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+                <div className={`border rounded-2xl p-4 space-y-2 md:backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
                   {lastViewedResources.map((item, index) => (
                     <div 
                       key={`recent-${item.id}-${index}`}
@@ -1870,7 +1888,7 @@ export default function App() {
                 }
 
                 return (
-                  <details key={i} className={`group border rounded-2xl overflow-hidden backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <details key={i} className={`group border rounded-2xl overflow-hidden md:backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
                     <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
                       <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
                       <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
@@ -1969,7 +1987,7 @@ export default function App() {
                 const years = [2021, 2022];
                 return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
               }) && (
-                <div className={`text-center py-8 text-sm border rounded-2xl backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
+                <div className={`text-center py-8 text-sm border rounded-2xl md:backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
                   No past questions found matching "{vaultSearchQuery}"
                 </div>
               )}
@@ -1990,15 +2008,15 @@ export default function App() {
                 <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="aspect-[4/3] overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" decoding="async" />
                     <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
                       {brand.productImageUrl && (
                         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/20 shrink-0 shadow-lg">
-                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" loading="lazy" />
+                           <img referrerPolicy="no-referrer" src={brand.productImageUrl || undefined} alt={`${brand.name} product`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         </div>
                       )}
                       <div>
-                        <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
+                        <div className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded md:backdrop-blur-md">
                           {brand.category}
                         </div>
                         <h4 className="text-xl font-bold text-white tracking-tight">{brand.name}</h4>
@@ -2042,7 +2060,7 @@ export default function App() {
             </div>
 
             {partnersData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+              <div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
                 Partners directory will be announced soon.
               </div>
             ) : (
@@ -2050,7 +2068,7 @@ export default function App() {
                 {partnersData.map((partner) => (
                   <div 
                     key={partner.id} 
-                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between md:backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                       isDarkMode 
                         ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
                         : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
@@ -2166,7 +2184,7 @@ export default function App() {
             </div>
 
             {sponsorsData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+              <div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
                 Sponsors will be updated soon.
               </div>
             ) : (
@@ -2174,7 +2192,7 @@ export default function App() {
                 {sponsorsData.map((sponsor) => (
                   <div 
                     key={sponsor.id} 
-                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
+                    className={`group rounded-3xl border overflow-hidden flex flex-col justify-between md:backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl ${
                       isDarkMode 
                         ? 'bg-white/5 border-white/10 hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' 
                         : 'bg-white border-slate-200 hover:border-yellow-500 hover:shadow-xl'
@@ -2276,7 +2294,7 @@ export default function App() {
               </div>
             )}
 
-            <div className={`mt-16 p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+            <div className={`mt-16 p-8 md:p-12 rounded-3xl border text-center md:backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
               isDarkMode 
                 ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.15)]' 
                 : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
@@ -2332,7 +2350,7 @@ export default function App() {
               </p>
             </div>
             <EmergencyHotline />
-            <div className={`mt-6 p-6 rounded-3xl border text-center backdrop-blur-xl shadow-lg max-w-3xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+            <div className={`mt-6 p-6 rounded-3xl border text-center md:backdrop-blur-xl shadow-lg max-w-3xl mx-auto ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 For quick responses, chat with us on WhatsApp or call any of the numbers displayed above.
               </p>
@@ -2392,7 +2410,7 @@ export default function App() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className={`p-6 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+                  className={`p-6 rounded-3xl border flex flex-col justify-between md:backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
                     isDarkMode
                       ? 'bg-white/5 border-white/10 hover:border-yellow-400/40 hover:shadow-[0_10px_25px_rgba(250,204,21,0.1)]'
                       : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'
@@ -2405,7 +2423,7 @@ export default function App() {
               ))}
             </div>
 
-            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+            <div className={`p-8 md:p-12 rounded-3xl border text-center md:backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
               isDarkMode 
                 ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/90 to-slate-950 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.15)]' 
                 : 'bg-gradient-to-b from-yellow-50 to-white border-yellow-500/50 shadow-xl'
@@ -2452,7 +2470,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className={`p-10 sm:p-16 rounded-3xl border text-center backdrop-blur-xl relative overflow-hidden shadow-xl ${
+            <div className={`p-10 sm:p-16 rounded-3xl border text-center md:backdrop-blur-xl relative overflow-hidden shadow-xl ${
               isDarkMode 
                 ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
                 : 'bg-white border-slate-200'
@@ -2475,7 +2493,7 @@ export default function App() {
 
           {/* SECRETARIAT SECTION */}
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
-            <div className={`p-8 md:p-12 border rounded-3xl backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
+            <div className={`p-8 md:p-12 border rounded-3xl md:backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               {siteContentMap.secretariat_image_url && (
@@ -2549,18 +2567,18 @@ export default function App() {
               <div className="absolute -right-20 -bottom-20 text-[200px] opacity-5 pointer-events-none hidden md:block">🏛️</div>
             </div>
 
-            <div className={`p-8 md:p-12 rounded-3xl border text-center backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
+            <div className={`p-8 md:p-12 rounded-3xl border text-center md:backdrop-blur-2xl relative overflow-hidden shadow-2xl ${
               isDarkMode 
                 ? 'bg-gradient-to-b from-yellow-400/10 via-slate-900/95 to-slate-950 border-yellow-400/40 shadow-[0_0_50px_rgba(250,204,21,0.18)]' 
                 : 'bg-gradient-to-b from-yellow-50 via-white to-white border-yellow-500/50 shadow-xl'
             }`}>
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/10 hidden md:block rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10 max-w-3xl mx-auto space-y-5">
                 <div className="relative inline-flex items-center justify-center group">
                   <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md -z-10 group-hover:bg-yellow-400/30 transition-all duration-500" />
-                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
-                    <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                  <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/80 px-5 py-1.5 md:backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center gap-2">
+                    <div className="absolute inset-0 -translate-x-full md:animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
                     <Users size={14} className="text-yellow-400" />
                     <span className="font-mono tracking-[0.25em] text-[10px] sm:text-xs font-black uppercase text-yellow-300">
                       Join The Innovation Network
@@ -2599,7 +2617,7 @@ export default function App() {
           <section id="admin" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <AdminGate>
               <div className="space-y-8">
-                <AdminPanel />
+                <Suspense fallback={null}><AdminPanel /></Suspense>
                 <LandmarkAdminManager landmarksData={landmarksData} isDarkMode={isDarkMode} />
                 <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
               </div>
@@ -2629,7 +2647,7 @@ export default function App() {
                 return (
                   <div
                     key={landmark.id}
-                    className={`rounded-3xl border overflow-hidden backdrop-blur-xl shadow-2xl transition-all ${
+                    className={`rounded-3xl border overflow-hidden md:backdrop-blur-xl shadow-2xl transition-all ${
                       isDarkMode 
                         ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
                         : 'bg-white border-slate-200 shadow-xl'
@@ -2649,7 +2667,7 @@ export default function App() {
 
                         {/* Top Badge Overlay */}
                         <div className="relative z-20 p-6 flex flex-wrap gap-2 items-center justify-between">
-                          <span className="px-4 py-1.5 rounded-full bg-yellow-400/90 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg backdrop-blur-md flex items-center gap-1.5">
+                          <span className="px-4 py-1.5 rounded-full bg-yellow-400/90 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg md:backdrop-blur-md flex items-center gap-1.5">
                             <Users size={14} />
                             <span>{landmark.capacityBadge || '100-Seat Capacity'}</span>
                           </span>
@@ -2657,7 +2675,7 @@ export default function App() {
                           {landmarkImages.length > 1 && (
                             <button
                               onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
-                              className="px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white font-extrabold text-[11px] uppercase tracking-wider backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                              className="px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white font-extrabold text-[11px] uppercase tracking-wider md:backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
                             >
                               <ImageIcon size={14} />
                               <span>View Gallery ({landmarkImages.length})</span>
@@ -2674,7 +2692,7 @@ export default function App() {
                                 onClick={() => setSelectedEventGallery({ title: landmark.title, images: landmarkImages })}
                                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-yellow-400/60 shadow-lg shrink-0 hover:scale-105 transition-transform cursor-pointer"
                               >
-                                <img src={imgUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                                <img src={imgUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                               </button>
                             ))}
                           </div>
@@ -2735,7 +2753,7 @@ export default function App() {
           <section id="feedback" className="px-4 max-w-7xl mx-auto w-full pb-12 mt-8">
             <SecretariatFeedback />
             
-            <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+            <div className={`mt-8 flex flex-col items-center justify-center text-center space-y-3 border p-6 rounded-3xl md:backdrop-blur-xl max-w-xl mx-auto shadow-lg ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 For quick responses, send a message using the button below.
               </p>
@@ -2773,8 +2791,8 @@ export default function App() {
               
               <div className="relative inline-flex items-center justify-center mt-3 group">
                 <div className="absolute -inset-1 bg-yellow-400/15 rounded-full blur-lg -z-10 group-hover:bg-yellow-400/25 transition-all duration-500" />
-                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/85 px-6 sm:px-8 py-2 backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2.5">
-                  <div className="absolute inset-0 -translate-x-full animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                <div className="relative overflow-hidden rounded-full border border-yellow-400/40 bg-slate-950/85 px-6 sm:px-8 py-2 md:backdrop-blur-xl shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2.5">
+                  <div className="absolute inset-0 -translate-x-full md:animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
                   <div className="p-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
                     <PenTool size={13} className="text-yellow-400" />
@@ -2791,7 +2809,7 @@ export default function App() {
         </main>
       </div>
 
-      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
+      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t md:backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
         <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 shrink-0">
@@ -2802,7 +2820,7 @@ export default function App() {
         </div>
       </aside>
 
-      <Chatbot />
+      <Suspense fallback={null}><Chatbot /></Suspense>
 
       <AnimatePresence>
         {isRsvpOpen && (
@@ -2810,7 +2828,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 md:backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -3012,7 +3030,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 md:backdrop-blur-md"
             onClick={() => setSelectedExecutive(null)}
           >
             <motion.div
