@@ -1488,7 +1488,16 @@ export default function App() {
                   >
                     <div className="aspect-[4/5] overflow-hidden relative rounded-[1.25rem]">
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                      <img referrerPolicy="no-referrer" src={ex.imageUrl || undefined} alt={ex.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      <img 
+                        referrerPolicy="no-referrer" 
+                        src={ex.imageUrl || ex.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"} 
+                        alt={ex.name} 
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80";
+                        }}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        loading="lazy" 
+                      />
                       <div className="absolute bottom-6 left-6 right-6 z-20">
                         <div className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
                           {ex.office}
@@ -1714,7 +1723,11 @@ export default function App() {
               className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory"
             >
               {eventsData.map((ev) => {
-                const coverImage = ev.image || (ev.images && ev.images[0]) || '/pageant/cover.jpg';
+                const coverImage = 
+                  ev.coverImage || 
+                  ev.image || 
+                  (Array.isArray(ev.images) && ev.images.length > 0 ? ev.images[0] : null) || 
+                  "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80";
                 const imageCount = ev.images && Array.isArray(ev.images) ? ev.images.length : (ev.image ? 1 : 0);
 
                 return (
@@ -1990,7 +2003,16 @@ export default function App() {
                 <div key={brand.id} className={`group relative rounded-3xl border overflow-hidden transition-all flex flex-col ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/50' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-md'}`}>
                   <div className="aspect-[4/3] overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10 opacity-90" />
-                    <img referrerPolicy="no-referrer" src={brand.imageUrl || undefined} alt={brand.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                    <img 
+                      referrerPolicy="no-referrer" 
+                      src={brand.imageUrl || "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=800&q=80"} 
+                      alt={brand.name} 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=800&q=80";
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                      loading="lazy" 
+                    />
                     <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-4 items-end">
                       {brand.productImageUrl && (
                         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-white/20 shrink-0 shadow-lg">
@@ -2976,18 +2998,22 @@ export default function App() {
                 <div className="bg-slate-900/10 p-2 rounded-full group-hover:bg-slate-900/20 transition-colors">
                   <Sparkles size={18} className="text-slate-900" />
                 </div>
-                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Vision</span>
+                <span className="text-xs uppercase tracking-wider font-extrabold">WebApp Story</span>
               </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <button 
+        <button
           onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-          className="p-4 bg-yellow-400 text-slate-900 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
-          aria-label="Quick Actions Menu"
+          className={`p-4 rounded-full shadow-2xl transition-all border duration-300 flex items-center justify-center cursor-pointer ${
+            isQuickActionsOpen 
+              ? 'bg-slate-900 text-yellow-400 border-yellow-400 rotate-45 scale-105' 
+              : 'bg-yellow-400 hover:bg-yellow-300 text-slate-900 border-yellow-300 hover:scale-110 shadow-[0_0_25px_rgba(250,204,21,0.5)]'
+          }`}
+          aria-label="Toggle Quick Navigation"
         >
-          {isQuickActionsOpen ? <X size={20} /> : <Menu size={20} />}
+          {isQuickActionsOpen ? <X size={24} /> : <Compass size={24} />}
         </button>
       </div>
 
@@ -2998,10 +3024,10 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={scrollToTop}
-            className="fixed bottom-14 right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer"
+            className="fixed bottom-14 right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_25px_rgba(250,204,21,0.5)] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer border border-yellow-300"
             aria-label="Back to Top"
           >
-            <ArrowUp size={20} />
+            <ArrowUp size={20} className="font-extrabold" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -3012,7 +3038,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
             onClick={() => setSelectedExecutive(null)}
           >
             <motion.div
@@ -3020,59 +3046,73 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className={`border rounded-3xl p-6 sm:p-8 max-w-xl w-full relative shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto ${isDarkMode ? 'bg-slate-900/90 border-yellow-400/30 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+              className={`border rounded-3xl max-w-lg w-full overflow-hidden relative shadow-2xl ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
             >
               <button
                 onClick={() => setSelectedExecutive(null)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer z-10 p-2 bg-slate-900/50 rounded-full"
+                className="absolute top-4 right-4 z-30 p-2 rounded-full bg-slate-950/60 text-white hover:bg-yellow-400 hover:text-slate-900 transition-colors cursor-pointer"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
 
-              <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left mb-6">
-                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-2 border-yellow-400/50 shrink-0 shadow-lg relative">
-                  <img referrerPolicy="no-referrer" src={selectedExecutive.imageUrl || undefined} alt={selectedExecutive.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="space-y-2">
-                  <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-400">
+              <div className="aspect-[4/3] overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
+                <img 
+                  referrerPolicy="no-referrer" 
+                  src={selectedExecutive.imageUrl || selectedExecutive.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"} 
+                  alt={selectedExecutive.name} 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80";
+                  }}
+                  className="w-full h-full object-cover" 
+                />
+                <div className="absolute bottom-4 left-6 right-6 z-20">
+                  <span className="inline-block px-3 py-1 mb-2 bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 text-[10px] font-bold uppercase tracking-widest rounded backdrop-blur-md">
                     {selectedExecutive.office}
                   </span>
-                  <h3 className="text-2xl font-black text-yellow-400 font-space-grotesk">{selectedExecutive.name}</h3>
-                  {selectedExecutive.nickname && (
-                    <p className="text-sm font-bold text-yellow-300">'{selectedExecutive.nickname}'</p>
-                  )}
-                  <p className="text-xs text-slate-400 uppercase font-semibold">{selectedExecutive.department}</p>
+                  <h3 className="text-2xl font-black text-white font-space-grotesk">{selectedExecutive.name}</h3>
+                  <p className="text-xs text-yellow-300 font-semibold uppercase tracking-wider">{selectedExecutive.department}</p>
                 </div>
               </div>
 
-              {selectedExecutive.manifesto && (
-                <div className={`p-4 rounded-xl border mb-6 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 mb-2">Manifesto / Vision Statement</h4>
-                  <p className="text-xs leading-relaxed italic text-slate-300">{selectedExecutive.manifesto}</p>
+              <div className="p-6 space-y-4">
+                <div>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Executive Bio</h4>
+                  <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    {selectedExecutive.bio || `${selectedExecutive.name} serves as the ${selectedExecutive.office} for the 36th NASS LASU Administration, representing the ${selectedExecutive.department} with dedication and leadership.`}
+                  </p>
                 </div>
-              )}
 
-              {selectedExecutive.bio && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Biography</h4>
-                  <p className="text-xs leading-relaxed text-slate-300">{selectedExecutive.bio}</p>
+                {selectedExecutive.keyAchievements && (
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Key Initiatives & Roles</h4>
+                    <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      {selectedExecutive.keyAchievements}
+                    </p>
+                  </div>
+                )}
+
+                <div className="pt-2 flex items-center justify-between border-t border-white/10">
+                  <span className="text-[10px] font-mono text-yellow-500 uppercase">36th NASS LASU Executive Council</span>
+                  <button
+                    onClick={() => setSelectedExecutive(null)}
+                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
                 </div>
-              )}
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {selectedEventGallery && (
-          <PageantGallery
-            isOpen={!!selectedEventGallery}
-            onClose={() => setSelectedEventGallery(null)}
-            images={selectedEventGallery.images}
-            title={selectedEventGallery.title}
-          />
-        )}
-      </AnimatePresence>
+      <PageantGallery
+        isOpen={!!selectedEventGallery}
+        onClose={() => setSelectedEventGallery(null)}
+        title={selectedEventGallery?.title || ''}
+        images={selectedEventGallery?.images || []}
+      />
     </div>
   );
 }
