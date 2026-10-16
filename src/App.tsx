@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll } from 'motion/react';
 import { BackgroundEngine } from './components/BackgroundEngine';
 import { CursorTrail } from './components/CursorTrail';
 const Chatbot = lazy(() => import('./components/Chatbot').then(m => ({ default: m.Chatbot })));
-import { AdminGate } from './components/AdminGate';
+import { AdminGate, SuperAdminOnly } from './components/AdminGate';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 import { PageantGallery } from './components/PageantGallery';
@@ -1019,6 +1019,10 @@ export default function App() {
   };
 
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
+
+  // News Flash bulletin published from the Admin Panel (hidden when status is Inactive)
+  const newsFlashText = (siteContentMap.news_flash_content || '').trim();
+  const newsFlashLive = newsFlashText.length > 0 && siteContentMap.news_flash_status !== 'Inactive';
 
   return (
     <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
@@ -2476,10 +2480,21 @@ export default function App() {
                 ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
                 : 'bg-white border-slate-200'
             }`}>
-              <div className="relative z-10 max-w-md mx-auto space-y-4">
+              <div className={`relative z-10 mx-auto space-y-4 ${newsFlashLive ? 'max-w-3xl' : 'max-w-md'}`}>
                 <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mx-auto shadow-inner">
                   <Megaphone size={28} className="animate-pulse" />
                 </div>
+                {newsFlashLive ? (
+                  <>
+                    <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                      Latest Bulletin
+                    </h3>
+                    <p className={`text-sm md:text-base leading-relaxed whitespace-pre-line ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                      {renderWithBold(newsFlashText, isDarkMode)}
+                    </p>
+                  </>
+                ) : (
+                  <>
                 
                 <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
                   Official news coming soon
@@ -2488,7 +2503,9 @@ export default function App() {
                 <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                   The Secretariat is currently preparing upcoming press releases and official updates. Please check back shortly.
                 </p>
-              </div>
+                  </>
+                )}
+              </div>
             </div>
           </section>
 
@@ -2619,9 +2636,11 @@ export default function App() {
             <AdminGate>
               <div className="space-y-8">
                 <Suspense fallback={null}><AdminPanel /></Suspense>
+                <SuperAdminOnly>
                 <LandmarkAdminManager landmarksData={landmarksData} isDarkMode={isDarkMode} />
                 <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
                 <Base64Migrator />
+                </SuperAdminOnly>
               </div>
             </AdminGate>
           </section>
