@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
   signInWithPopup, 
   GoogleAuthProvider, 
@@ -53,13 +54,27 @@ export const SecretariatFeedback = () => {
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const subject = String(data.get('subject') || '').trim().slice(0, 200);
+    const message = String(data.get('message') || '').trim().slice(0, 2000);
+    if (!subject || !message) return;
+
     setFeedbackLoading(true);
-    
-    setTimeout(() => {
-      setFeedbackLoading(false);
+    try {
+      await addDoc(collection(db, 'feedback'), {
+        subject,
+        message,
+        createdAt: serverTimestamp()
+      });
       addToast('Feedback submitted successfully! Thank you.', 'success');
-      (e.target as HTMLFormElement).reset();
-    }, 1000);
+      form.reset();
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+      addToast('Could not send your feedback. Please check your connection and try again.', 'error');
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -144,11 +159,11 @@ export const SecretariatFeedback = () => {
         <form onSubmit={handleFeedbackSubmit} className="space-y-4">
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Subject</label>
-            <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 text-white placeholder-slate-500" placeholder="What is this regarding?" />
+            <input required name="subject" maxLength={200} type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 text-white placeholder-slate-500" placeholder="What is this regarding?" />
           </div>
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Message</label>
-            <textarea required rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 text-white placeholder-slate-500 resize-none" placeholder="Type your feedback here..."></textarea>
+            <textarea required name="message" maxLength={2000} rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-400/50 text-white placeholder-slate-500 resize-none" placeholder="Type your feedback here..."></textarea>
           </div>
           <button type="submit" disabled={feedbackLoading} className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest px-8 py-3 rounded-xl transition-colors text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] disabled:opacity-50 disabled:cursor-not-allowed">
             {feedbackLoading ? 'Submitting...' : 'Submit Feedback'}
