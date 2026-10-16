@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword 
 } from 'firebase/auth';
 import { Lock, LogOut, ShieldAlert, X, Mail, Key } from 'lucide-react';
+import { isAuthorizedAdmin, isStaffEmail } from '../adminAuth';
 
 export function AdminGate({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -19,22 +20,16 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Authorized Admin & Google Sign-In Emails
-  const ALLOWED_ADMIN_EMAILS = [
-    'honour2est@gmail.com', 
-    'ekopeters@gmail.com'
-  ];
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
 
-        if (!ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
+        if (!isStaffEmail(currentUser.email)) {
           setError(`Access denied for ${currentUser.email}. Not an authorized admin.`);
           signOut(auth); 
           setUser(null);
-        } else if (isGoogleProvider && !ALLOWED_ADMIN_EMAILS.includes(currentUser.email || '')) {
+        } else if (isGoogleProvider && !isStaffEmail(currentUser.email)) {
           setError('Google Sign-In is restricted to authorized admins.');
           signOut(auth);
           setUser(null);
@@ -197,4 +192,16 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
       )}
     </>
   );
+}
+
+// Wrap anything that only FULL admins may see (hides it from media officers).
+export function SuperAdminOnly({ children }: { children: React.ReactNode }) {
+  const [email, setEmail] = useState<string | null>(auth.currentUser?.email ?? null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => setEmail(u?.email ?? null));
+    return () => unsubscribe();
+  }, []);
+
+  return isAuthorizedAdmin(email) ? <>{children}</> : null;
 }
