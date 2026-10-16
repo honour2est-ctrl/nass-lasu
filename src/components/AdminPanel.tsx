@@ -22,48 +22,7 @@ const LIMITED_OFFICER_EMAILS = [
 // FILE / IMAGE UPLOAD HELPERS
 // ============================================================================
 
-const fileToDataUrl = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    if (file.type.startsWith('image/')) {
-      const img = new Image();
-      const reader = new FileReader();
-      reader.onload = (e) => { img.src = e.target?.result as string; };
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        const maxDim = 800;
-        if (width > maxDim || height > maxDim) {
-          if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
-          else { width = Math.round((width * maxDim) / height); height = maxDim; }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.65));
-          return;
-        }
-        resolve(img.src);
-      };
-      img.onerror = () => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result as string);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result as string);
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    }
-  });
-};
-
-const compressImageToBlob = (file: File, maxDim = 1600, quality = 0.82): Promise<Blob> => {
+const compressImageToBlob = (file: File, maxDim = 1280, quality = 0.8): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const reader = new FileReader();
@@ -90,18 +49,18 @@ const compressImageToBlob = (file: File, maxDim = 1600, quality = 0.82): Promise
 };
 
 const uploadFile = async (file: File): Promise<string> => {
-  try {
-    const isImage = file.type.startsWith('image/');
-    const uploadBody = isImage ? await compressImageToBlob(file) : file;
-    const ext = isImage ? 'jpg' : (file.name.split('.').pop() || 'bin');
-    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.[a-zA-Z0-9]+$/, '')}.${ext}`;
-    const storageRef = ref(storage, `uploads/${fileName}`);
-    await uploadBytes(storageRef, uploadBody);
-    return await getDownloadURL(storageRef);
-  } catch (err) {
-    console.warn('Firebase Storage upload failed, falling back to Data URL:', err);
-    return await fileToDataUrl(file);
-  }
+  const isImage = file.type.startsWith('image/');
+  const uploadBody: Blob = isImage ? await compressImageToBlob(file) : file;
+  const wasCompressed = isImage && uploadBody !== file;
+  const ext = wasCompressed ? 'jpg' : (file.name.split('.').pop() || 'bin');
+  const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.[a-zA-Z0-9]+$/, '')}.${ext}`;
+  const storageRef = ref(storage, `uploads/${fileName}`);
+  // File names are unique (timestamped), so browsers can safely cache them for a year.
+  await uploadBytes(storageRef, uploadBody, {
+    contentType: uploadBody.type || file.type || undefined,
+    cacheControl: 'public,max-age=31536000',
+  });
+  return await getDownloadURL(storageRef);
 };
 
 const parseGallery = (value: any): string[] => {
@@ -117,13 +76,16 @@ const parseGallery = (value: any): string[] => {
 const FileUploadZone = ({ value, onChange, label, highContrast }: { value: string; onChange: (val: string) => void; label: string; highContrast: boolean; }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
 
   const processFile = async (file: File) => {
     setIsUploading(true);
+    setError('');
     try {
       onChange(await uploadFile(file));
     } catch (err) {
       console.error('Error uploading file:', err);
+      setError('Upload failed. Check your internet connection and Firebase Storage/billing, then try again.');
     } finally {
       setIsUploading(false);
     }
@@ -165,6 +127,7 @@ const FileUploadZone = ({ value, onChange, label, highContrast }: { value: strin
           )}
         </>
       )}
+      {error && <p className="mt-3 text-xs font-bold text-red-400">{error}</p>}
     </div>
   );
 };
@@ -172,21 +135,28 @@ const FileUploadZone = ({ value, onChange, label, highContrast }: { value: strin
 const GalleryUploadZone = ({ value, onChange, highContrast }: { value: string; onChange: (val: string) => void; highContrast: boolean; }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  const [error, setError] = useState('');
   const images = parseGallery(value);
 
   const handleFiles = async (files: FileList) => {
     if (!files.length) return;
     setIsUploading(true);
     setProgress({ current: 0, total: files.length });
+    setError('');
+    const uploaded: string[] = [];
+    let failed = 0;
     try {
-      const uploaded: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        uploaded.push(await uploadFile(files[i]));
+        try {
+          uploaded.push(await uploadFile(files[i]));
+        } catch (err) {
+          failed++;
+          console.error('Error uploading gallery image:', err);
+        }
         setProgress({ current: i + 1, total: files.length });
       }
-      onChange(Array.from(new Set([...images, ...uploaded])).join(','));
-    } catch (err) {
-      console.error('Error batch uploading gallery images:', err);
+      if (uploaded.length > 0) onChange(Array.from(new Set([...images, ...uploaded])).join(','));
+      if (failed > 0) setError(`${failed} of ${files.length} photos failed to upload. Check your internet connection and Firebase Storage/billing, then try those again.`);
     } finally {
       setIsUploading(false);
       setProgress(null);
@@ -202,6 +172,7 @@ const GalleryUploadZone = ({ value, onChange, highContrast }: { value: string; o
           <input type="file" multiple accept="image/*" className="hidden" disabled={isUploading} onChange={(e) => e.target.files && handleFiles(e.target.files)} />
         </label>
         <span className="text-[11px] text-slate-400">Select multiple photos at once</span>
+        {error && <p className="text-xs font-bold text-red-400">{error}</p>}
         {progress && (
           <div className="w-full bg-slate-900/90 p-3 rounded-xl border border-yellow-400/30 space-y-2 mt-2 text-left">
             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-white/10">
