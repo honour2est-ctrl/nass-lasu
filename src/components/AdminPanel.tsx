@@ -10,13 +10,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { AdminField, AdminSection, BUILT_IN_SECTIONS, blankItemFor, withOrderField, sortByOrder } from '../adminSections';
-import { isAuthorizedAdmin } from '../adminAuth';
-
-// Explicitly defined Limited Media Officers
-const LIMITED_OFFICER_EMAILS = [
-  'akachukwuezekiel40@gmail.com',
-  'inioluwaadelegan5@gmail.com'
-];
+import { isAuthorizedAdmin, isLimitedOfficer as isLimitedOfficerEmail } from '../adminAuth';
 
 // ============================================================================
 // FILE / IMAGE UPLOAD HELPERS
@@ -318,6 +312,15 @@ const NewSectionModal = ({ onClose, onCreate, highContrast }: { onClose: () => v
 // PARTNERS & SPONSORS CONFIGURATION
 // ============================================================================
 
+// Dedicated tab for the News Flash bulletin (and, for full admins, the ticker).
+const NEWS_SECTION: AdminSection = {
+  key: 'site_content',
+  label: 'News Flash',
+  collection: 'siteContent',
+  titleField: 'label',
+  fields: [],
+};
+
 const PARTNERS_SECTION: AdminSection = {
   key: 'partners',
   label: 'Partners',
@@ -387,7 +390,7 @@ export const AdminPanel = () => {
 
   // Email Normalization & Officer Checks
   const userEmailNormalized = user?.email?.toLowerCase().trim() || '';
-  const isLimitedOfficer = LIMITED_OFFICER_EMAILS.includes(userEmailNormalized);
+  const isLimitedOfficer = isLimitedOfficerEmail(userEmailNormalized);
 
   // Combine built-ins and custom sections
   const allSections = useMemo(() => {
@@ -395,11 +398,12 @@ export const AdminPanel = () => {
       PARTNERS_SECTION,
       SPONSORS_SECTION,
       ...BUILT_IN_SECTIONS,
+      NEWS_SECTION,
       ...customSections
     ].map(withOrderField);
 
     if (isLimitedOfficer) {
-      // Strictly expose Events & Site Content tabs to limited officers
+      // Media officers only get the Events and News Flash tabs
       return rawList.filter((sec) => sec.key === 'events' || sec.key === 'site_content');
     }
 
@@ -823,6 +827,7 @@ export const AdminPanel = () => {
           </div>
 
           {/* Marquee Ticker Quick Editor */}
+          {!isLimitedOfficer && (
           <div className={`p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-yellow-400/5 border-yellow-400/20'}`}>
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
@@ -848,6 +853,7 @@ export const AdminPanel = () => {
               </button>
             </form>
           </div>
+          )}
         </div>
       )}
 
@@ -860,7 +866,7 @@ export const AdminPanel = () => {
       )}
 
       {/* Edit / Add Form */}
-      {editingItem ? (
+      {activeSectionKey !== 'site_content' && (editingItem ? (
         <form onSubmit={handleSaveEdit} className="space-y-4 bg-slate-800/30 p-6 rounded-xl border border-white/10">
           <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-2">
             <h5 className="text-white font-bold">{editingItem.id ? `Edit ${activeSection.label.replace(/s$/, '')}` : `New ${activeSection.label.replace(/s$/, '')}`}</h5>
@@ -941,7 +947,7 @@ export const AdminPanel = () => {
             {filteredData.length === 0 && <p className="text-slate-500 text-sm col-span-2 text-center py-8">No items yet. Click "Add New" to create one.</p>}
           </div>
         </div>
-      )}
+      ))}
 
       {showNewSection && !isLimitedOfficer && <NewSectionModal onClose={() => setShowNewSection(false)} onCreate={handleCreateSection} highContrast={highContrast} />}
     </div>
