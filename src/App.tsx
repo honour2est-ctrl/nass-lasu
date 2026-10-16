@@ -7,6 +7,7 @@ import { AdminGate } from './components/AdminGate';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 import { PageantGallery } from './components/PageantGallery';
+import { Base64Migrator } from './components/Base64Migrator';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown, Building2, Plus, Trash2, Edit3, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc, addDoc, deleteDoc } from 'firebase/firestore';
@@ -2620,6 +2621,7 @@ export default function App() {
                 <Suspense fallback={null}><AdminPanel /></Suspense>
                 <LandmarkAdminManager landmarksData={landmarksData} isDarkMode={isDarkMode} />
                 <SecretariatInlineEditor siteContentMap={siteContentMap} isDarkMode={isDarkMode} />
+                <Base64Migrator />
               </div>
             </AdminGate>
           </section>
