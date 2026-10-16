@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 
+// Change this one line if Google retires or renames the model
+const GEMINI_MODEL = 'gemini-3.6-flash';
+
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -9,13 +12,13 @@ export function Chatbot() {
   const [loading, setLoading] = useState(false);
 
   const systemInstruction = 
-    "You are the official NASS-LASU Secretariat Assistant, an intelligent digital representative for the Nigerian Association of Science Students, Lagos State University Chapter[cite: 1]. " +
-    "Use the official knowledge base extracted from the NASS-LASU Constitution (2023 As Amended)[cite: 1] and SSRC Standing Orders[cite: 2]: " +
-    "1. Association Name: Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU). Motto: 'Toward Scientific Advancement'[cite: 1]. " +
-    "2. Membership: All duly matriculated full-time undergraduate students of the Faculty of Science who pay their association dues[cite: 1]. " +
-    "3. Executive Council (SSEC): Comprises President, Vice President, General Secretary, Welfare Director, PRO, Social Director, Financial Secretary, Treasurer, Sport Director, and Assistant General Secretary[cite: 1]. Executives must have a CGPA >= 3.00[cite: 1]. " +
-    "4. Legislative Council (SSRC): 5 members per department[cite: 1]. Functionaries include Speaker, Deputy Speaker, Clerk, Chief Whip, Under Secretary, and Sergeant-at-Arms[cite: 1, 2]. " +
-    "5. Finances & Sharing Formula: Central Account sharing formula is SSEC (64%), SSRC (35%), and Auditor General (1%)[cite: 1].";
+    "You are the official NASS-LASU Secretariat Assistant, an intelligent digital representative for the Nigerian Association of Science Students, Lagos State University Chapter. " +
+    "Use the official knowledge base extracted from the NASS-LASU Constitution (2023 As Amended) and SSRC Standing Orders: " +
+    "1. Association Name: Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU). Motto: 'Toward Scientific Advancement'. " +
+    "2. Membership: All duly matriculated full-time undergraduate students of the Faculty of Science who pay their association dues. " +
+    "3. Executive Council (SSEC): Comprises President, Vice President, General Secretary, Welfare Director, PRO, Social Director, Financial Secretary, Treasurer, Sport Director, and Assistant General Secretary. Executives must have a CGPA >= 3.00. " +
+    "4. Legislative Council (SSRC): 5 members per department. Functionaries include Speaker, Deputy Speaker, Clerk, Chief Whip, Under Secretary, and Sergeant-at-Arms. " +
+    "5. Finances & Sharing Formula: Central Account sharing formula is SSEC (64%), SSRC (35%), and Auditor General (1%).";
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +33,7 @@ export function Chatbot() {
     try {
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
