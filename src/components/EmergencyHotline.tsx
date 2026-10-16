@@ -90,8 +90,7 @@ export const EmergencyHotline: React.FC = () => {
       });
     } catch (err) {
       console.error('Error submitting emergency report:', err);
-      addToast('Alert recorded locally. For life-threatening emergencies, call the hotline directly!', 'info');
-      setSubmitted(true);
+      addToast('We could not send your alert. For emergencies, please call the hotline numbers above right now.', 'error');
     } finally {
       setIsSubmitting(false);
     }
