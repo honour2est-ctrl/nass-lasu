@@ -4,10 +4,9 @@ import {
   onAuthStateChanged, 
   signInWithPopup, 
   GoogleAuthProvider, 
-  signOut, 
-  signInWithEmailAndPassword 
+  signOut
 } from 'firebase/auth';
-import { Lock, LogOut, ShieldAlert, X, Mail, Key } from 'lucide-react';
+import { Lock, LogOut, ShieldAlert, X } from 'lucide-react';
 import { isAuthorizedAdmin, isStaffEmail } from '../adminAuth';
 
 export function AdminGate({ children }: { children: React.ReactNode }) {
@@ -17,8 +16,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -29,8 +26,8 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
           setError(`Access denied for ${currentUser.email}. Not an authorized admin.`);
           signOut(auth); 
           setUser(null);
-        } else if (isGoogleProvider && !isStaffEmail(currentUser.email)) {
-          setError('Google Sign-In is restricted to authorized admins.');
+        } else if (!isGoogleProvider) {
+          setError('Admin access requires Google sign-in.');
           signOut(auth);
           setUser(null);
         } else {
@@ -51,22 +48,10 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     setSubmitting(true);
     try {
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider); 
     } catch (err: any) {
       setError('Google Sign-In failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err: any) {
-      setError('Invalid email or password. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -142,51 +127,6 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               {submitting ? 'Authenticating...' : 'Sign in with Google'}
             </button>
 
-            <div className="relative flex py-2 items-center mb-6">
-              <div className="flex-grow border-t border-white/10"></div>
-              <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-widest">Or sign in with email</span>
-              <div className="flex-grow border-t border-white/10"></div>
-            </div>
-
-            <form onSubmit={handleEmailLogin} className="space-y-4 text-left">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3.5 text-slate-500" size={16} />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@nasslasu.com"
-                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Password</label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3.5 text-slate-500" size={16} />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold py-3.5 rounded-xl transition-all text-xs uppercase tracking-wider shadow-lg cursor-pointer mt-2 disabled:opacity-50"
-              >
-                {submitting ? 'Signing in...' : 'Sign In with Email'}
-              </button>
-            </form>
           </div>
         </div>
       )}
