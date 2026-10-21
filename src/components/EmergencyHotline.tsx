@@ -68,14 +68,43 @@ export const EmergencyHotline: React.FC = () => {
     }
 
     setIsSubmitting(true);
+    const report = { ...formData };
+
+    // 1) Save the report so admins can see it in the Admin Panel
+    let saved = false;
+    let reportId: string | null = null;
     try {
       if (db) {
-        await addDoc(collection(db, 'emergency_reports'), {
-          ...formData,
+        const docRef = await addDoc(collection(db, 'emergency_reports'), {
+          ...report,
           createdAt: serverTimestamp(),
           status: 'pending'
         });
+        reportId = docRef.id;
+        saved = true;
       }
+    } catch (err) {
+      console.error('Error saving emergency report:', err);
+    }
+
+    // 2) Alert the admins right away (works even if the save above failed)
+    let notified = false;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch('/api/emergency', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...report, reportId }),
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      notified = res.ok;
+    } catch (err) {
+      console.error('Error sending emergency notification:', err);
+    }
+
+    if (saved || notified) {
       setSubmitted(true);
       addToast('Emergency alert transmitted to Squad dispatch!', 'success');
       setFormData({
@@ -88,19 +117,17 @@ export const EmergencyHotline: React.FC = () => {
         description: '',
         urgency: 'High'
       });
-    } catch (err) {
-      console.error('Error submitting emergency report:', err);
+    } else {
       addToast('We could not send your alert. For emergencies, please call the hotline numbers above right now.', 'error');
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-slate-900/90 border border-yellow-400/30 p-6 md:p-10 shadow-[0_0_50px_rgba(250,204,21,0.15)] backdrop-blur-xl">
+    <div className="relative overflow-hidden rounded-3xl bg-slate-900/90 border border-yellow-400/30 p-6 md:p-10 shadow-[0_0_50px_rgba(250,204,21,0.15)] md:backdrop-blur-xl">
       {/* Background ambient glow */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-400/10 hidden md:block rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-500/10 hidden md:block rounded-full blur-3xl pointer-events-none" />
 
       {/* Header Badge */}
       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400 text-slate-900 font-black text-xs uppercase tracking-widest mb-6 shadow-md">
