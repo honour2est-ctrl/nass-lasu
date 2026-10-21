@@ -75,6 +75,9 @@ export const RECOGNIZED_CONTENT_KEYS = [
   'executive_arm_text',
   'legislative_arm_text',
   'footer_tagline',
+  'social_x',          // full web address, e.g. https://x.com/yourpage
+  'social_linkedin',   // full web address
+  'social_instagram',  // full web address
   'secretariat_description_1',
   'secretariat_description_2',
   'secretariat_phone',
