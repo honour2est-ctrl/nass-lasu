@@ -42,6 +42,9 @@ const renderWithBold = (text: string, isDarkMode: boolean) => {
   });
 };
 
+// Only allow normal web links (protects against odd values typed into the admin panel)
+const safeUrl = (u?: string): string | undefined => (u && /^https?:\/\//i.test(u.trim()) ? u.trim() : undefined);
+
 const INITIAL_EVENTS_DATA = [
   {
     id: 1,
@@ -686,7 +689,6 @@ export default function App() {
   const [vaultSearchQuery, setVaultSearchQuery] = useState('');
   const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [eventsData, setEventsData] = useState<any[]>(INITIAL_EVENTS_DATA);
   const [landmarksData, setLandmarksData] = useState<any[]>(INITIAL_LANDMARKS_DATA);
   const [executivesData, setExecutivesData] = useState<any[]>([]);
@@ -713,165 +715,158 @@ export default function App() {
     }
   });
 
-  useEffect(() => {
-    const unsubLandmarks = onSnapshot(collection(db, 'landmarks'), (snap) => {
-      if (!snap.empty) {
-        setLandmarksData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setLandmarksData(INITIAL_LANDMARKS_DATA);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (landmarks):", error.message);
-    });
+  // ---------------------------------------------------------------------------
+  // LIVE DATA: page text loads immediately (it is tiny). Every other section
+  // starts loading only when it is about to scroll into view, so the first
+  // visit on a phone downloads far less.
+  // ---------------------------------------------------------------------------
+  const unsubsRef = useRef<Record<string, () => void>>({});
+  const [nearSections, setNearSections] = useState<Record<string, boolean>>({});
+  const [dataReady, setDataReady] = useState<Record<string, boolean>>({});
 
-    const unsubBrands = onSnapshot(collection(db, 'studentBrands'), (snap) => {
-      if (!snap.empty) {
-        setStudentBrandsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setStudentBrandsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (studentBrands):", error.message);
-    });
-    
-    const unsubExecs = onSnapshot(collection(db, 'executives'), (snap) => {
-      if (!snap.empty) {
-        setExecutivesData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setExecutivesData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (executives):", error.message);
-    });
+  const markReady = (key: string) => setDataReady(prev => (prev[key] ? prev : { ...prev, [key]: true }));
 
-    const unsubSsrc = onSnapshot(collection(db, 'ssrcMembers'), (snap) => {
-      if (!snap.empty) {
-        setSsrcMembersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSsrcMembersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (ssrcMembers):", error.message);
-    });
+  const startFeed = (key: string, start: () => () => void) => {
+    if (unsubsRef.current[key]) return;
+    unsubsRef.current[key] = start();
+  };
 
-    const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => {
-      if (!snap.empty) {
-        setPartnersData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setPartnersData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (partners):", error.message);
-    });
+  const listen = (key: string, collName: string, setter: (rows: any[]) => void, fallback: any[] = []) =>
+    startFeed(key, () => onSnapshot(collection(db, collName), (snap) => {
+      setter(snap.empty ? fallback : snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(sortByOrder));
+      markReady(key);
+    }, (error) => {
+      console.warn(`Firestore listener warning (${collName}):`, error.message);
+      markReady(key);
+    }));
 
-    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
-      if (!snap.empty) {
-        setSponsorsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setSponsorsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (sponsors):", error.message);
-    });
+  const startEvents = () =>
+    startFeed('events', () => onSnapshot(collection(db, 'events'), (snap) => {
+      if (!snap.empty) {
+        const fetchedEvents = snap.docs.map(d => {
+          const data = d.data();
+          const initialMatch = INITIAL_EVENTS_DATA.find(i => i.id.toString() === d.id || i.title?.toUpperCase() === (data.title || '').toUpperCase());
+          const rawImages = data.images || data.image || initialMatch?.images || initialMatch?.image || [];
+          const cleanImages = (Array.isArray(rawImages) ? rawImages : String(rawImages).split(','))
+            .map((s: any) => String(s).trim())
+            .filter((s: string) => s.length > 0);
+          return {
+            ...initialMatch,
+            ...data,
+            id: d.id,
+            images: cleanImages.length > 0 ? cleanImages : (initialMatch?.images || [])
+          };
+        });
+        setEventsData(fetchedEvents.sort(sortByOrder));
+      } else {
+        setEventsData(INITIAL_EVENTS_DATA);
+      }
+      markReady('events');
+    }, (error) => {
+      console.warn('Firestore listener warning (events):', error.message);
+      markReady('events');
+    }));
 
-    const unsubEvents = onSnapshot(collection(db, 'events'), (snap) => {
-      if (!snap.empty) {
-        const fetchedEvents = snap.docs.map(doc => {
-          const data = doc.data();
-          const initialMatch = INITIAL_EVENTS_DATA.find(i => i.id.toString() === doc.id || i.title?.toUpperCase() === (data.title || '').toUpperCase());
-          const rawImages = data.images || data.image || initialMatch?.images || initialMatch?.image || [];
-          const cleanImages = (Array.isArray(rawImages) ? rawImages : String(rawImages).split(','))
-            .map((s: any) => String(s).trim())
-            .filter((s: string) => s.length > 0);
-          return {
-            ...initialMatch,
-            ...data,
-            id: doc.id,
-            images: cleanImages.length > 0 ? cleanImages : (initialMatch?.images || [])
-          };
-        });
-        setEventsData(fetchedEvents.sort(sortByOrder));
-      } else {
-        setEventsData(INITIAL_EVENTS_DATA);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (events):", error.message);
-    });
+  // Which data each section needs
+  const feedStarters: Record<string, () => void> = {
+    corePillars: () => listen('corePillars', 'corePillars', setCorePillarsData),
+    executives: () => listen('executives', 'executives', setExecutivesData),
+    hallOfFame: () => listen('hallOfFame', 'hallOfFame', setHallOfFameData),
+    ssrcMembers: () => listen('ssrcMembers', 'ssrcMembers', setSsrcMembersData),
+    legislativeDocs: () => listen('legislativeDocs', 'legislative_documents', setLegislativeDocsData),
+    vaultItems: () => listen('vaultItems', 'vaultItems', setVaultItemsData),
+    events: startEvents,
+    studentBrands: () => listen('studentBrands', 'studentBrands', setStudentBrandsData),
+    partners: () => listen('partners', 'partners', setPartnersData),
+    sponsors: () => listen('sponsors', 'sponsors', setSponsorsData),
+    landmarks: () => listen('landmarks', 'landmarks', setLandmarksData, INITIAL_LANDMARKS_DATA),
+  };
 
-    const unsubVaultItems = onSnapshot(collection(db, 'vaultItems'), (snap) => {
-      if (!snap.empty) {
-        setVaultItemsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-      } else {
-        setVaultItemsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (vaultItems):", error.message);
-    });
+  const SECTION_FEEDS: Record<string, string[]> = {
+    digitalized: ['corePillars'],
+    executives: ['executives'],
+    'hall-of-fame': ['hallOfFame'],
+    ssrc: ['ssrcMembers', 'legislativeDocs', 'vaultItems'],
+    events: ['events'],
+    vault: ['vaultItems'],
+    brands: ['studentBrands'],
+    partners: ['partners'],
+    sponsors: ['sponsors'],
+    admin: ['landmarks'],
+    landmarks: ['landmarks'],
+  };
 
-    const unsubLegislativeDocs = onSnapshot(collection(db, 'legislative_documents'), (snap) => {
-      if (!snap.empty) {
-        setLegislativeDocsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } else {
-        setLegislativeDocsData([]);
-      }
-    }, (error) => {
-      console.warn("Firestore listener warning (legislative_documents):", error.message);
-    });
+  // Always-needed page text (hero text, ticker, secretariat details, ...)
+  useEffect(() => {
+    const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
+      const map = { ...existingMap };
+      snap.docs.forEach((doc: any) => {
+        const d = doc.data();
+        const key = d.contentKey || doc.id;
+        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || d.imageUrl || d.name || d.bio || '');
+        if (key) map[key] = val;
+      });
+      return map;
+    };
 
-    const unsubCorePillars = onSnapshot(collection(db, 'corePillars'), (snap) => {
-      setCorePillarsData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (corePillars):", error.message);
-    });
+    let combinedMap: Record<string, string> = {};
+    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
+      combinedMap = updateMapFromSnap(snap, combinedMap);
+      setSiteContentMap({ ...combinedMap });
+    }, (error) => {
+      console.warn("Firestore listener warning (siteContent):", error.message);
+    });
 
-    const unsubHallOfFame = onSnapshot(collection(db, 'hallOfFame'), (snap) => {
-      setHallOfFameData(snap.empty ? [] : snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort(sortByOrder));
-    }, (error) => {
-      console.warn("Firestore listener warning (hallOfFame):", error.message);
-    });
+    const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
+      combinedMap = updateMapFromSnap(snap, combinedMap);
+      setSiteContentMap({ ...combinedMap });
+    }, (error) => {
+      console.warn("Firestore listener warning (site_content):", error.message);
+    });
 
-    const updateMapFromSnap = (snap: any, existingMap: Record<string, string>) => {
-      const map = { ...existingMap };
-      snap.docs.forEach((doc: any) => {
-        const d = doc.data();
-        const key = d.contentKey || doc.id;
-        const val = d.value !== undefined ? d.value : (d.url || d.image || d.text || d.imageUrl || d.name || d.bio || '');
-        if (key) map[key] = val;
-      });
-      return map;
-    };
+    return () => {
+      unsubSiteContent();
+      unsubSiteContentAlt();
+    };
+  }, []);
 
-    let combinedMap: Record<string, string> = {};
-    const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
-      combinedMap = updateMapFromSnap(snap, combinedMap);
-      setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (siteContent):", error.message);
-    });
+  // Notice which sections are about to be scrolled into view
+  useEffect(() => {
+    const ids = Object.keys(SECTION_FEEDS);
+    if (typeof IntersectionObserver === 'undefined') {
+      setNearSections(Object.fromEntries(ids.map(id => [id, true])));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = (entry.target as HTMLElement).id;
+          setNearSections(prev => (prev[id] ? prev : { ...prev, [id]: true }));
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '900px 0px' });
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
 
-    const unsubSiteContentAlt = onSnapshot(collection(db, 'site_content'), (snap) => {
-      combinedMap = updateMapFromSnap(snap, combinedMap);
-      setSiteContentMap({ ...combinedMap });
-    }, (error) => {
-      console.warn("Firestore listener warning (site_content):", error.message);
-    });
+  // Start the data feeds for the sections that are near the screen
+  useEffect(() => {
+    const wanted = new Set<string>();
+    Object.entries(nearSections).forEach(([section, near]) => {
+      if (near) (SECTION_FEEDS[section] || []).forEach(k => wanted.add(k));
+    });
+    wanted.forEach(key => feedStarters[key]?.());
+  }, [nearSections]);
 
-    return () => {
-      unsubLandmarks();
-      unsubBrands();
-      unsubExecs();
-      unsubSsrc();
-      unsubEvents();
-      unsubVaultItems();
-      unsubLegislativeDocs();
-      unsubCorePillars();
-      unsubHallOfFame();
-      unsubSiteContent();
-      unsubSiteContentAlt();
-      unsubPartners();
-      unsubSponsors();
-    };
-  }, []);
+  // Stop every feed when the page closes
+  useEffect(() => () => {
+    Object.values(unsubsRef.current).forEach(unsub => unsub());
+    unsubsRef.current = {};
+  }, []);
 
   const handleDownloadDocument = async (docType: 'constitution' | 'standing_orders') => {
     const isConstitution = docType === 'constitution';
@@ -1059,84 +1054,84 @@ export default function App() {
             
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
               <a 
-                href="#vision" 
+                href="#vision" aria-label="WebApp Story" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Sparkles size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">WebApp Story</span>
               </a>
               <a 
-                href="#executives" 
+                href="#executives" aria-label="Excos" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <UserIcon size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Excos</span>
               </a>
               <a 
-                href="#hall-of-fame" 
+                href="#hall-of-fame" aria-label="Hall of Fame" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Crown size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Hall of Fame</span>
               </a>
               <a 
-                href="#vault" 
+                href="#vault" aria-label="Vault" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <BookOpen size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Vault</span>
               </a>
               <a 
-                href="#brands" 
+                href="#brands" aria-label="Market" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <ShoppingBag size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Market</span>
               </a>
               <a 
-                href="#partners" 
+                href="#partners" aria-label="Partners" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Handshake size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Partners</span>
               </a>
               <a 
-                href="#sponsors" 
+                href="#sponsors" aria-label="Sponsors" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Award size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Sponsors</span>
               </a>
               <a 
-                href="#events" 
+                href="#events" aria-label="Events" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Eye size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Events</span>
               </a>
               <a 
-                href="#hotline" 
+                href="#hotline" aria-label="Hotline" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Siren size={14} className="text-slate-900 animate-pulse" />
                 <span className="hidden lg:inline">Hotline</span>
               </a>
               <a 
-                href="#sports" 
+                href="#sports" aria-label="Sports" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Trophy size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Sports</span>
               </a>
               <a 
-                href="#news" 
+                href="#news" aria-label="News Flash" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Megaphone size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">News Flash</span>
               </a>
               <a 
-                href="#landmarks" 
+                href="#landmarks" aria-label="Landmarks" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Building2 size={14} className="text-slate-900" />
@@ -1496,7 +1491,6 @@ export default function App() {
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 TOP EXECUTIVES
               </h2>
-              <span className="text-[10px] text-yellow-500 underline cursor-pointer font-bold tracking-widest uppercase">View All</span>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1552,11 +1546,9 @@ export default function App() {
               </p>
             </div>
 
-            {hallOfFameData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+            {hallOfFameData.length === 0 ? (!dataReady.hallOfFame ? (<div className="text-center py-12 text-slate-400 text-xs uppercase tracking-widest font-bold animate-pulse">Loading...</div>) : (<div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
                 Hall of Fame records are being updated. Check back soon!
-              </div>
-            ) : (
+              </div>)) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {hallOfFameData.map((inductee) => (
                   <div
@@ -2064,11 +2056,9 @@ export default function App() {
               </p>
             </div>
 
-            {partnersData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+            {partnersData.length === 0 ? (!dataReady.partners ? (<div className="text-center py-12 text-slate-400 text-xs uppercase tracking-widest font-bold animate-pulse">Loading...</div>) : (<div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
                 Partners directory will be announced soon.
-              </div>
-            ) : (
+              </div>)) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {partnersData.map((partner) => (
                   <div 
@@ -2188,11 +2178,9 @@ export default function App() {
               </p>
             </div>
 
-            {sponsorsData.length === 0 ? (
-              <div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
+            {sponsorsData.length === 0 ? (!dataReady.sponsors ? (<div className="text-center py-12 text-slate-400 text-xs uppercase tracking-widest font-bold animate-pulse">Loading...</div>) : (<div className="text-center py-12 border rounded-3xl md:backdrop-blur-xl bg-white/5 border-white/10 text-slate-400 text-xs uppercase tracking-widest font-bold">
                 Sponsors will be updated soon.
-              </div>
-            ) : (
+              </div>)) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {sponsorsData.map((sponsor) => (
                   <div 
@@ -2803,11 +2791,19 @@ export default function App() {
             </div>
 
             <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              <div className="flex gap-6 mb-2">
-                <a href="#" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
-                <a href="#" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
-                <a href="#" className="hover:text-yellow-500 transition-colors">Instagram</a>
-              </div>
+              {(safeUrl(siteContentMap.social_x) || safeUrl(siteContentMap.social_linkedin) || safeUrl(siteContentMap.social_instagram)) && (
+                <div className="flex gap-6 mb-2">
+                  {safeUrl(siteContentMap.social_x) && (
+                    <a href={safeUrl(siteContentMap.social_x)} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
+                  )}
+                  {safeUrl(siteContentMap.social_linkedin) && (
+                    <a href={safeUrl(siteContentMap.social_linkedin)} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
+                  )}
+                  {safeUrl(siteContentMap.social_instagram) && (
+                    <a href={safeUrl(siteContentMap.social_instagram)} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">Instagram</a>
+                  )}
+                </div>
+              )}
               <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
               
               <div className="relative inline-flex items-center justify-center mt-3 group">
@@ -2843,61 +2839,7 @@ export default function App() {
 
       <Suspense fallback={null}><Chatbot /></Suspense>
 
-      <AnimatePresence>
-        {isRsvpOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 md:backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className={`border rounded-3xl p-6 md:p-8 max-w-md w-full relative shadow-2xl ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
-            >
-              <button
-                onClick={() => setIsRsvpOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-              
-              <div className="text-yellow-500 text-3xl mb-4">🎟️</div>
-              <h3 className="text-2xl font-bold mb-2">RSVP for Events</h3>
-              <p className="text-slate-400 text-sm mb-6">Register your attendance for upcoming faculty events. An email confirmation will be sent to you.</p>
-              
-              <form className="space-y-4" onSubmit={(e) => { 
-                e.preventDefault(); 
-                setIsRsvpOpen(false); 
-                addToast('RSVP submitted successfully! Check your email for confirmation.', 'success');
-              }}>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Select Event</label>
-                  <select className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 appearance-none ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
-                    <option value="science-week" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Science Week 2024</option>
-                    <option value="inauguration" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Inauguration Event</option>
-                    <option value="tech-fair" className={isDarkMode ? 'bg-slate-900' : 'bg-white'}>Tech Fair & Exhibition</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Full Name</label>
-                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. John Doe" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Matric Number</label>
-                  <input required type="text" className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-yellow-500 ${isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'}`} placeholder="e.g. 18/555... " />
-                </div>
-                
-                <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold uppercase tracking-widest py-4 rounded-xl transition-colors mt-4 text-xs shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:shadow-[0_0_30px_rgba(250,204,21,0.4)] cursor-pointer">
-                  Confirm Attendance
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       <div className="fixed bottom-14 left-6 z-50 flex flex-col items-start gap-4">
         <AnimatePresence>
