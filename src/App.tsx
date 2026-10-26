@@ -45,6 +45,15 @@ const renderWithBold = (text: string, isDarkMode: boolean) => {
 // Only allow normal web links (protects against odd values typed into the admin panel)
 const safeUrl = (u?: string): string | undefined => (u && /^https?:\/\//i.test(u.trim()) ? u.trim() : undefined);
 
+// Social platforms for the "Follow Us" section. Logo images live in the /public folder.
+// The web address of each one is set by an admin:
+// Admin Panel -> Page Text & Content -> social_tiktok / social_instagram / social_youtube
+const SOCIAL_PLATFORMS = [
+  { key: 'social_tiktok', name: 'TikTok', image: '/social-tiktok.webp' },
+  { key: 'social_instagram', name: 'Instagram', image: '/social-instagram.webp' },
+  { key: 'social_youtube', name: 'YouTube', image: '/social-youtube.webp' },
+];
+
 const INITIAL_EVENTS_DATA = [
   {
     id: 1,
@@ -2452,6 +2461,12 @@ export default function App() {
           {/* NEWS FLASH SECTION */}
           <section id="news" className="px-4 max-w-7xl mx-auto w-full pt-8">
             <div className="text-center mb-8 space-y-2">
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office Of The 36th PRO
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized And Innovative Secretariat
+              </p>
               <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
                 OFFICIAL BULLETIN
               </span>
@@ -2496,6 +2511,61 @@ export default function App() {
               </div>
             </div>
           </section>
+
+          {/* FOLLOW US / SOCIAL MEDIA SECTION */}
+          <section id="social" className="px-4 max-w-7xl mx-auto w-full pt-8">
+            <div className="text-center mb-10 space-y-3">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                STAY CONNECTED
+              </span>
+              <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                Follow Us On All Our Social Media Platforms
+              </h2>
+              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Get the latest updates, events and announcements straight from the Faculty of Science.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto">
+              {SOCIAL_PLATFORMS.map((p) => {
+                const href = safeUrl(siteContentMap[p.key]);
+                const base = `group flex flex-col items-center gap-3 p-4 sm:p-6 rounded-3xl border text-center transition-all duration-300 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`;
+                const content = (
+                  <>
+                    <img
+                      src={p.image}
+                      alt=""
+                      width={256}
+                      height={256}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.45)] group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{p.name}</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500">
+                      {href ? 'Follow us' : 'Coming soon'}
+                    </span>
+                  </>
+                );
+                return href ? (
+                  <a
+                    key={p.key}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Follow us on ${p.name}`}
+                    className={`${base} hover:-translate-y-1.5 ${isDarkMode ? 'hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' : 'hover:border-yellow-500 hover:shadow-xl'}`}
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <div key={p.key} className={`${base} opacity-70`}>
+                    {content}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
           {/* SECRETARIAT SECTION */}
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
