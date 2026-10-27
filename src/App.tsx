@@ -45,6 +45,14 @@ const renderWithBold = (text: string, isDarkMode: boolean) => {
 // Only allow normal web links (protects against odd values typed into the admin panel)
 const safeUrl = (u?: string): string | undefined => (u && /^https?:\/\//i.test(u.trim()) ? u.trim() : undefined);
 
+// Built-in links to the official accounts. An admin can override any of them from
+// Admin Panel -> Page Text & Content (social_tiktok / social_instagram / social_youtube).
+const DEFAULT_SOCIAL_LINKS: Record<string, string> = {
+  social_tiktok: 'https://www.tiktok.com/@nasslasuhub',
+  social_instagram: 'https://www.instagram.com/nass.lasuofficial',
+  social_youtube: 'https://youtube.com/@nasslasuofficial',
+};
+
 // Social platforms for the "Follow Us" section. Logo images live in the /public folder.
 // The web address of each one is set by an admin:
 // Admin Panel -> Page Text & Content -> social_tiktok / social_instagram / social_youtube
@@ -1023,6 +1031,7 @@ export default function App() {
   };
 
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
+  const socialUrl = (key: string) => safeUrl(siteContentMap[key]) || DEFAULT_SOCIAL_LINKS[key];
 
   // News Flash bulletin published from the Admin Panel (hidden when status is Inactive)
   const newsFlashText = (siteContentMap.news_flash_content || '').trim();
@@ -2528,7 +2537,7 @@ export default function App() {
 
             <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto">
               {SOCIAL_PLATFORMS.map((p) => {
-                const href = safeUrl(siteContentMap[p.key]);
+                const href = socialUrl(p.key);
                 const base = `group flex flex-col items-center gap-3 p-4 sm:p-6 rounded-3xl border text-center transition-all duration-300 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`;
                 const content = (
                   <>
@@ -2861,16 +2870,16 @@ export default function App() {
             </div>
 
             <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              {(safeUrl(siteContentMap.social_x) || safeUrl(siteContentMap.social_linkedin) || safeUrl(siteContentMap.social_instagram)) && (
+              {(socialUrl('social_x') || socialUrl('social_linkedin') || socialUrl('social_instagram')) && (
                 <div className="flex gap-6 mb-2">
-                  {safeUrl(siteContentMap.social_x) && (
-                    <a href={safeUrl(siteContentMap.social_x)} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
+                  {socialUrl('social_x') && (
+                    <a href={socialUrl('social_x')} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
                   )}
-                  {safeUrl(siteContentMap.social_linkedin) && (
-                    <a href={safeUrl(siteContentMap.social_linkedin)} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
+                  {socialUrl('social_linkedin') && (
+                    <a href={socialUrl('social_linkedin')} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
                   )}
-                  {safeUrl(siteContentMap.social_instagram) && (
-                    <a href={safeUrl(siteContentMap.social_instagram)} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">Instagram</a>
+                  {socialUrl('social_instagram') && (
+                    <a href={socialUrl('social_instagram')} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">Instagram</a>
                   )}
                 </div>
               )}
