@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+
+// Seconds each photo stays on screen while the slideshow plays
+const AUTOPLAY_MS = 4000;
 
 interface PageantGalleryProps {
   images?: string[];
@@ -62,10 +65,21 @@ const sortWithCoverFirst = (list: string[]): string[] => {
 export function PageantGallery({ images = [], title, onClose }: PageantGalleryProps) {
   const [galleryImages, setGalleryImages] = useState<string[]>(() => sortWithCoverFirst((images || []).filter(isValidUrl)));
   const [currentIndex, setCurrentIndex] = useState(0);
+  // The slideshow plays by itself, unless the visitor's device asks for reduced motion
+  const [isPlaying, setIsPlaying] = useState(
+    () => !(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  );
+  const [isHovering, setIsHovering] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     setGalleryImages(sortWithCoverFirst((images || []).filter(isValidUrl)));
   }, [images?.join('|')]);
+
+  // Keep the position valid if the list of photos changes
+  useEffect(() => {
+    if (currentIndex >= galleryImages.length && galleryImages.length > 0) setCurrentIndex(0);
+  }, [galleryImages.length, currentIndex]);
 
   const handleNext = () => {
     if (galleryImages.length === 0) return;
@@ -77,16 +91,68 @@ export function PageantGallery({ images = [], title, onClose }: PageantGalleryPr
     setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
   };
 
+  // Slideshow: move to the next photo after a few seconds. Choosing a photo yourself
+  // restarts the countdown, and hovering over the photo pauses it.
+  useEffect(() => {
+    if (!isPlaying || isHovering || galleryImages.length < 2) return;
+    const timer = setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+    }, AUTOPLAY_MS);
+    return () => clearTimeout(timer);
+  }, [isPlaying, isHovering, currentIndex, galleryImages.length]);
+
+  // Warm up the next photo so the slide change feels instant
+  useEffect(() => {
+    if (galleryImages.length < 2) return;
+    const next = galleryImages[(currentIndex + 1) % galleryImages.length];
+    if (next) {
+      const preload = new Image();
+      preload.src = getSafeImageSrc(next);
+    }
+  }, [currentIndex, galleryImages]);
+
+  // Keyboard: arrow keys to move, Escape to close
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') handleNext();
+      else if (e.key === 'ArrowLeft') handlePrev();
+      else if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [galleryImages.length, onClose]);
+
+  // Stop the page behind the gallery from scrolling while it is open
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
+
+  // Swipe left / right on phones
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? touchStartX.current) - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 50) return;
+    if (dx < 0) handleNext(); else handlePrev();
+  };
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-8"
+        role="dialog" aria-modal="true" aria-label={title}
+        className="fixed inset-0 z-[100] bg-slate-950/95 md:backdrop-blur-xl flex items-center justify-center p-4 md:p-8"
       >
         <button
           onClick={onClose}
+          aria-label="Close gallery"
           className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-50 border border-white/10"
         >
           <X size={24} />
@@ -97,9 +163,21 @@ export function PageantGallery({ images = [], title, onClose }: PageantGalleryPr
             {title}
           </h2>
           {galleryImages.length > 0 && (
-            <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mt-1">
-              {currentIndex + 1} / {galleryImages.length}
-            </p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest">
+                {currentIndex + 1} / {galleryImages.length}
+              </p>
+              {galleryImages.length > 1 && (
+                <button
+                  onClick={() => setIsPlaying((p) => !p)}
+                  aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-yellow-400 hover:text-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border border-white/10 transition-colors"
+                >
+                  {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+                  <span>{isPlaying ? 'Pause' : 'Play'}</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -109,9 +187,16 @@ export function PageantGallery({ images = [], title, onClose }: PageantGalleryPr
           </div>
         ) : (
           <>
-            <div className="relative w-full max-w-6xl aspect-[4/3] md:aspect-video flex items-center justify-center">
+            <div
+              className="relative w-full max-w-6xl aspect-[4/3] md:aspect-video flex items-center justify-center"
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+            >
               <button
                 onClick={handlePrev}
+                aria-label="Previous photo"
                 className="absolute left-2 md:-left-12 p-3 bg-white/10 hover:bg-yellow-400 hover:text-slate-900 rounded-full text-white transition-colors z-20 border border-white/10"
               >
                 <ChevronLeft size={24} />
@@ -137,6 +222,7 @@ export function PageantGallery({ images = [], title, onClose }: PageantGalleryPr
 
               <button
                 onClick={handleNext}
+                aria-label="Next photo"
                 className="absolute right-2 md:-right-12 p-3 bg-white/10 hover:bg-yellow-400 hover:text-slate-900 rounded-full text-white transition-colors z-20 border border-white/10"
               >
                 <ChevronRight size={24} />
@@ -150,6 +236,7 @@ export function PageantGallery({ images = [], title, onClose }: PageantGalleryPr
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
+                    aria-label={`Show photo ${idx + 1}`}
                     className={`relative flex-none snap-center transition-all overflow-hidden rounded-lg border-2 ${
                       idx === currentIndex
                         ? 'w-24 aspect-video border-yellow-400 scale-110 z-10'
@@ -160,6 +247,8 @@ export function PageantGallery({ images = [], title, onClose }: PageantGalleryPr
                       referrerPolicy="no-referrer"
                       src={getSafeImageSrc(img)}
                       alt={`Thumbnail ${idx + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = getFallbackForTitle(title);
                       }}
