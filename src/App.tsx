@@ -712,6 +712,7 @@ export default function App() {
   const [corePillarsData, setCorePillarsData] = useState<any[]>([]);
   const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
   const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
+  const [newsFlashMeta, setNewsFlashMeta] = useState<{ headline: string; images: string[] }>({ headline: '', images: [] });
   const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
   const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
   const [studentBrandsData, setStudentBrandsData] = useState<any[]>([]);
@@ -830,6 +831,16 @@ export default function App() {
     const unsubSiteContent = onSnapshot(collection(db, 'siteContent'), (snap) => {
       combinedMap = updateMapFromSnap(snap, combinedMap);
       setSiteContentMap({ ...combinedMap });
+      const newsDoc = snap.docs.find((d: any) => d.id === 'news_flash_content');
+      if (newsDoc) {
+        const nd: any = newsDoc.data();
+        setNewsFlashMeta({
+          headline: String(nd.headline || '').trim(),
+          images: (Array.isArray(nd.images) ? nd.images : String(nd.images || '').split(','))
+            .map((s: any) => String(s).trim())
+            .filter((s: string) => s.length > 0),
+        });
+      }
     }, (error) => {
       console.warn("Firestore listener warning (siteContent):", error.message);
     });
@@ -1035,7 +1046,9 @@ export default function App() {
 
   // News Flash bulletin published from the Admin Panel (hidden when status is Inactive)
   const newsFlashText = (siteContentMap.news_flash_content || '').trim();
-  const newsFlashLive = newsFlashText.length > 0 && siteContentMap.news_flash_status !== 'Inactive';
+  const newsFlashHeadline = newsFlashMeta.headline;
+  const newsFlashImages = newsFlashMeta.images;
+  const newsFlashLive = (newsFlashText.length > 0 || newsFlashHeadline.length > 0 || newsFlashImages.length > 0) && siteContentMap.news_flash_status !== 'Inactive';
 
   return (
     <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
@@ -2487,96 +2500,81 @@ export default function App() {
               </p>
             </div>
 
-            <div className={`p-10 sm:p-16 rounded-3xl border text-center md:backdrop-blur-xl relative overflow-hidden shadow-xl ${
+            <div className={`${newsFlashLive ? 'p-6 sm:p-10' : 'p-10 sm:p-16'} rounded-3xl border text-center md:backdrop-blur-xl relative overflow-hidden shadow-xl ${
               isDarkMode 
                 ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
                 : 'bg-white border-slate-200'
             }`}>
-              <div className={`relative z-10 mx-auto space-y-4 ${newsFlashLive ? 'max-w-3xl' : 'max-w-md'}`}>
-                <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mx-auto shadow-inner">
-                  <Megaphone size={28} className="animate-pulse" />
-                </div>
+              <div className={`relative z-10 mx-auto space-y-5 ${newsFlashLive ? 'max-w-3xl' : 'max-w-md'}`}>
                 {newsFlashLive ? (
                   <>
-                    <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                      Latest Bulletin
-                    </h3>
-                    <p className={`text-sm md:text-base leading-relaxed whitespace-pre-line ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                      {renderWithBold(newsFlashText, isDarkMode)}
-                    </p>
+                    <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3.5 py-1 rounded-full">
+                      <Megaphone size={12} className="animate-pulse" /> Latest Bulletin
+                    </span>
+
+                    {newsFlashHeadline && (
+                      <h3 className={`font-space-grotesk text-2xl sm:text-4xl font-black leading-tight tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {newsFlashHeadline}
+                      </h3>
+                    )}
+
+                    {newsFlashImages.length > 0 && (
+                      <div className={`grid gap-3 ${newsFlashImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {newsFlashImages.slice(0, 4).map((src, idx) => (
+                          <button
+                            key={`${src}-${idx}`}
+                            type="button"
+                            onClick={() => setSelectedEventGallery({ title: newsFlashHeadline || 'News Flash', images: newsFlashImages })}
+                            aria-label={`Open news photo ${idx + 1}`}
+                            className={`relative overflow-hidden rounded-2xl border border-white/10 cursor-pointer group ${
+                              newsFlashImages.length === 1
+                                ? 'aspect-[16/10]'
+                                : idx === 0 && newsFlashImages.length === 3
+                                  ? 'col-span-2 aspect-[16/9]'
+                                  : 'aspect-[4/3]'
+                            }`}
+                          >
+                            <img
+                              src={src}
+                              alt={newsFlashHeadline ? `${newsFlashHeadline} - photo ${idx + 1}` : `News photo ${idx + 1}`}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            {idx === 3 && newsFlashImages.length > 4 && (
+                              <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center text-white font-black text-2xl">
+                                +{newsFlashImages.length - 4}
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {newsFlashText && (
+                      <p className={`mx-auto max-w-2xl text-left text-sm md:text-base leading-relaxed whitespace-pre-line ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                        {renderWithBold(newsFlashText, isDarkMode)}
+                      </p>
+                    )}
                   </>
                 ) : (
                   <>
-                
-                <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                  Official news coming soon
-                </h3>
-
-                <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  The Secretariat is currently preparing upcoming press releases and official updates. Please check back shortly.
-                </p>
+                    <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mx-auto shadow-inner">
+                      <Megaphone size={28} className="animate-pulse" />
+                    </div>
+                    <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                      Official news coming soon
+                    </h3>
+                    <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      The Secretariat is currently preparing upcoming press releases and official updates. Please check back shortly.
+                    </p>
                   </>
                 )}
               </div>
-            </div>
-          </section>
-
-          {/* FOLLOW US / SOCIAL MEDIA SECTION */}
-          <section id="social" className="px-4 max-w-7xl mx-auto w-full pt-8">
-            <div className="text-center mb-10 space-y-3">
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
-                STAY CONNECTED
-              </span>
-              <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
-                Follow Us On All Our Social Media Platforms
-              </h2>
-              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Get the latest updates, events and announcements straight from the Faculty of Science.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto">
-              {SOCIAL_PLATFORMS.map((p) => {
-                const href = socialUrl(p.key);
-                const base = `group flex flex-col items-center gap-3 p-4 sm:p-6 rounded-3xl border text-center transition-all duration-300 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`;
-                const content = (
-                  <>
-                    <img
-                      src={p.image}
-                      alt=""
-                      width={256}
-                      height={256}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.45)] group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{p.name}</span>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500">
-                      {href ? 'Follow us' : 'Coming soon'}
-                    </span>
-                  </>
-                );
-                return href ? (
-                  <a
-                    key={p.key}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Follow us on ${p.name}`}
-                    className={`${base} hover:-translate-y-1.5 ${isDarkMode ? 'hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' : 'hover:border-yellow-500 hover:shadow-xl'}`}
-                  >
-                    {content}
-                  </a>
-                ) : (
-                  <div key={p.key} className={`${base} opacity-70`}>
-                    {content}
-                  </div>
-                );
-              })}
             </div>
           </section>
 
-          {/* SECRETARIAT SECTION */}
+{/* SECRETARIAT SECTION */}
           <section id="secretariat" className="px-4 max-w-7xl mx-auto w-full pt-8 space-y-12">
             <div className={`p-8 md:p-12 border rounded-3xl md:backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col gap-8 items-center shadow-xl ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500'}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -2856,6 +2854,61 @@ export default function App() {
               </a>
             </div>
             
+            {/* FOLLOW US / SOCIAL MEDIA SECTION */}
+          <div id="social" className="mt-16">
+            <div className="text-center mb-10 space-y-3">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
+                STAY CONNECTED
+              </span>
+              <h2 className={`font-space-grotesk text-2xl md:text-4xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white via-yellow-200 to-yellow-400' : 'from-slate-900 via-yellow-700 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
+                Follow Us On All Our Social Media Platforms
+              </h2>
+              <p className={`text-xs md:text-sm max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                Get the latest updates, events and announcements straight from the Faculty of Science.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto">
+              {SOCIAL_PLATFORMS.map((p) => {
+                const href = socialUrl(p.key);
+                const base = `group flex flex-col items-center gap-3 p-4 sm:p-6 rounded-3xl border text-center transition-all duration-300 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`;
+                const content = (
+                  <>
+                    <img
+                      src={p.image}
+                      alt=""
+                      width={256}
+                      height={256}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.45)] group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{p.name}</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-500">
+                      {href ? 'Follow us' : 'Coming soon'}
+                    </span>
+                  </>
+                );
+                return href ? (
+                  <a
+                    key={p.key}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Follow us on ${p.name}`}
+                    className={`${base} hover:-translate-y-1.5 ${isDarkMode ? 'hover:border-yellow-400/50 hover:shadow-[0_10px_30px_rgba(250,204,21,0.15)]' : 'hover:border-yellow-500 hover:shadow-xl'}`}
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <div key={p.key} className={`${base} opacity-70`}>
+                    {content}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
             <div className="w-full flex justify-center px-4 mt-16 mb-4">
               <div className="relative inline-flex items-center justify-center">
                 <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
