@@ -385,6 +385,8 @@ export const AdminPanel = () => {
   // News Flash Bulletin State
   const [newsFlashText, setNewsFlashText] = useState('');
   const [newsFlashStatus, setNewsFlashStatus] = useState('Active');
+  const [newsFlashHeadline, setNewsFlashHeadline] = useState('');
+  const [newsFlashImages, setNewsFlashImages] = useState('');
   const [savingNewsFlash, setSavingNewsFlash] = useState(false);
   const [newsFlashSuccess, setNewsFlashSuccess] = useState(false);
 
@@ -513,6 +515,8 @@ export const AdminPanel = () => {
         const d = docSnap.data();
         setNewsFlashText(d.text || '');
         setNewsFlashStatus(d.status || 'Active');
+        setNewsFlashHeadline(d.headline || '');
+        setNewsFlashImages(Array.isArray(d.images) ? d.images.join(',') : (d.images || ''));
       }
     });
 
@@ -548,14 +552,18 @@ export const AdminPanel = () => {
       await setDoc(doc(db, 'siteContent', 'news_flash_content'), {
         contentKey: 'news_flash_content',
         text: newsFlashText,
+        headline: newsFlashHeadline.trim(),
+        images: parseGallery(newsFlashImages),
         status: newsFlashStatus,
         updatedAt: new Date().toISOString(),
         updatedBy: user.email
       }, { merge: true });
 
+      const hasNewsContent = newsFlashText.trim() || newsFlashHeadline.trim() || parseGallery(newsFlashImages).length > 0;
+
       await setDoc(doc(db, 'siteContent', 'news_flash_status'), {
         contentKey: 'news_flash_status',
-        value: newsFlashText.trim() ? newsFlashStatus : 'Inactive'
+        value: hasNewsContent ? newsFlashStatus : 'Inactive'
       }, { merge: true });
 
       setNewsFlashSuccess(true);
@@ -789,13 +797,34 @@ export const AdminPanel = () => {
             <form onSubmit={handleSaveNewsFlash} className="space-y-4">
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Bulletin Announcement Text
+                  News Headline
+                </label>
+                <input
+                  type="text"
+                  maxLength={150}
+                  value={newsFlashHeadline}
+                  onChange={(e) => setNewsFlashHeadline(e.target.value)}
+                  placeholder="e.g. Science Week 2026 Registration Is Now Open"
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Photos (optional - you can select several at once)
+                </label>
+                <GalleryUploadZone value={newsFlashImages} onChange={setNewsFlashImages} highContrast={highContrast} />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Details (optional)
                 </label>
                 <textarea
-                  rows={3}
+                  rows={4}
                   value={newsFlashText}
                   onChange={(e) => setNewsFlashText(e.target.value)}
-                  placeholder="Type official news flash content..."
+                  placeholder="Type the full news story or announcement..."
                   className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-yellow-400"
                 />
               </div>
