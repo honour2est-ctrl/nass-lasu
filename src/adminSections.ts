@@ -78,6 +78,8 @@ export const RECOGNIZED_CONTENT_KEYS = [
   'social_x',          // full web address, e.g. https://x.com/yourpage
   'social_linkedin',   // full web address
   'social_instagram',  // full web address
+  'social_tiktok',     // full web address
+  'social_youtube',    // full web address
   'secretariat_description_1',
   'secretariat_description_2',
   'secretariat_phone',
@@ -164,6 +166,20 @@ export const BUILT_IN_SECTIONS: AdminSection[] = [
       { key: 'category', label: 'Category', type: 'text', required: true },
       { key: 'image', label: 'Cover Image', type: 'image', required: true },
       { key: 'images', label: 'Photo Gallery', type: 'gallery' },
+    ],
+  },
+  {
+    key: 'newsFlash',
+    label: 'News Flash',
+    collection: 'newsFlash',
+    titleField: 'headline',
+    subtitleField: 'details',
+    fields: [
+      { key: 'headline', label: 'News Headline', type: 'text', required: true, placeholder: 'e.g. Science Week 2026 Registration Is Now Open' },
+      { key: 'details', label: 'Details (optional)', type: 'textarea' },
+      { key: 'images', label: 'Photos (optional - you can select several at once)', type: 'gallery' },
+      { key: 'date', label: 'Date shown on the post (optional)', type: 'text', placeholder: 'e.g. 30 Oct 2026' },
+      { key: 'status', label: 'Visibility (choose Hidden to take a post down without deleting it)', type: 'select', options: ['Published', 'Hidden'] },
     ],
   },
   {
