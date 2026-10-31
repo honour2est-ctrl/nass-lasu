@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -7,6 +7,8 @@ interface ImageSlideshowProps {
   interval?: number;
   alt: string;
   fallbackImage?: string;
+  /** Show the arrows and dots (default). Turn off where the page already has its own controls. */
+  showControls?: boolean;
 }
 
 const FALLBACK_MAP: Record<string, string> = {
@@ -36,9 +38,15 @@ const cleanUrl = (raw: string): string => {
 // sometimes never start slideshowing at all. Now it just renders whatever is
 // in the event's `images` field directly — which is exactly what the Admin
 // Panel's photo uploads already write there.
-export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage }: ImageSlideshowProps) {
+export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage, showControls = true }: ImageSlideshowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Only play while the slideshow is actually on screen. This saves a lot of mobile data
+  // and battery, because the page can hold several slideshows at once.
+  const [isVisible, setIsVisible] = useState(false);
+  const prefersReducedMotion =
+    typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const activeImages = (images || []).filter(Boolean);
   const activeCount = activeImages.length;
@@ -48,21 +56,30 @@ export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage }: 
   }, [images?.join('|')]);
 
   useEffect(() => {
-    if (activeCount <= 1) return;
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { setIsVisible(true); return; }
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), { threshold: 0.15 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activeCount]);
+
+  useEffect(() => {
+    if (activeCount <= 1 || !isVisible || prefersReducedMotion) return;
     const timer = setInterval(() => {
+      if (document.hidden) return; // do not advance in a background tab
       setCurrentIndex((prev) => (prev + 1) % activeCount);
     }, interval);
     return () => clearInterval(timer);
-  }, [activeCount, interval]);
+  }, [activeCount, interval, isVisible, prefersReducedMotion]);
 
   // Preload the next couple of images so the cross-fade never has to wait
   useEffect(() => {
-    if (activeCount <= 1) return;
+    if (activeCount <= 1 || !isVisible) return;
     [(currentIndex + 1) % activeCount, (currentIndex + 2) % activeCount].forEach((idx) => {
       const url = activeImages[idx];
       if (url) { const img = new Image(); img.src = cleanUrl(url); }
     });
-  }, [currentIndex, activeCount]);
+  }, [currentIndex, activeCount, isVisible]);
 
   const defaultFallback = getFallbackForAlt(alt);
   const fallback = fallbackImage || defaultFallback;
@@ -89,12 +106,14 @@ export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage }: 
   const activeSrcUrl = isFailed ? fallback : cleanUrl(currentRawUrl);
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-slate-900 group/slideshow">
+    <div ref={rootRef} className="w-full h-full relative overflow-hidden bg-slate-900 group/slideshow">
       <AnimatePresence mode="sync">
         <motion.img
           key={`${currentCleanUrl}-${currentIndex}`}
           referrerPolicy="no-referrer"
           src={activeSrcUrl}
+          loading="lazy"
+          decoding="async"
           alt={`${alt} - ${currentIndex + 1}`}
           initial={{ opacity: 0, scale: 1.03 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -110,7 +129,7 @@ export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage }: 
         />
       </AnimatePresence>
 
-      {activeCount > 1 && (
+      {showControls && activeCount > 1 && (
         <>
           <button onClick={handlePrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 bg-black/40 hover:bg-yellow-400 hover:text-slate-900 text-white rounded-full transition-all opacity-0 group-hover/slideshow:opacity-100 backdrop-blur-sm border border-white/20" aria-label="Previous slide">
             <ChevronLeft size={16} />
@@ -121,7 +140,7 @@ export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage }: 
         </>
       )}
 
-      {activeCount > 1 && (
+      {showControls && activeCount > 1 && (
         <div className="absolute bottom-2 left-0 right-0 z-20 flex justify-center items-center gap-1 px-4 pointer-events-auto">
           {activeImages.slice(0, 10).map((_, idx) => (
             <button
