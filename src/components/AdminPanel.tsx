@@ -312,10 +312,11 @@ const NewSectionModal = ({ onClose, onCreate, highContrast }: { onClose: () => v
 // PARTNERS & SPONSORS CONFIGURATION
 // ============================================================================
 
-// Dedicated tab for the News Flash bulletin (and, for full admins, the ticker).
+// Full-admin tab for the scrolling ticker and the OLD single bulletin.
+// News updates themselves now live in the 'News Flash' list (see adminSections.ts).
 const NEWS_SECTION: AdminSection = {
   key: 'site_content',
-  label: 'News Flash',
+  label: 'Ticker & Old Bulletin',
   collection: 'siteContent',
   titleField: 'label',
   fields: [],
@@ -406,7 +407,7 @@ export const AdminPanel = () => {
 
     if (isLimitedOfficer) {
       // Media officers only get the Events and News Flash tabs
-      return rawList.filter((sec) => sec.key === 'events' || sec.key === 'site_content');
+      return rawList.filter((sec) => sec.key === 'events' || sec.key === 'newsFlash');
     }
 
     return rawList;
@@ -414,7 +415,7 @@ export const AdminPanel = () => {
 
   // Adjust default active section key if current key isn't allowed
   useEffect(() => {
-    if (isLimitedOfficer && activeSectionKey !== 'events' && activeSectionKey !== 'site_content') {
+    if (isLimitedOfficer && activeSectionKey !== 'events' && activeSectionKey !== 'newsFlash') {
       setActiveSectionKey('events');
     }
   }, [isLimitedOfficer, activeSectionKey]);
@@ -610,7 +611,7 @@ export const AdminPanel = () => {
     try {
       const { id, ...updateData } = editingItem;
       if (id) await updateDoc(doc(db, activeSection.collection, id), updateData);
-      else await addDoc(collection(db, activeSection.collection), updateData);
+      else await addDoc(collection(db, activeSection.collection), { ...updateData, createdAt: new Date().toISOString() });
       setEditingItem(null);
     } catch (err: any) {
       console.error('Error saving item:', err);
@@ -620,6 +621,7 @@ export const AdminPanel = () => {
 
   const handleDelete = async (id: string) => {
     if (!activeSection) return;
+    if (!window.confirm('Delete this item permanently? This cannot be undone.')) return;
     try { await deleteDoc(doc(db, activeSection.collection, id)); } catch (err) { console.error(err); }
   };
 
@@ -784,6 +786,9 @@ export const AdminPanel = () => {
       {/* News Flash Bulletin & Marquee Editor (Visible on Site Content Tab) */}
       {activeSectionKey === 'site_content' && (
         <div className="space-y-6 mb-8">
+          <p className="text-[11px] text-slate-400">
+            News updates are managed in the <strong className="text-yellow-400">News Flash</strong> tab. The older single bulletin below only appears on the website when there are no posts there.
+          </p>
           {/* News Flash Bulletin Editor */}
           <div className={`p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-slate-900/90 border-yellow-400/30 shadow-xl'}`}>
             <div className="flex items-center justify-between mb-2">
@@ -946,7 +951,8 @@ export const AdminPanel = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <AnimatePresence>
               {filteredData.map((item) => {
-                const cover = item[activeSection.fields.find((f) => f.type === 'image')?.key || ''] || item.logoUrl || item.imageUrl || item.image;
+                const cover = item[activeSection.fields.find((f) => f.type === 'image')?.key || ''] || item.logoUrl || item.imageUrl || item.image
+                  || (Array.isArray(item.images) ? item.images[0] : (typeof item.images === 'string' ? item.images.split(',')[0]?.trim() : undefined));
                 const title = item[activeSection.titleField] || item.name || 'Untitled';
                 const subtitleRaw = activeSection.subtitleField ? item[activeSection.subtitleField] : '';
                 const subtitle = typeof subtitleRaw === 'string' ? subtitleRaw.slice(0, 60) : '';
@@ -962,6 +968,7 @@ export const AdminPanel = () => {
                     )}
                     <div className="flex-1 min-w-0">
                       <h5 className="font-bold text-white text-sm truncate">{title}</h5>
+                      {item.status === 'Hidden' && <span className="inline-block mb-1 px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px] font-bold uppercase tracking-wider">Hidden on site</span>}
                       {subtitle && <p className="text-xs text-yellow-400 font-semibold mb-1 truncate">{subtitle}</p>}
                       {item.bio && <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{item.bio}</p>}
                     </div>
