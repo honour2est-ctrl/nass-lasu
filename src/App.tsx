@@ -7,6 +7,7 @@ import { AdminGate, SuperAdminOnly } from './components/AdminGate';
 import { SecretariatFeedback } from './components/SecretariatFeedback';
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 import { PageantGallery } from './components/PageantGallery';
+import { ImageSlideshow } from './components/ImageSlideshow';
 import { Base64Migrator } from './components/Base64Migrator';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown, Building2, Plus, Trash2, Edit3, CheckCircle, Image as ImageIcon } from 'lucide-react';
@@ -1762,6 +1763,8 @@ export default function App() {
               {eventsData.map((ev) => {
                 const coverImage = ev.image || (ev.images && ev.images[0]) || '/pageant/cover.jpg';
                 const imageCount = ev.images && Array.isArray(ev.images) ? ev.images.length : (ev.image ? 1 : 0);
+                // Photos cycling on the card: the cover first, then the first few gallery photos
+                const cardSlides = Array.from(new Set([ev.image, ...(Array.isArray(ev.images) ? ev.images : [])].filter(Boolean))).slice(0, 8) as string[];
 
                 return (
                   <div
@@ -1772,14 +1775,8 @@ export default function App() {
                     }`}
                   >
                     <div className="aspect-[16/10] overflow-hidden relative">
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90" />
-                      <img 
-                        referrerPolicy="no-referrer" 
-                        src={coverImage} 
-                        alt={ev.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                        loading="lazy" 
-                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10 opacity-90 pointer-events-none" />
+                      <ImageSlideshow images={cardSlides} alt={ev.title} interval={3500} />
                       <div className="absolute top-4 right-4 z-20">
                         <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full md:backdrop-blur-md bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 shadow-md">
                           {imageCount} Photos
@@ -2742,13 +2739,15 @@ export default function App() {
                     <div className="grid lg:grid-cols-12 gap-0">
                       {/* Left: Interactive Image Gallery */}
                       <div className="lg:col-span-7 relative min-h-[320px] sm:min-h-[400px] bg-slate-950 flex flex-col justify-between overflow-hidden group">
-                        <img
-                          referrerPolicy="no-referrer"
-                          src={landmark.coverImage || landmarkImages[0] || '/nass_logo.jpg'}
-                          alt={landmark.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
-                          loading="lazy"
-                        />
+                        <div className="absolute inset-0">
+                          <ImageSlideshow
+                            images={Array.from(new Set([landmark.coverImage, ...landmarkImages].filter(Boolean))).slice(0, 8) as string[]}
+                            alt={landmark.title}
+                            interval={4500}
+                            fallbackImage="/nass_logo.jpg"
+                            showControls={false}
+                          />
+                        </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
 
                         {/* Top Badge Overlay */}
