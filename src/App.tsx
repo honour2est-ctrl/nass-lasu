@@ -8,6 +8,7 @@ import { SecretariatFeedback } from './components/SecretariatFeedback';
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 import { PageantGallery } from './components/PageantGallery';
 import { ImageSlideshow } from './components/ImageSlideshow';
+import { IntroSplash } from './components/IntroSplash';
 import { Base64Migrator } from './components/Base64Migrator';
 import { EmergencyHotline } from './components/EmergencyHotline';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown, Building2, Plus, Trash2, Edit3, CheckCircle, Image as ImageIcon } from 'lucide-react';
@@ -680,6 +681,69 @@ function LandmarkAdminManager({ landmarksData, isDarkMode }: { landmarksData: an
   );
 }
 
+// ---------- News Flash helpers ----------
+const toImageList = (value: any): string[] =>
+  (Array.isArray(value) ? value : String(value || '').split(','))
+    .map((s: any) => String(s).trim())
+    .filter((s: string) => s.length > 0);
+
+// A date typed by the admin wins; otherwise use the day the post was created
+const formatNewsDate = (post: any): string => {
+  if (post?.date && String(post.date).trim()) return String(post.date).trim();
+  if (post?.createdAt) {
+    const d = new Date(post.createdAt);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  return '';
+};
+
+// Newest first. A post with a Display Order number above 0 is "pinned" to the top (1 = first).
+const newsSort = (a: any, b: any): number => {
+  const ao = Number(a?.order) || 0;
+  const bo = Number(b?.order) || 0;
+  if (ao > 0 || bo > 0) {
+    if (ao > 0 && bo > 0) return ao - bo;
+    return ao > 0 ? -1 : 1;
+  }
+  return String(b?.createdAt || '').localeCompare(String(a?.createdAt || ''));
+};
+
+function NewsPhotoGrid({ images, title, onOpen }: { images: string[]; title: string; onOpen: (images: string[], title: string) => void }) {
+  if (images.length === 0) return null;
+  return (
+    <div className={`grid gap-3 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+      {images.slice(0, 4).map((src, idx) => (
+        <button
+          key={`${src}-${idx}`}
+          type="button"
+          onClick={() => onOpen(images, title)}
+          aria-label={`Open news photo ${idx + 1}`}
+          className={`relative overflow-hidden rounded-2xl border border-white/10 cursor-pointer group ${
+            images.length === 1
+              ? 'aspect-[16/10]'
+              : idx === 0 && images.length === 3
+                ? 'col-span-2 aspect-[16/9]'
+                : 'aspect-[4/3]'
+          }`}
+        >
+          <img
+            src={src}
+            alt={`${title} - photo ${idx + 1}`}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          {idx === 3 && images.length > 4 && (
+            <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center text-white font-black text-2xl">
+              +{images.length - 4}
+            </div>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const { addToast } = useToast();
   const { scrollYProgress } = useScroll();
@@ -702,7 +766,16 @@ export default function App() {
     }
   };
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Welcome screen: shown once per visit, and skipped when someone opens a link to a specific section
+  const [showIntro, setShowIntro] = useState(() => {
+    try { return !sessionStorage.getItem('nass_intro_seen') && !window.location.hash; } catch { return true; }
+  });
+  const enterSite = () => {
+    try { sessionStorage.setItem('nass_intro_seen', '1'); } catch { /* private mode: fine */ }
+    setShowIntro(false);
+  };
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [vaultSearchQuery, setVaultSearchQuery] = useState('');
   const [vaultLevelFilter, setVaultLevelFilter] = useState<string | null>(null);
@@ -714,6 +787,8 @@ export default function App() {
   const [hallOfFameData, setHallOfFameData] = useState<any[]>([]);
   const [siteContentMap, setSiteContentMap] = useState<Record<string, string>>({});
   const [newsFlashMeta, setNewsFlashMeta] = useState<{ headline: string; images: string[] }>({ headline: '', images: [] });
+  const [newsPosts, setNewsPosts] = useState<any[]>([]);
+  const [showAllNews, setShowAllNews] = useState(false);
   const [selectedExecutive, setSelectedExecutive] = useState<any | null>(null);
   const [selectedEventGallery, setSelectedEventGallery] = useState<{ title: string, images: string[] } | null>(null);
   const [studentBrandsData, setStudentBrandsData] = useState<any[]>([]);
@@ -798,6 +873,7 @@ export default function App() {
     studentBrands: () => listen('studentBrands', 'studentBrands', setStudentBrandsData),
     partners: () => listen('partners', 'partners', setPartnersData),
     sponsors: () => listen('sponsors', 'sponsors', setSponsorsData),
+    newsFlash: () => listen('newsFlash', 'newsFlash', setNewsPosts),
     landmarks: () => listen('landmarks', 'landmarks', setLandmarksData, INITIAL_LANDMARKS_DATA),
   };
 
@@ -811,6 +887,7 @@ export default function App() {
     brands: ['studentBrands'],
     partners: ['partners'],
     sponsors: ['sponsors'],
+    news: ['newsFlash'],
     admin: ['landmarks'],
     landmarks: ['landmarks'],
   };
@@ -1050,9 +1127,19 @@ export default function App() {
   const newsFlashHeadline = newsFlashMeta.headline;
   const newsFlashImages = newsFlashMeta.images;
   const newsFlashLive = (newsFlashText.length > 0 || newsFlashHeadline.length > 0 || newsFlashImages.length > 0) && siteContentMap.news_flash_status !== 'Inactive';
+  // News posts from the admin 'News Flash' list; the older single bulletin is only used when there are no posts
+  const newsPostsVisible = newsPosts
+    .filter((p: any) => (p.status || 'Published') !== 'Hidden' && (String(p.headline || '').trim() || String(p.details || '').trim() || toImageList(p.images).length > 0))
+    .sort(newsSort);
+  const newsItems: any[] = newsPostsVisible.length > 0
+    ? newsPostsVisible
+    : (newsFlashLive ? [{ id: 'old-bulletin', headline: newsFlashHeadline, details: newsFlashText, images: newsFlashImages, date: '' }] : []);
+  const shownNews = showAllNews ? newsItems : newsItems.slice(0, 3);
 
   return (
     <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+      <AnimatePresence>{showIntro && <IntroSplash onEnter={enterSite} />}</AnimatePresence>
+
       {isMobile ? (
         <div
           className={`fixed inset-0 z-0 pointer-events-none ${
@@ -1100,18 +1187,18 @@ export default function App() {
                 <span className="hidden lg:inline">Excos</span>
               </a>
               <a 
-                href="#hall-of-fame" aria-label="Hall of Fame" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Crown size={14} className="text-slate-900" />
-                <span className="hidden lg:inline">Hall of Fame</span>
-              </a>
-              <a 
                 href="#vault" aria-label="Vault" 
                 className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <BookOpen size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Vault</span>
+              </a>
+              <a 
+                href="#hall-of-fame" aria-label="Hall of Fame" 
+                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+              >
+                <Crown size={14} className="text-slate-900" />
+                <span className="hidden lg:inline">Hall of Fame</span>
               </a>
               <a 
                 href="#brands" aria-label="Market" 
@@ -1566,6 +1653,224 @@ export default function App() {
             </div>
           </section>
 
+          <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
+            <div className="text-center mb-10">
+              <div className="text-yellow-500 text-4xl mb-4">📚</div>
+              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                The Office Of The 36th Vice President (Dami PR)
+              </h3>
+              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Initiative Of A Digitalized and Innovative Secretariat
+              </p>
+              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
+                ACADEMIC VAULT
+              </h2>
+              <p className={`text-xs uppercase tracking-widest font-bold mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Secure access to past questions & syllabi</p>
+              
+              <div className="relative max-w-md mx-auto mb-6">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className={`h-5 w-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by department or year..."
+                  value={vaultSearchQuery}
+                  onChange={(e) => setVaultSearchQuery(e.target.value)}
+                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl md:backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
+                />
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
+                {['All Levels', '100 Level', '200 Level', '300 Level', '400 Level'].map((level) => {
+                  const isActive = level === 'All Levels' ? vaultLevelFilter === null : vaultLevelFilter === level;
+                  return (
+                    <button
+                      key={level}
+                      onClick={() => setVaultLevelFilter(level === 'All Levels' ? null : level)}
+                      className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors border ${
+                        isActive 
+                          ? 'bg-yellow-400 text-slate-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
+                          : isDarkMode ? 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200' : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {lastViewedResources.length > 0 && !vaultSearchQuery && (
+              <div className="mb-8 space-y-3">
+                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
+                <div className={`border rounded-2xl p-4 space-y-2 md:backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
+                  {lastViewedResources.map((item, index) => (
+                    <div 
+                      key={`recent-${item.id}-${index}`}
+                      className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
+                          <span className="text-yellow-500 text-sm">📄</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title || 'Past Questions'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] text-slate-400 font-mono">{item.year || ''} Session</span>
+                            {item.department && <span className="text-[9px] text-slate-500 font-mono hidden sm:inline-block truncate max-w-[150px]">{item.department}</span>}
+                            {(item.viewCount || 0) > 50 && (
+                              <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
+                                <Flame size={10} /> Trending
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                        View Material
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {[
+                'Department of Biochemistry',
+                'Department of Botany',
+                'Department of Fisheries and Aquatic Biology',
+                'Department of Microbiology',
+                'Department of Science Laboratory Technology',
+                'Department of Zoology and Environment Biology',
+                'Department of Chemistry',
+                'Department of Physics',
+                'Department of Mathematics'
+              ].map((dept, i) => {
+                const query = vaultSearchQuery.toLowerCase();
+                const deptMatches = dept.toLowerCase().includes(query);
+                
+                const deptItems = vaultItemsData.filter(item => item.department === dept);
+                
+                const levels = ['100 Level', '200 Level', '300 Level', '400 Level'];
+                const filteredLevels = vaultLevelFilter ? levels.filter(l => l === vaultLevelFilter) : levels;
+
+                const hasMatchingItems = deptItems.some(item => 
+                  filteredLevels.includes(item.level) && 
+                  (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query)))
+                );
+
+                if (query) {
+                  if (!hasMatchingItems && !deptMatches) return null;
+                }
+
+                return (
+                  <details key={i} className={`group border rounded-2xl overflow-hidden md:backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
+                      <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
+                      <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div className={`p-4 pt-0 border-t space-y-3 mt-4 ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
+                      {deptItems.length === 0 ? (
+                        <div className={`flex flex-col items-center justify-center py-10 text-center space-y-3 rounded-xl border ${isDarkMode ? 'bg-slate-900/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
+                            <BookOpen className="w-5 h-5 text-slate-500" />
+                          </div>
+                          <p className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No resources uploaded yet</p>
+                          <p className="text-slate-500 text-xs max-w-[250px] leading-relaxed">
+                            Check back later. The academic team is currently gathering materials for this department.
+                          </p>
+                        </div>
+                      ) : (
+                        filteredLevels.map(level => {
+                          const levelItems = deptItems.filter(item => item.level === level && (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query))));
+                          if (levelItems.length === 0) return null;
+
+                          return (
+                            <details key={level} className={`group/level rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border ${isDarkMode ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                              <summary className={`flex justify-between items-center p-4 cursor-pointer transition-colors group/summary ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
+                                <div className="flex items-center gap-3">
+                                  <span className={`font-semibold text-xs tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{level}</span>
+                                </div>
+                                <span className="text-yellow-500/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
+                              </summary>
+                              <div className={`p-4 pt-0 space-y-4 border-t mt-2 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
+                                {['First Semester', 'Second Semester'].map(semester => {
+                                  const semesterItems = levelItems.filter(item => item.semester === semester);
+                                  if (semesterItems.length === 0) return null;
+
+                                  return (
+                                    <div key={semester} className="space-y-2">
+                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
+                                      <div className="space-y-2">
+                                        {semesterItems.map((item, index) => (
+                                          <div 
+                                            key={item.id} 
+                                            className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
+                                                <span className="text-yellow-500 text-sm">📄</span>
+                                              </div>
+                                              <div className="flex flex-col">
+                                                <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{highlightText(item.title || 'Past Questions', vaultSearchQuery, isDarkMode)}</span>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery, isDarkMode)}</span>
+                                                  {(item.viewCount !== undefined) && (
+                                                    <span className="flex items-center gap-1 text-[9px] text-slate-500 font-mono" title={`${item.viewCount} views`}>
+                                                      <Eye size={10} /> {item.viewCount}
+                                                    </span>
+                                                  )}
+                                                  {(item.viewCount || 0) > 50 && (
+                                                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
+                                                      <Flame size={10} /> Trending
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
+                                              View Material
+                                            </a>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </details>
+                          );
+                        })
+                      )}
+                    </div>
+                  </details>
+                );
+              })}
+              
+              {vaultSearchQuery && [
+                'Department of Biochemistry',
+                'Department of Botany',
+                'Department of Fisheries and Aquatic Biology',
+                'Department of Microbiology',
+                'Department of Science Laboratory Technology',
+                'Department of Zoology and Environment Biology',
+                'Department of Chemistry',
+                'Department of Physics',
+                'Department of Mathematics'
+              ].every(dept => {
+                const query = vaultSearchQuery.toLowerCase();
+                const deptMatches = dept.toLowerCase().includes(query);
+                const years = [2021, 2022];
+                return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
+              }) && (
+                <div className={`text-center py-8 text-sm border rounded-2xl md:backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
+                  No past questions found matching "{vaultSearchQuery}"
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* HALL OF FAME SECTION */}
           <section id="hall-of-fame" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-12">
@@ -1801,225 +2106,7 @@ export default function App() {
             </div>
           </section>
 
-          <section id="vault" className="px-4 max-w-4xl mx-auto w-full">
-            <div className="text-center mb-10">
-              <div className="text-yellow-500 text-4xl mb-4">📚</div>
-              <h3 className={`font-space-grotesk text-xl md:text-2xl font-extrabold uppercase tracking-wide mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                The Office Of The 36th Vice President (Dami PR)
-              </h3>
-              <p className={`text-[11px] uppercase tracking-[0.2em] font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Initiative Of A Digitalized and Innovative Secretariat
-              </p>
-              <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight mb-2`}>
-                ACADEMIC VAULT
-              </h2>
-              <p className={`text-xs uppercase tracking-widest font-bold mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Secure access to past questions & syllabi</p>
-              
-              <div className="relative max-w-md mx-auto mb-6">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className={`h-5 w-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search by department or year..."
-                  value={vaultSearchQuery}
-                  onChange={(e) => setVaultSearchQuery(e.target.value)}
-                  className={`block w-full pl-12 pr-4 py-3.5 border rounded-2xl md:backdrop-blur-xl transition-all text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-200 placeholder-slate-400 focus:border-yellow-400/50' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-yellow-500 shadow-sm'}`}
-                />
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {['All Levels', '100 Level', '200 Level', '300 Level', '400 Level'].map((level) => {
-                  const isActive = level === 'All Levels' ? vaultLevelFilter === null : vaultLevelFilter === level;
-                  return (
-                    <button
-                      key={level}
-                      onClick={() => setVaultLevelFilter(level === 'All Levels' ? null : level)}
-                      className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors border ${
-                        isActive 
-                          ? 'bg-yellow-400 text-slate-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
-                          : isDarkMode ? 'bg-white/5 text-slate-400 border-white/10 hover:border-yellow-400/50 hover:text-slate-200' : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {lastViewedResources.length > 0 && !vaultSearchQuery && (
-              <div className="mb-8 space-y-3">
-                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest px-1">Recently Viewed</h3>
-                <div className={`border rounded-2xl p-4 space-y-2 md:backdrop-blur-xl shadow-md ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}>
-                  {lastViewedResources.map((item, index) => (
-                    <div 
-                      key={`recent-${item.id}-${index}`}
-                      className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30 text-slate-300' : 'bg-slate-50 border-slate-200 hover:border-yellow-500 text-slate-700'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                          <span className="text-yellow-500 text-sm">📄</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title || 'Past Questions'}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[9px] text-slate-400 font-mono">{item.year || ''} Session</span>
-                            {item.department && <span className="text-[9px] text-slate-500 font-mono hidden sm:inline-block truncate max-w-[150px]">{item.department}</span>}
-                            {(item.viewCount || 0) > 50 && (
-                              <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-                                <Flame size={10} /> Trending
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
-                        View Material
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {[
-                'Department of Biochemistry',
-                'Department of Botany',
-                'Department of Fisheries and Aquatic Biology',
-                'Department of Microbiology',
-                'Department of Science Laboratory Technology',
-                'Department of Zoology and Environment Biology',
-                'Department of Chemistry',
-                'Department of Physics',
-                'Department of Mathematics'
-              ].map((dept, i) => {
-                const query = vaultSearchQuery.toLowerCase();
-                const deptMatches = dept.toLowerCase().includes(query);
-                
-                const deptItems = vaultItemsData.filter(item => item.department === dept);
-                
-                const levels = ['100 Level', '200 Level', '300 Level', '400 Level'];
-                const filteredLevels = vaultLevelFilter ? levels.filter(l => l === vaultLevelFilter) : levels;
-
-                const hasMatchingItems = deptItems.some(item => 
-                  filteredLevels.includes(item.level) && 
-                  (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query)))
-                );
-
-                if (query) {
-                  if (!hasMatchingItems && !deptMatches) return null;
-                }
-
-                return (
-                  <details key={i} className={`group border rounded-2xl overflow-hidden md:backdrop-blur-xl [&_summary::-webkit-details-marker]:hidden ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <summary className={`flex justify-between items-center p-5 cursor-pointer transition-colors ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-slate-50 text-slate-900'}`}>
-                      <span className="font-bold text-sm tracking-wide">{highlightText(`${dept} Resources`, vaultSearchQuery, isDarkMode)}</span>
-                      <span className="text-yellow-500 text-sm group-open:rotate-180 transition-transform">▼</span>
-                    </summary>
-                    <div className={`p-4 pt-0 border-t space-y-3 mt-4 ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
-                      {deptItems.length === 0 ? (
-                        <div className={`flex flex-col items-center justify-center py-10 text-center space-y-3 rounded-xl border ${isDarkMode ? 'bg-slate-900/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
-                            <BookOpen className="w-5 h-5 text-slate-500" />
-                          </div>
-                          <p className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No resources uploaded yet</p>
-                          <p className="text-slate-500 text-xs max-w-[250px] leading-relaxed">
-                            Check back later. The academic team is currently gathering materials for this department.
-                          </p>
-                        </div>
-                      ) : (
-                        filteredLevels.map(level => {
-                          const levelItems = deptItems.filter(item => item.level === level && (deptMatches || (item.title && item.title.toLowerCase().includes(query)) || (item.year && item.year.toLowerCase().includes(query))));
-                          if (levelItems.length === 0) return null;
-
-                          return (
-                            <details key={level} className={`group/level rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden border ${isDarkMode ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                              <summary className={`flex justify-between items-center p-4 cursor-pointer transition-colors group/summary ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}>
-                                <div className="flex items-center gap-3">
-                                  <span className={`font-semibold text-xs tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{level}</span>
-                                </div>
-                                <span className="text-yellow-500/50 text-xs group-open/level:rotate-180 transition-transform">▼</span>
-                              </summary>
-                              <div className={`p-4 pt-0 space-y-4 border-t mt-2 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
-                                {['First Semester', 'Second Semester'].map(semester => {
-                                  const semesterItems = levelItems.filter(item => item.semester === semester);
-                                  if (semesterItems.length === 0) return null;
-
-                                  return (
-                                    <div key={semester} className="space-y-2">
-                                      <h4 className="text-[10px] uppercase font-bold tracking-widest text-yellow-500 ml-1">{semester}</h4>
-                                      <div className="space-y-2">
-                                        {semesterItems.map((item, index) => (
-                                          <div 
-                                            key={item.id} 
-                                            className={`flex justify-between items-center py-2.5 px-3 rounded-lg border transition-colors group/item ${isDarkMode ? 'bg-slate-900/50 border-white/5 hover:border-yellow-400/30' : 'bg-white border-slate-200 hover:border-yellow-500 shadow-sm'}`}
-                                          >
-                                            <div className="flex items-center gap-3">
-                                              <div className="bg-yellow-400/10 p-1.5 rounded-md group-hover/item:bg-yellow-400/20 transition-colors">
-                                                <span className="text-yellow-500 text-sm">📄</span>
-                                              </div>
-                                              <div className="flex flex-col">
-                                                <span className={`text-[11px] font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{highlightText(item.title || 'Past Questions', vaultSearchQuery, isDarkMode)}</span>
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                  <span className="text-[9px] text-slate-400 font-mono">{highlightText(`${item.year || ''} Session`, vaultSearchQuery, isDarkMode)}</span>
-                                                  {(item.viewCount !== undefined) && (
-                                                    <span className="flex items-center gap-1 text-[9px] text-slate-500 font-mono" title={`${item.viewCount} views`}>
-                                                      <Eye size={10} /> {item.viewCount}
-                                                    </span>
-                                                  )}
-                                                  {(item.viewCount || 0) > 50 && (
-                                                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-                                                      <Flame size={10} /> Trending
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <a href={item.link || '#'} onClick={(e) => handleResourceClick(e, item)} className={`text-[9px] uppercase font-bold tracking-tight px-4 py-2 rounded-full transition-colors border inline-block ${isDarkMode ? 'bg-white/5 text-slate-300 hover:bg-yellow-400 hover:text-slate-900 border-white/10 hover:border-yellow-400' : 'bg-slate-100 text-slate-700 hover:bg-yellow-400 hover:text-slate-900 border-slate-300'}`}>
-                                              View Material
-                                            </a>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </details>
-                          );
-                        })
-                      )}
-                    </div>
-                  </details>
-                );
-              })}
-              
-              {vaultSearchQuery && [
-                'Department of Biochemistry',
-                'Department of Botany',
-                'Department of Fisheries and Aquatic Biology',
-                'Department of Microbiology',
-                'Department of Science Laboratory Technology',
-                'Department of Zoology and Environment Biology',
-                'Department of Chemistry',
-                'Department of Physics',
-                'Department of Mathematics'
-              ].every(dept => {
-                const query = vaultSearchQuery.toLowerCase();
-                const deptMatches = dept.toLowerCase().includes(query);
-                const years = [2021, 2022];
-                return !deptMatches && years.filter(year => year.toString().includes(query) || deptMatches).length === 0;
-              }) && (
-                <div className={`text-center py-8 text-sm border rounded-2xl md:backdrop-blur-xl ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
-                  No past questions found matching "{vaultSearchQuery}"
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
+<section id="brands" className="px-4 max-w-7xl mx-auto w-full relative">
             <div className="text-center mb-10">
               <h2 className={`font-space-grotesk text-3xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r ${isDarkMode ? 'from-white to-yellow-400' : 'from-slate-900 to-yellow-600'} bg-clip-text text-transparent uppercase tracking-tight`}>
                 NASS LASU ONLINE MARKETPLACE
@@ -2497,78 +2584,89 @@ export default function App() {
               </p>
             </div>
 
-            <div className={`${newsFlashLive ? 'p-6 sm:p-10' : 'p-10 sm:p-16'} rounded-3xl border text-center md:backdrop-blur-xl relative overflow-hidden shadow-xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30' 
-                : 'bg-white border-slate-200'
-            }`}>
-              <div className={`relative z-10 mx-auto space-y-5 ${newsFlashLive ? 'max-w-3xl' : 'max-w-md'}`}>
-                {newsFlashLive ? (
-                  <>
-                    <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3.5 py-1 rounded-full">
-                      <Megaphone size={12} className="animate-pulse" /> Latest Bulletin
-                    </span>
-
-                    {newsFlashHeadline && (
-                      <h3 className={`font-space-grotesk text-2xl sm:text-4xl font-black leading-tight tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                        {newsFlashHeadline}
+            {/* NEWS-LIST-START */}
+            {newsItems.length === 0 ? (
+              <div className={`p-10 sm:p-16 rounded-3xl border text-center md:backdrop-blur-xl relative overflow-hidden shadow-xl ${
+                isDarkMode
+                  ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30'
+                  : 'bg-white border-slate-200'
+              }`}>
+                <div className="relative z-10 max-w-md mx-auto space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mx-auto shadow-inner">
+                    <Megaphone size={28} className="animate-pulse" />
+                  </div>
+                  {!dataReady.newsFlash ? (
+                    <h3 className="text-xs uppercase tracking-widest font-bold text-slate-400 animate-pulse">Loading...</h3>
+                  ) : (
+                    <>
+                      <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                        Official news coming soon
                       </h3>
-                    )}
-
-                    {newsFlashImages.length > 0 && (
-                      <div className={`grid gap-3 ${newsFlashImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                        {newsFlashImages.slice(0, 4).map((src, idx) => (
-                          <button
-                            key={`${src}-${idx}`}
-                            type="button"
-                            onClick={() => setSelectedEventGallery({ title: newsFlashHeadline || 'News Flash', images: newsFlashImages })}
-                            aria-label={`Open news photo ${idx + 1}`}
-                            className={`relative overflow-hidden rounded-2xl border border-white/10 cursor-pointer group ${
-                              newsFlashImages.length === 1
-                                ? 'aspect-[16/10]'
-                                : idx === 0 && newsFlashImages.length === 3
-                                  ? 'col-span-2 aspect-[16/9]'
-                                  : 'aspect-[4/3]'
-                            }`}
-                          >
-                            <img
-                              src={src}
-                              alt={newsFlashHeadline ? `${newsFlashHeadline} - photo ${idx + 1}` : `News photo ${idx + 1}`}
-                              loading="lazy"
-                              decoding="async"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            {idx === 3 && newsFlashImages.length > 4 && (
-                              <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center text-white font-black text-2xl">
-                                +{newsFlashImages.length - 4}
-                              </div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {newsFlashText && (
-                      <p className={`mx-auto max-w-2xl text-left text-sm md:text-base leading-relaxed whitespace-pre-line ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                        {renderWithBold(newsFlashText, isDarkMode)}
+                      <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        The Secretariat is currently preparing upcoming press releases and official updates. Please check back shortly.
                       </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 flex items-center justify-center mx-auto shadow-inner">
-                      <Megaphone size={28} className="animate-pulse" />
-                    </div>
-                    <h3 className={`font-space-grotesk text-xl sm:text-2xl font-bold uppercase tracking-wider ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                      Official news coming soon
-                    </h3>
-                    <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                      The Secretariat is currently preparing upcoming press releases and official updates. Please check back shortly.
-                    </p>
-                  </>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-3xl mx-auto space-y-6">
+                {shownNews.map((post: any, idx: number) => {
+                  const images = toImageList(post.images);
+                  const when = formatNewsDate(post);
+                  const title = String(post.headline || '').trim() || 'News Flash';
+                  return (
+                    <article
+                      key={post.id}
+                      className={`p-6 sm:p-10 rounded-3xl border text-center md:backdrop-blur-xl relative overflow-hidden shadow-xl space-y-5 ${
+                        isDarkMode
+                          ? 'bg-gradient-to-br from-white/5 via-slate-900/80 to-slate-950 border-yellow-400/30'
+                          : 'bg-white border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-3 flex-wrap">
+                        <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-3.5 py-1 rounded-full">
+                          <Megaphone size={12} className={idx === 0 ? 'animate-pulse' : ''} /> {idx === 0 ? 'Latest Bulletin' : 'News Update'}
+                        </span>
+                        {when && (
+                          <span className={`text-[11px] font-mono uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{when}</span>
+                        )}
+                      </div>
+
+                      {post.headline && (
+                        <h3 className={`font-space-grotesk text-2xl sm:text-4xl font-black leading-tight tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {post.headline}
+                        </h3>
+                      )}
+
+                      <NewsPhotoGrid
+                        images={images}
+                        title={title}
+                        onOpen={(imgs, t) => setSelectedEventGallery({ title: t, images: imgs })}
+                      />
+
+                      {post.details && (
+                        <p className={`mx-auto max-w-2xl text-left text-sm md:text-base leading-relaxed whitespace-pre-line ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                          {renderWithBold(post.details, isDarkMode)}
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+
+                {newsItems.length > 3 && (
+                  <div className="text-center">
+                    <button
+                      onClick={() => setShowAllNews((v) => !v)}
+                      className="px-6 py-2.5 rounded-full bg-yellow-400/10 hover:bg-yellow-400 text-yellow-400 hover:text-slate-900 border border-yellow-400/40 text-xs font-extrabold uppercase tracking-widest transition-colors cursor-pointer"
+                    >
+                      {showAllNews ? 'Show fewer updates' : `Show older updates (${newsItems.length - 3})`}
+                    </button>
+                  </div>
                 )}
               </div>
-            </div>
+            )}
+            {/* NEWS-LIST-END */}
           </section>
 
 {/* SECRETARIAT SECTION */}
