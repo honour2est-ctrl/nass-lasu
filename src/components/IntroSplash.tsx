@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 
@@ -7,15 +7,135 @@ interface IntroSplashProps {
   onEnter: () => void;
 }
 
+// Lines of the "system start-up" shown while the intro boots (about 3 seconds in total)
+const BOOT_LINES = [
+  { text: 'INITIALIZING NASS LASU WEBAPP', tag: '' },
+  { text: 'LOADING ACADEMIC VAULT', tag: 'OK' },
+  { text: 'CONNECTING FACULTY NETWORK', tag: 'OK' },
+  { text: 'SYNCING NEWS & EVENTS', tag: 'OK' },
+  { text: 'SECURING CONNECTION', tag: 'OK' },
+  { text: 'SYSTEM ONLINE', tag: 'READY' },
+];
+const LINE_MS = 480;
+
+// Falling symbols: binary, maths and science, in the brand yellow
+const RAIN_CHARS = '01∑∫π∂√ΔΩ≈∞λθ{}<>/=+'.split('');
+
+// Reveals text as if it were being decoded, one letter at a time
+function useDecode(target: string, run: boolean, instant: boolean, ms = 900) {
+  const [text, setText] = useState(instant ? target : '');
+  useEffect(() => {
+    if (instant) { setText(target); return; }
+    if (!run) { setText(''); return; }
+    const start = performance.now();
+    const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*<>/';
+    const id = setInterval(() => {
+      const progress = Math.min(1, (performance.now() - start) / ms);
+      const revealed = Math.floor(progress * target.length);
+      setText(
+        target
+          .split('')
+          .map((ch, i) => (ch === ' ' || i < revealed ? ch : glyphs[(Math.random() * glyphs.length) | 0]))
+          .join('')
+      );
+      if (progress >= 1) { setText(target); clearInterval(id); }
+    }, 45);
+    return () => clearInterval(id);
+  }, [target, run, instant, ms]);
+  return text;
+}
+
+function DigitalRain() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    let raf = 0;
+    let last = 0;
+    let drops: number[] = [];
+    let cols = 0;
+    let size = 16;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      size = (window.innerWidth < 640 ? 14 : 16) * dpr;
+      cols = Math.ceil(canvas.width / size);
+      drops = Array.from({ length: cols }, () => Math.random() * -40);
+      ctx.font = `${size}px monospace`;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const draw = (t: number) => {
+      raf = requestAnimationFrame(draw);
+      if (t - last < 70) return; // about 14 frames a second: smooth enough, and light on phones
+      last = t;
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.13)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < cols; i++) {
+        const y = drops[i] * size;
+        ctx.fillStyle = Math.random() > 0.97 ? '#fff7cc' : 'rgba(250, 204, 21, 0.8)';
+        ctx.fillText(RAIN_CHARS[(Math.random() * RAIN_CHARS.length) | 0], i * size, y);
+        if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i] += 1;
+      }
+    };
+    raf = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return <canvas ref={ref} aria-hidden="true" className="fixed inset-0 w-full h-full opacity-40 pointer-events-none" />;
+}
+
+const KEYFRAMES = `
+@keyframes introScan { from { top: -2%; } to { top: 102%; } }
+@keyframes introSpin { to { transform: rotate(360deg); } }
+@keyframes introSpinRev { to { transform: rotate(-360deg); } }
+@keyframes introBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes introGlitch {
+  0%, 92%, 100% { text-shadow: 0 0 18px rgba(250,204,21,.35); transform: translate(0); }
+  93% { text-shadow: 3px 0 rgba(34,211,238,.9), -3px 0 rgba(244,63,94,.9); transform: translate(-2px, 1px); }
+  95% { text-shadow: -3px 0 rgba(34,211,238,.9), 3px 0 rgba(244,63,94,.9); transform: translate(2px, -1px); }
+  97% { text-shadow: 2px 0 rgba(34,211,238,.9), -2px 0 rgba(244,63,94,.9); transform: translate(-1px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-anim { animation: none !important; }
+}
+`;
+
+function Bracket({ className }: { className: string }) {
+  return <span aria-hidden="true" className={`absolute w-6 h-6 sm:w-8 sm:h-8 border-cyan-300/60 ${className}`} />;
+}
+
 // Full-screen welcome page shown once per visit. App.tsx decides when to show it.
 export function IntroSplash({ onEnter }: IntroSplashProps) {
   const exploreRef = useRef<HTMLButtonElement>(null);
+  const reduced =
+    typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const [lines, setLines] = useState(reduced ? BOOT_LINES.length : 1);
+  const ready = lines >= BOOT_LINES.length;
+  const progress = Math.round((lines / BOOT_LINES.length) * 100);
+
+  useEffect(() => {
+    if (reduced || lines >= BOOT_LINES.length) return;
+    const t = setTimeout(() => setLines((n) => n + 1), LINE_MS);
+    return () => clearTimeout(t);
+  }, [reduced, lines]);
+
+  const line1 = useDecode('NASS LASU', ready, reduced);
+  const line2 = useDecode('WEBAPP', ready, reduced, 1100);
 
   useEffect(() => {
     // Keep the page behind the intro from scrolling while it is open
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    exploreRef.current?.focus();
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === 'Enter') onEnter();
@@ -27,99 +147,162 @@ export function IntroSplash({ onEnter }: IntroSplashProps) {
     };
   }, [onEnter]);
 
+  useEffect(() => {
+    if (ready) exploreRef.current?.focus({ preventScroll: true });
+  }, [ready]);
+
   return (
     <motion.div
       role="dialog"
       aria-modal="true"
       aria-label="Welcome to the NASS LASU WebApp"
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 1.04 }}
-      transition={{ duration: 0.55, ease: 'easeInOut' }}
-      className="fixed inset-0 z-[300] overflow-y-auto bg-slate-950"
+      exit={{ opacity: 0, scale: 1.06 }}
+      transition={{ duration: 0.6, ease: 'easeInOut' }}
+      className="fixed inset-0 z-[300] overflow-y-auto overflow-x-hidden bg-slate-950 text-white"
     >
-      {/* Soft yellow glow behind the content (kept off phones to stay fast) */}
-      <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[640px] bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-blue-950/40 to-slate-950 pointer-events-none" />
+      <style>{KEYFRAMES}</style>
 
-      <div className="relative min-h-full flex flex-col items-center justify-center px-6 py-12 text-center">
+      {!reduced && <DigitalRain />}
+
+      {/* Darkens the middle so the text stays easy to read over the rain */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(2,6,23,0.94)_0%,rgba(2,6,23,0.62)_55%,rgba(2,6,23,0.92)_100%)]" />
+
+      {/* Faint circuit grid */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-60"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(34,211,238,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.07) 1px, transparent 1px)',
+          backgroundSize: '44px 44px',
+        }}
+      />
+
+      {/* Scanning line */}
+      {!reduced && (
+        <div
+          aria-hidden="true"
+          className="intro-anim fixed left-0 right-0 h-px bg-cyan-300/60 shadow-[0_0_14px_3px_rgba(34,211,238,0.5)] pointer-events-none"
+          style={{ animation: 'introScan 4.5s linear infinite' }}
+        />
+      )}
+
+      {/* Corner brackets and readouts */}
+      <div className="fixed inset-3 sm:inset-5 pointer-events-none">
+        <Bracket className="top-0 left-0 border-t-2 border-l-2" />
+        <Bracket className="top-0 right-0 border-t-2 border-r-2" />
+        <Bracket className="bottom-0 left-0 border-b-2 border-l-2" />
+        <Bracket className="bottom-0 right-0 border-b-2 border-r-2" />
+        <span className="absolute top-1 left-9 sm:left-12 font-mono text-[9px] sm:text-[10px] tracking-[0.25em] text-cyan-300/70">
+          NASS-LASU // WEBAPP v36
+        </span>
+        <span className="hidden sm:block absolute bottom-1 left-12 font-mono text-[10px] tracking-[0.25em] text-cyan-300/70">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 align-middle" />
+          SECURE CONNECTION
+        </span>
+        <span className="hidden sm:block absolute bottom-1 right-12 font-mono text-[10px] tracking-[0.25em] text-cyan-300/70">
+          LAGOS STATE UNIVERSITY
+        </span>
+      </div>
+
+      {/* Skip is available from the very first second */}
+      <button
+        onClick={onEnter}
+        className="fixed top-5 right-6 sm:top-7 sm:right-12 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-slate-900/70 px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-slate-300 hover:border-yellow-400 hover:text-yellow-400 transition-colors cursor-pointer"
+      >
+        Skip <ArrowRight size={12} />
+      </button>
+
+      <div className="relative z-10 min-h-full flex flex-col items-center justify-center px-5 py-12 sm:py-16 text-center">
+        {/* Logo inside two spinning rings */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.6 }}
+          initial={reduced ? false : { opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-8"
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="relative flex items-center justify-center w-40 h-40 sm:w-52 sm:h-52 mb-6"
         >
-          <div className="absolute -inset-3 rounded-full border border-yellow-400/30 animate-pulse" />
+          <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full" aria-hidden="true">
+            <circle
+              cx="100" cy="100" r="96" fill="none" stroke="rgba(34,211,238,0.55)" strokeWidth="1.5" strokeDasharray="6 10"
+              className="intro-anim" style={{ transformOrigin: '50% 50%', animation: 'introSpin 14s linear infinite' }}
+            />
+            <circle
+              cx="100" cy="100" r="86" fill="none" stroke="rgba(250,204,21,0.8)" strokeWidth="2" strokeDasharray="60 30 10 30"
+              className="intro-anim" style={{ transformOrigin: '50% 50%', animation: 'introSpinRev 9s linear infinite' }}
+            />
+          </svg>
           <img
             src="/nass_logo.jpg"
             alt="NASS LASU logo"
-            width={160}
-            height={160}
-            className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-yellow-400/70 shadow-[0_0_40px_rgba(250,204,21,0.35)]"
+            width={128}
+            height={128}
+            className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-yellow-400/80 shadow-[0_0_40px_rgba(250,204,21,0.45)]"
           />
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.6 }}
-          className="font-mono text-xs sm:text-sm font-bold uppercase tracking-[0.5em] text-yellow-500 mb-3"
-        >
-          Welcome To
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.7 }}
-          className="font-space-grotesk text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[1.05] tracking-tight bg-gradient-to-r from-white via-yellow-200 to-yellow-400 bg-clip-text text-transparent"
-        >
-          NASS LASU
-          <br />
-          WebApp
-        </motion.h1>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="relative overflow-hidden mt-6 rounded-3xl border border-yellow-400/40 bg-slate-900/80 px-5 sm:px-7 py-2.5 shadow-[0_0_25px_rgba(250,204,21,0.2)]"
-        >
-          <div className="absolute inset-0 -translate-x-full md:animate-[shine_3.5s_infinite_linear] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-          <span className="relative block text-[11px] sm:text-sm font-extrabold uppercase leading-snug tracking-[0.12em] sm:tracking-[0.18em] text-yellow-300">
-            1st Of Its Kind In Lagos State University
-          </span>
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-5 max-w-md text-xs sm:text-sm leading-relaxed text-slate-400"
-        >
-          Academic materials, faculty news, events and student services, all in one place.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.6 }}
-          className="mt-10 flex flex-col items-center gap-4"
-        >
-          <button
-            ref={exploreRef}
-            onClick={onEnter}
-            className="group inline-flex items-center gap-2.5 rounded-full bg-yellow-400 hover:bg-yellow-300 px-9 py-3.5 text-sm font-black uppercase tracking-widest text-slate-900 shadow-[0_0_25px_rgba(250,204,21,0.45)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+        {/* Boot progress, then the welcome message in the same space (no jumping) */}
+        <div className="grid w-full max-w-3xl">
+          <motion.div
+            animate={{ opacity: ready ? 0 : 1 }}
+            transition={{ duration: 0.35 }}
+            className={`col-start-1 row-start-1 flex flex-col items-center ${ready ? 'pointer-events-none' : ''}`}
+            aria-hidden={ready}
           >
-            <span>Explore</span>
-            <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-          </button>
-          <button
-            onClick={onEnter}
-            className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400 hover:text-yellow-400 transition-colors cursor-pointer py-2 px-4"
+            <div className="w-full max-w-sm font-mono text-[11px] sm:text-xs text-left leading-6 tracking-wider text-cyan-200/90">
+              {BOOT_LINES.slice(0, lines).map((l, i) => (
+                <div key={l.text} className="flex items-center justify-between gap-3">
+                  <span>
+                    <span className="text-yellow-400">&gt;</span> {l.text}
+                    {i === lines - 1 && !ready && (
+                      <span className="intro-anim ml-1 inline-block w-2 h-3.5 bg-yellow-400 align-middle" style={{ animation: 'introBlink 0.8s steps(1) infinite' }} />
+                    )}
+                  </span>
+                  {l.tag && i < lines - 1 && <span className="text-emerald-400 font-bold">[{l.tag}]</span>}
+                  {l.tag && i === lines - 1 && ready && <span className="text-emerald-400 font-bold">[{l.tag}]</span>}
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 w-full max-w-sm">
+              <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-yellow-400 transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="mt-2 font-mono text-[10px] tracking-[0.3em] text-slate-400">LOADING {progress}%</p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 10 }}
+            transition={{ duration: 0.6 }}
+            className={`relative z-[1] col-start-1 row-start-1 flex flex-col items-center ${ready ? '' : 'pointer-events-none'}`}
+            aria-hidden={!ready}
           >
-            Skip
-          </button>
-        </motion.div>
+            <p className="font-mono text-[11px] sm:text-sm font-bold uppercase tracking-[0.5em] text-cyan-300">Welcome To</p>
+            <h1
+              className="intro-anim mt-3 font-space-grotesk text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[1.02] tracking-tight text-yellow-300"
+              style={{ animation: reduced ? undefined : 'introGlitch 5s linear infinite' }}
+              aria-label="NASS LASU WebApp"
+            >
+              <span aria-hidden="true" className="block text-white">{line1 || '\u00a0'}</span>
+              <span aria-hidden="true" className="block">{line2 || '\u00a0'}</span>
+            </h1>
+
+            <div className="relative shrink-0 overflow-hidden mt-5 rounded-2xl border border-cyan-300/40 bg-slate-900/70 px-5 sm:px-7 py-2.5 shadow-[0_0_25px_rgba(34,211,238,0.18)]">
+              <span className="relative block text-[11px] sm:text-sm font-extrabold uppercase leading-snug tracking-[0.12em] sm:tracking-[0.18em] text-yellow-300">
+                1st Of Its Kind In Lagos State University
+              </span>
+            </div>
+
+            <button
+              ref={exploreRef}
+              onClick={onEnter}
+              tabIndex={ready ? 0 : -1}
+              className="group mt-8 inline-flex items-center gap-2.5 rounded-full bg-yellow-400 hover:bg-yellow-300 px-10 py-3.5 text-sm font-black uppercase tracking-widest text-slate-900 shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <span>Explore</span>
+              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );
