@@ -3020,20 +3020,7 @@ export default function App() {
             </div>
 
             <div className="pt-8 text-center flex flex-col items-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              {(socialUrl('social_x') || socialUrl('social_linkedin') || socialUrl('social_instagram')) && (
-                <div className="flex gap-6 mb-2">
-                  {socialUrl('social_x') && (
-                    <a href={socialUrl('social_x')} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">X (Twitter)</a>
-                  )}
-                  {socialUrl('social_linkedin') && (
-                    <a href={socialUrl('social_linkedin')} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">LinkedIn</a>
-                  )}
-                  {socialUrl('social_instagram') && (
-                    <a href={socialUrl('social_instagram')} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors">Instagram</a>
-                  )}
-                </div>
-              )}
-              <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
+                            <p>&copy; 2026 NASS LASU 36TH ADMINISTRATION. ALL RIGHTS RESERVED.</p>
               
               <div className="relative inline-flex items-center justify-center mt-3 group">
                 <div className="absolute -inset-1 bg-yellow-400/15 rounded-full blur-lg -z-10 group-hover:bg-yellow-400/25 transition-all duration-500" />
