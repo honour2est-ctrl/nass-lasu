@@ -390,6 +390,7 @@ export const AdminPanel = () => {
   const [newsFlashImages, setNewsFlashImages] = useState('');
   const [savingNewsFlash, setSavingNewsFlash] = useState(false);
   const [newsFlashSuccess, setNewsFlashSuccess] = useState(false);
+  const [oldBulletinBusy, setOldBulletinBusy] = useState(false);
 
   // Email Normalization & Officer Checks
   const userEmailNormalized = user?.email?.toLowerCase().trim() || '';
@@ -573,6 +574,60 @@ export const AdminPanel = () => {
       console.error('Failed to save news flash:', err);
     } finally {
       setSavingNewsFlash(false);
+    }
+  };
+
+  // ---- The older single bulletin (published before News Flash became a list) ----
+  const hasOldBulletin = !!(newsFlashText.trim() || newsFlashHeadline.trim() || parseGallery(newsFlashImages).length > 0);
+
+  const clearOldBulletin = async () => {
+    await setDoc(doc(db, 'siteContent', 'news_flash_content'), {
+      contentKey: 'news_flash_content',
+      text: '',
+      headline: '',
+      images: [],
+      status: 'Inactive',
+      updatedAt: new Date().toISOString(),
+      updatedBy: user?.email || ''
+    }, { merge: true });
+    await setDoc(doc(db, 'siteContent', 'news_flash_status'), {
+      contentKey: 'news_flash_status',
+      value: 'Inactive'
+    }, { merge: true });
+  };
+
+  const handleDeleteOldBulletin = async () => {
+    if (!window.confirm('Delete the old bulletin from the website? This cannot be undone.')) return;
+    setOldBulletinBusy(true);
+    try {
+      await clearOldBulletin();
+    } catch (err) {
+      console.error('Failed to delete old bulletin:', err);
+      window.alert('Could not delete it. Please check your connection and try again.');
+    } finally {
+      setOldBulletinBusy(false);
+    }
+  };
+
+  const handleMoveOldBulletin = async () => {
+    setOldBulletinBusy(true);
+    try {
+      const lines = newsFlashText.trim().split('\n');
+      const hasHeadline = !!newsFlashHeadline.trim();
+      await addDoc(collection(db, 'newsFlash'), {
+        headline: hasHeadline ? newsFlashHeadline.trim() : ((lines[0] || '').slice(0, 150) || 'News update'),
+        details: hasHeadline ? newsFlashText.trim() : lines.slice(1).join('\n').trim(),
+        images: parseGallery(newsFlashImages).join(','),
+        date: '',
+        status: 'Published',
+        createdAt: new Date().toISOString()
+      });
+      await clearOldBulletin();
+    } catch (err) {
+      console.error('Failed to move old bulletin:', err);
+      window.alert('Could not move it. Please check your connection and try again.');
+    } finally {
+      setOldBulletinBusy(false);
     }
   };
 
@@ -784,6 +839,36 @@ export const AdminPanel = () => {
       </div>
 
       {/* News Flash Bulletin & Marquee Editor (Visible on Site Content Tab) */}
+      {(activeSectionKey === 'newsFlash' || activeSectionKey === 'site_content') && !isLimitedOfficer && hasOldBulletin && (
+        <div className="mb-6 p-5 rounded-2xl border border-amber-400/40 bg-amber-400/10">
+          <p className="text-xs font-bold uppercase tracking-wider text-amber-300 mb-1">
+            An older bulletin is still on the website{newsFlashStatus === 'Inactive' ? ' (currently hidden)' : ''}
+          </p>
+          <p className="text-sm font-semibold text-white break-words">
+            {newsFlashHeadline.trim() || newsFlashText.trim().split('\n')[0].slice(0, 120) || `${parseGallery(newsFlashImages).length} photo(s)`}
+          </p>
+          <p className="text-[11px] text-slate-400 mt-1 mb-3">
+            It was published before News Flash became a list, so it is not listed below. Move it into the list to edit it like any other post, or delete it.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={handleMoveOldBulletin}
+              disabled={oldBulletinBusy}
+              className="px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-900 text-xs font-extrabold uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+            >
+              {oldBulletinBusy ? 'Working...' : 'Move it into the list'}
+            </button>
+            <button
+              onClick={handleDeleteOldBulletin}
+              disabled={oldBulletinBusy}
+              className="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/40 text-xs font-extrabold uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+            >
+              Delete it
+            </button>
+          </div>
+        </div>
+      )}
+
       {activeSectionKey === 'site_content' && (
         <div className="space-y-6 mb-8">
           <p className="text-[11px] text-slate-400">
