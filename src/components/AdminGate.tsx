@@ -86,7 +86,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     <>
       <button 
         onClick={() => setShowLoginModal(true)}
-        className="fixed bottom-16 right-2 w-3 h-3 bg-white/5 hover:bg-yellow-400/50 rounded-full z-[100] cursor-pointer transition-colors"
+        className="fixed bottom-28 md:bottom-16 right-2 w-3 h-3 bg-white/5 hover:bg-yellow-400/50 rounded-full z-[100] cursor-pointer transition-colors"
         title="Main Admin"
         aria-label="Open Main Admin Portal"
       />
