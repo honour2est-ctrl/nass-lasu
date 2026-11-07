@@ -9,8 +9,11 @@ const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ def
 import { PageantGallery } from './components/PageantGallery';
 import { ImageSlideshow } from './components/ImageSlideshow';
 import { IntroSplash } from './components/IntroSplash';
+import { MobileNav, scrollToSection } from './components/MobileNav';
+import { EmergencySheet, EmergencyButton } from './components/EmergencySheet';
+import { QuickTiles } from './components/QuickTiles';
 import { Base64Migrator } from './components/Base64Migrator';
-import { EmergencyHotline } from './components/EmergencyHotline';
+import { EmergencyHotline, SQUAD_NUMBERS } from './components/EmergencyHotline';
 import { User as UserIcon, ArrowRight, ArrowUp, Search, Menu, X, BookOpen, MessageSquare, Download, Navigation, Eye, Flame, ChevronLeft, ChevronRight, ShoppingBag, Siren, PhoneCall, MessageCircle, MapPin, ExternalLink, Globe, Handshake, Award, PenTool, Trophy, Sparkles, Compass, Cpu, Users, Settings, Calendar, Upload, Bell, Megaphone, Crown, Building2, Plus, Trash2, Edit3, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { collection, onSnapshot, doc, updateDoc, increment, setDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, listAll, uploadBytes } from 'firebase/storage';
@@ -767,6 +770,7 @@ export default function App() {
   };
 
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [emergencyOpen, setEmergencyOpen] = useState(false);
 
   // Welcome screen: shown once per visit, and skipped when someone opens a link to a specific section
   const [showIntro, setShowIntro] = useState(() => {
@@ -1137,7 +1141,7 @@ export default function App() {
   const shownNews = showAllNews ? newsItems : newsItems.slice(0, 3);
 
   return (
-    <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+    <div className={`relative w-full max-w-[100vw] overflow-x-hidden min-h-screen font-sans pb-32 md:pb-16 transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
       <AnimatePresence>{showIntro && <IntroSplash onEnter={enterSite} />}</AnimatePresence>
 
       {isMobile ? (
@@ -1174,84 +1178,84 @@ export default function App() {
             <div className="flex items-center gap-1.5 md:gap-3 text-[11px] uppercase tracking-widest font-semibold overflow-x-auto no-scrollbar">
               <a 
                 href="#vision" aria-label="WebApp Story" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Sparkles size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">WebApp Story</span>
               </a>
               <a 
                 href="#executives" aria-label="Excos" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <UserIcon size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Excos</span>
               </a>
               <a 
                 href="#vault" aria-label="Vault" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <BookOpen size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Vault</span>
               </a>
               <a 
                 href="#hall-of-fame" aria-label="Hall of Fame" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Crown size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Hall of Fame</span>
               </a>
               <a 
                 href="#brands" aria-label="Market" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <ShoppingBag size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Market</span>
               </a>
               <a 
                 href="#partners" aria-label="Partners" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Handshake size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Partners</span>
               </a>
               <a 
                 href="#sponsors" aria-label="Sponsors" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Award size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Sponsors</span>
               </a>
               <a 
                 href="#events" aria-label="Events" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Eye size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Events</span>
               </a>
               <a 
                 href="#hotline" aria-label="Hotline" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Siren size={14} className="text-slate-900 animate-pulse" />
                 <span className="hidden lg:inline">Hotline</span>
               </a>
               <a 
                 href="#sports" aria-label="Sports" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Trophy size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Sports</span>
               </a>
               <a 
                 href="#news" aria-label="News Flash" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Megaphone size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">News Flash</span>
               </a>
               <a 
                 href="#landmarks" aria-label="Landmarks" 
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
+                className="max-md:hidden bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold p-2 lg:px-3.5 lg:py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 shrink-0"
               >
                 <Building2 size={14} className="text-slate-900" />
                 <span className="hidden lg:inline">Landmarks</span>
@@ -1277,7 +1281,7 @@ export default function App() {
         <main className="flex flex-col gap-32 pb-16 pt-24 w-full overflow-x-hidden">
           
           {/* HERO SECTION */}
-          <section id="hero" className="min-h-[80vh] flex items-center justify-center px-4">
+          <section id="hero" className="min-h-[56vh] md:min-h-[80vh] flex items-center justify-center px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               
               <div className="relative inline-flex items-center justify-center mb-1">
@@ -1318,7 +1322,7 @@ export default function App() {
                 {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
               </p>
 
-              <div className="flex flex-wrap justify-center gap-4 pt-4">
+              <div className="max-md:hidden flex flex-wrap justify-center gap-4 pt-4">
                 <a 
                   href="#vision" 
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-extrabold px-8 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 uppercase tracking-wide text-xs md:text-sm"
@@ -1351,7 +1355,9 @@ export default function App() {
             </div>
           </section>
 
-          {/* VISION SECTION */}
+          <QuickTiles isDarkMode={isDarkMode} onEmergency={() => setEmergencyOpen(true)} />
+
+          {/* VISION SECTION */}
           <section id="vision" className="px-4 max-w-7xl mx-auto w-full">
             <div className="text-center mb-14 space-y-3">
               <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-yellow-500 bg-yellow-400/10 border border-yellow-400/30 px-4 py-1.5 rounded-full inline-block">
@@ -3042,7 +3048,7 @@ export default function App() {
         </main>
       </div>
 
-      <aside aria-label="Announcement ticker" className={`fixed bottom-0 left-0 right-0 z-40 h-11 border-t md:backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
+      <aside aria-label="Announcement ticker" className={`fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 h-7 md:h-11 border-t md:backdrop-blur-md flex items-center overflow-hidden shadow-[0_-5px_20px_rgba(0,0,0,0.7)] ${isDarkMode ? 'border-yellow-400/30 bg-slate-950/95 text-slate-200' : 'border-yellow-500/40 bg-white/95 text-slate-800'}`}>
         <div className="flex items-center gap-12 whitespace-nowrap px-6 text-[11px] font-bold tracking-wider animate-[marquee_28s_linear_infinite]">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 shrink-0">
@@ -3053,11 +3059,22 @@ export default function App() {
         </div>
       </aside>
 
+      <MobileNav isDarkMode={isDarkMode} onEmergency={() => setEmergencyOpen(true)} />
+      <EmergencyButton onOpen={() => setEmergencyOpen(true)} />
+      <EmergencySheet
+        isOpen={emergencyOpen}
+        onClose={() => setEmergencyOpen(false)}
+        numbers={SQUAD_NUMBERS}
+        whatsappNumber="2347074351819"
+        isDarkMode={isDarkMode}
+        onSendAlert={() => { setEmergencyOpen(false); setTimeout(() => scrollToSection('hotline'), 80); }}
+      />
+
       <Suspense fallback={null}><Chatbot /></Suspense>
 
 
 
-      <div className="fixed bottom-14 left-6 z-50 flex flex-col items-start gap-4">
+      <div className="hidden md:flex fixed bottom-14 left-6 z-50 flex-col items-start gap-4">
         <AnimatePresence>
           {isQuickActionsOpen && (
             <motion.div
@@ -3195,7 +3212,7 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={scrollToTop}
-            className="fixed bottom-14 right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer"
+            className="max-md:hidden fixed bottom-14 right-6 z-50 p-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer"
             aria-label="Back to Top"
           >
             <ArrowUp size={20} />
