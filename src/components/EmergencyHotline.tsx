@@ -4,6 +4,9 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useToast } from './Toast';
 
+// The Emergency Squad numbers. Shared with the always-visible Emergency button in App.tsx.
+export const SQUAD_NUMBERS = ['09125603852', '09026534351', '08125658145', '09078254935', '07074351819'];
+
 export const EmergencyHotline: React.FC = () => {
   const { addToast } = useToast();
   const [showReportForm, setShowReportForm] = useState(false);
@@ -25,7 +28,7 @@ export const EmergencyHotline: React.FC = () => {
     {
       title: 'Emergency Squad Hotline',
       subtitle: '24/7 Campus Emergency Response',
-      numbers: ['09125603852', '09026534351', '08125658145', '09078254935', '07074351819'],
+      numbers: SQUAD_NUMBERS,
       available: '24/7 Active',
       icon: Siren,
       bgColor: 'from-red-500/20 to-yellow-500/10',
