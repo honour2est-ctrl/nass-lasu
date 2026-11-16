@@ -1,8 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuickTilesInView } from '../lib/useQuickTilesInView';
+import { ChatbotAvatar, ChatStyles, TypingDots } from './ChatbotAvatar';
 
 export function Chatbot() {
   const tilesVisible = useQuickTilesInView(); // on phones the launcher steps aside while the quick tiles are on screen
+
+  // A friendly nudge, shown once per visit a few seconds after the page opens
+  const [showHint, setShowHint] = useState(false);
+  useEffect(() => {
+    let seen = false;
+    try { seen = !!sessionStorage.getItem('nass_chat_hint'); } catch { /* private mode: fine */ }
+    if (seen) return;
+    const show = setTimeout(() => setShowHint(true), 6000);
+    const hide = setTimeout(() => {
+      setShowHint(false);
+      try { sessionStorage.setItem('nass_chat_hint', '1'); } catch { /* private mode: fine */ }
+    }, 15000);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, []);
+
+  const openChat = () => {
+    setShowHint(false);
+    try { sessionStorage.setItem('nass_chat_hint', '1'); } catch { /* private mode: fine */ }
+    setIsOpen(true);
+  };
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'model', parts: [{ text: 'Hello! I am Nass AI, your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?' }] }
@@ -47,20 +68,36 @@ export function Chatbot() {
 
   return (
     <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] right-4 md:bottom-6 md:right-6 z-50 pointer-events-none">
+      <ChatStyles />
       {/* Floating Toggle Button with Custom Robot Avatar */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className={`pointer-events-auto bg-yellow-400 text-slate-900 p-2.5 rounded-2xl shadow-2xl hover:bg-yellow-300 transition-all flex flex-col items-center justify-center font-bold text-xs border-2 border-slate-900 group max-md:transition-opacity ${tilesVisible ? 'max-md:opacity-0 max-md:pointer-events-none' : ''}`}
-          title="Open Nass AI Secretariat Assistant"
+        <div
+          className={`relative flex items-center justify-end pointer-events-none max-md:transition-opacity ${tilesVisible ? 'max-md:opacity-0' : ''}`}
         >
-          <img 
-            src="/bot-avatar.jpg" 
-            alt="Nass AI" 
-            className="w-9 h-9 rounded-full object-cover mb-1 border border-slate-900 shadow-inner" 
-          />
-          <span className="tracking-wide font-extrabold text-[11px]">Nass AI</span>
-        </button>
+          {showHint && !tilesVisible && (
+            <button
+              onClick={openChat}
+              className="pointer-events-auto absolute right-full mr-3 bottom-1 whitespace-nowrap rounded-2xl rounded-br-md border border-yellow-400/50 bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-xl cursor-pointer"
+              style={{ animation: 'nassHintIn 0.35s ease-out' }}
+            >
+              Questions? Ask Nass AI
+            </button>
+          )}
+          <button
+            onClick={openChat}
+            aria-label="Open Nass AI assistant"
+            title="Ask Nass AI"
+            className={`pointer-events-auto relative w-14 h-14 md:w-16 md:h-16 rounded-full shadow-[0_6px_22px_rgba(2,6,23,0.6)] transition-transform hover:scale-105 active:scale-95 cursor-pointer ${tilesVisible ? 'max-md:pointer-events-none' : ''}`}
+          >
+            <span
+              aria-hidden="true"
+              className="nass-anim absolute inset-0 rounded-full border-2 border-yellow-400/70"
+              style={{ animation: 'nassPulse 3.2s ease-out infinite', animationPlayState: tilesVisible ? 'paused' : 'running' }}
+            />
+            <ChatbotAvatar className="relative w-full h-full drop-shadow-lg" animated paused={tilesVisible} />
+            <span aria-hidden="true" className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900" />
+          </button>
+        </div>
       )}
 
       {/* Floating Chat Window */}
@@ -69,14 +106,10 @@ export function Chatbot() {
           {/* Header */}
           <div className="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
             <div className="flex items-center gap-2.5">
-              <img 
-                src="/bot-avatar.jpg" 
-                alt="Nass AI" 
-                className="w-7 h-7 rounded-full object-cover border border-yellow-400" 
-              />
+              <ChatbotAvatar className="w-9 h-9 shrink-0" ring={false} />
               <div>
                 <h3 className="font-bold text-yellow-400 text-sm">Nass AI Assistant</h3>
-                <p className="text-[10px] text-slate-400">Secretariat Digital Hub</p>
+                <p className="flex items-center gap-1.5 text-[10px] text-slate-400"><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />Online · Secretariat Digital Hub</p>
               </div>
             </div>
             <button
@@ -96,7 +129,7 @@ export function Chatbot() {
                 </div>
               </div>
             ))}
-            {loading && <div className="text-slate-400 text-xs italic p-1">Nass AI is typing...</div>}
+            {loading && <TypingDots />}
           </div>
 
           {/* Input Form */}
