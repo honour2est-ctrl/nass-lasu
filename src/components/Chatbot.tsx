@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import './Chatbot.css';
 
-// Keep your existing Gemini model configuration
 const GEMINI_MODEL = 'gemini-3.6-flash';
 
 export function Chatbot() {
@@ -26,6 +25,13 @@ export function Chatbot() {
     "3. Executive Council (SSEC): Comprises President, Vice President, General Secretary, Welfare Director, PRO, Social Director, Financial Secretary, Treasurer, Sport Director, and Assistant General Secretary. Executives must have a CGPA >= 3.00. " +
     "4. Legislative Council (SSRC): 5 members per department. Functionaries include Speaker, Deputy Speaker, Clerk, Chief Whip, Under Secretary, and Sergeant-at-Arms. " +
     "5. Finances & Sharing Formula: Central Account sharing formula is SSEC (64%), SSRC (35%), and Auditor General (1%).";
+
+  const suggestions = [
+    'What is the NASS-LASU Constitution?',
+    'What are the duties of the General Secretary?',
+    'Explain the SSRC Standing Orders',
+    'How are association funds shared?'
+  ];
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,50 +98,54 @@ export function Chatbot() {
     }
   };
 
-  const suggestions = [
-    'What is the NASS-LASU Constitution?',
-    'What are the duties of the General Secretary?',
-    'Explain the SSRC Standing Orders',
-    'How are association funds shared?'
-  ];
-
   return (
     <div className="nass-ai-root">
 
-      {/* Floating AI Launcher */}
+      {/* ANIMATED ENERGY ORB LAUNCHER */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="nass-ai-launcher"
-          title="Open Nass AI Secretariat Assistant"
-          aria-label="Open Nass AI"
+          className="nass-orb-launcher"
+          title="Open NASS AI"
+          aria-label="Open NASS AI Assistant"
         >
-          <span className="launcher-ring" />
+          <span className="energy-orbit orbit-one" />
+          <span className="energy-orbit orbit-two" />
+          <span className="energy-orbit orbit-three" />
 
-          <span className="launcher-avatar">
-            <img src="/bot-avatar.jpg" alt="Nass AI" />
+          <span className="energy-glow" />
+
+          <span className="energy-core">
+            <span className="core-light" />
           </span>
 
-          <span className="launcher-label">NASS AI</span>
-          <span className="launcher-status">
+          <span className="energy-particle particle-one" />
+          <span className="energy-particle particle-two" />
+          <span className="energy-particle particle-three" />
+
+          <span className="orb-label">NASS AI</span>
+
+          <span className="orb-online">
             <span className="status-dot" />
             ONLINE
           </span>
         </button>
       )}
 
-      {/* Main Chat Interface */}
+      {/* MAIN CHAT WINDOW */}
       {isOpen && (
         <div className="nass-ai-window">
 
-          {/* Animated Header */}
+          {/* HEADER */}
           <header className="nass-ai-header">
 
             <div className="header-orb">
               <div className="orb-glow" />
+
               <div className="orb-core">
-                <img src="/bot-avatar.jpg" alt="Nass AI" />
+                <img src="/bot-avatar.jpg" alt="NASS AI" />
               </div>
+
               <span className="orb-pulse" />
             </div>
 
@@ -164,10 +174,10 @@ export function Chatbot() {
             </button>
           </header>
 
-          {/* Chat Messages */}
+          {/* MESSAGES AREA */}
           <div className="nass-ai-messages">
 
-            {/* Welcome Screen */}
+            {/* WELCOME SCREEN */}
             {messages.length === 1 && (
               <div className="welcome-screen">
 
@@ -210,6 +220,7 @@ export function Chatbot() {
               </div>
             )}
 
+            {/* CHAT HISTORY */}
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -219,7 +230,7 @@ export function Chatbot() {
               >
                 {msg.role === 'model' && (
                   <div className="message-avatar">
-                    <img src="/bot-avatar.jpg" alt="AI" />
+                    <img src="/bot-avatar.jpg" alt="NASS AI" />
                   </div>
                 )}
 
@@ -231,6 +242,7 @@ export function Chatbot() {
                   <div className="message-label">
                     {msg.role === 'user' ? 'YOU' : 'NASS AI'}
                   </div>
+
                   <div className="message-text">
                     {msg.parts[0].text}
                   </div>
@@ -238,15 +250,17 @@ export function Chatbot() {
               </div>
             ))}
 
-            {/* Animated Typing Indicator */}
+            {/* TYPING INDICATOR */}
             {loading && (
               <div className="message-row ai-row">
+
                 <div className="message-avatar">
-                  <img src="/bot-avatar.jpg" alt="AI" />
+                  <img src="/bot-avatar.jpg" alt="NASS AI" />
                 </div>
 
                 <div className="message-bubble ai-bubble typing-bubble">
                   <span>PROCESSING RESPONSE</span>
+
                   <div className="typing-dots">
                     <i />
                     <i />
@@ -257,8 +271,9 @@ export function Chatbot() {
             )}
           </div>
 
-          {/* Input Area */}
+          {/* INPUT AREA */}
           <div className="nass-ai-footer">
+
             <div className="input-container">
               <form onSubmit={handleSendMessage}>
                 <input
