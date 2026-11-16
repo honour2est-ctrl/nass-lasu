@@ -139,11 +139,35 @@ export function Chatbot() {
           {/* HEADER */}
           <header className="nass-ai-header">
 
-            <div className="header-orb">
+            <div
+              className="header-orb"
+              style={{
+                width: '42px',
+                height: '42px',
+                minWidth: '42px'
+              }}
+            >
               <div className="orb-glow" />
 
-              <div className="orb-core">
-                <img src="/bot-avatar.jpg" alt="NASS AI" />
+              <div
+                className="orb-core"
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  overflow: 'hidden',
+                  borderRadius: '50%'
+                }}
+              >
+                <img
+                  src="/bot-avatar.jpg"
+                  alt="NASS AI"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                />
               </div>
 
               <span className="orb-pulse" />
@@ -181,9 +205,33 @@ export function Chatbot() {
             {messages.length === 1 && (
               <div className="welcome-screen">
 
-                <div className="welcome-orb">
-                  <div className="welcome-orb-inner">
-                    <img src="/bot-avatar.jpg" alt="NASS AI" />
+                <div
+                  className="welcome-orb"
+                  style={{
+                    width: '85px',
+                    height: '85px',
+                    margin: '0 auto'
+                  }}
+                >
+                  <div
+                    className="welcome-orb-inner"
+                    style={{
+                      width: '72px',
+                      height: '72px',
+                      overflow: 'hidden',
+                      borderRadius: '50%'
+                    }}
+                  >
+                    <img
+                      src="/bot-avatar.jpg"
+                      alt="NASS AI"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block'
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -229,8 +277,26 @@ export function Chatbot() {
                 }`}
               >
                 {msg.role === 'model' && (
-                  <div className="message-avatar">
-                    <img src="/bot-avatar.jpg" alt="NASS AI" />
+                  <div
+                    className="message-avatar"
+                    style={{
+                      width: '30px',
+                      height: '30px',
+                      minWidth: '30px',
+                      overflow: 'hidden',
+                      borderRadius: '50%'
+                    }}
+                  >
+                    <img
+                      src="/bot-avatar.jpg"
+                      alt="NASS AI"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block'
+                      }}
+                    />
                   </div>
                 )}
 
@@ -254,8 +320,26 @@ export function Chatbot() {
             {loading && (
               <div className="message-row ai-row">
 
-                <div className="message-avatar">
-                  <img src="/bot-avatar.jpg" alt="NASS AI" />
+                <div
+                  className="message-avatar"
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    minWidth: '30px',
+                    overflow: 'hidden',
+                    borderRadius: '50%'
+                  }}
+                >
+                  <img
+                    src="/bot-avatar.jpg"
+                    alt="NASS AI"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block'
+                    }}
+                  />
                 </div>
 
                 <div className="message-bubble ai-bubble typing-bubble">
