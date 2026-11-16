@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   BookOpen, Megaphone, Calendar, Siren, Sparkles, User as UserIcon, Crown, Users, Compass,
-  ShoppingBag, Handshake, Award, Trophy, Building2, Globe, MessageSquare, MapPin, X,
+  ShoppingBag, Handshake, Award, Trophy, Building2, Globe, MessageSquare, MapPin, X, Download,
 } from 'lucide-react';
+import { useInstallPrompt } from '../lib/pwa';
+import { track } from '../lib/analytics';
 
 // Scroll to a section, leaving room for the fixed header at the top
 export const scrollToSection = (id: string) => {
@@ -68,6 +70,9 @@ interface MobileNavProps {
 export function MobileNav({ isDarkMode, onEmergency }: MobileNavProps) {
   const [active, setActive] = useState<Tab>('home');
   const [moreOpen, setMoreOpen] = useState(false);
+  const [iosHelp, setIosHelp] = useState(false);
+  const { installed, canPrompt, showIOSHelp, promptInstall } = useInstallPrompt();
+  const showInstall = !installed && (canPrompt || showIOSHelp);
 
   // Light up the tab for whatever part of the page is in the middle of the screen
   useEffect(() => {
@@ -100,19 +105,30 @@ export function MobileNav({ isDarkMode, onEmergency }: MobileNavProps) {
 
   const goTo = (id: string) => {
     setMoreOpen(false);
+    track('more_item', { id });
     // let the sheet release the page scroll lock first
     setTimeout(() => scrollToSection(id), 60);
   };
 
   const tabs: { key: Tab | 'more'; label: string; icon: React.ReactNode; onClick: () => void }[] = [
-    { key: 'home', label: 'Home', icon: <HomeIcon />, onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
-    { key: 'vault', label: 'Vault', icon: <BookOpen size={20} />, onClick: () => scrollToSection('vault') },
-    { key: 'news', label: 'News', icon: <Megaphone size={20} />, onClick: () => scrollToSection('news') },
-    { key: 'events', label: 'Events', icon: <Calendar size={20} />, onClick: () => scrollToSection('events') },
-    { key: 'more', label: 'More', icon: <GridIcon />, onClick: () => setMoreOpen(true) },
+    { key: 'home', label: 'Home', icon: <HomeIcon />, onClick: () => { track('tab_click', { tab: 'home' }); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+    { key: 'vault', label: 'Vault', icon: <BookOpen size={20} />, onClick: () => { track('tab_click', { tab: 'vault' }); scrollToSection('vault'); } },
+    { key: 'news', label: 'News', icon: <Megaphone size={20} />, onClick: () => { track('tab_click', { tab: 'news' }); scrollToSection('news'); } },
+    { key: 'events', label: 'Events', icon: <Calendar size={20} />, onClick: () => { track('tab_click', { tab: 'events' }); scrollToSection('events'); } },
+    { key: 'more', label: 'More', icon: <GridIcon />, onClick: () => { track('more_open'); setMoreOpen(true); } },
   ];
 
   const muted = isDarkMode ? 'text-slate-400' : 'text-slate-500';
+
+  const onInstall = async () => {
+    track('install_click');
+    if (canPrompt) {
+      const accepted = await promptInstall();
+      if (accepted) { track('install_accepted'); setMoreOpen(false); }
+    } else {
+      setIosHelp((v) => !v);
+    }
+  };
 
   return (
     <>
@@ -184,6 +200,15 @@ export function MobileNav({ isDarkMode, onEmergency }: MobileNavProps) {
                   <span className="w-11 h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center"><Siren size={22} /></span>
                   <span className={`text-xs font-bold ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>Emergency</span>
                 </button>
+                {showInstall && (
+                  <button
+                    onClick={onInstall}
+                    className="flex flex-col items-center gap-2 rounded-2xl border border-green-500/40 bg-green-500/10 p-3 cursor-pointer active:scale-95"
+                  >
+                    <span className="w-11 h-11 rounded-2xl bg-green-600 text-white flex items-center justify-center"><Download size={22} /></span>
+                    <span className={`text-xs font-bold ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>Install App</span>
+                  </button>
+                )}
                 {MORE_ITEMS.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
@@ -197,6 +222,11 @@ export function MobileNav({ isDarkMode, onEmergency }: MobileNavProps) {
                   </button>
                 ))}
               </div>
+              {iosHelp && showIOSHelp && (
+                <p className={`mt-4 rounded-2xl px-4 py-3 text-sm leading-relaxed ${isDarkMode ? 'bg-green-500/10 text-green-200' : 'bg-green-50 text-green-800'}`}>
+                  To install on an iPhone: open this site in <strong>Safari</strong>, tap the <strong>Share</strong> button, then choose <strong>Add to Home Screen</strong>.
+                </p>
+              )}
             </motion.div>
           </motion.div>
         )}
