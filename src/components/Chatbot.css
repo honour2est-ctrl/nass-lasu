@@ -1,7 +1,7 @@
 
-/* =================================
-   NASS AI FUTURE INTERFACE
-================================= */
+/* =========================================
+   NASS AI FUTURISTIC CHATBOT INTERFACE
+========================================= */
 
 .nass-ai-root {
   --ai-gold: #facc15;
@@ -9,7 +9,6 @@
   --ai-cyan: #38bdf8;
   --ai-bg: #07111f;
   --ai-panel: #0b192b;
-  --ai-muted: #8da3bd;
 
   position: fixed;
   bottom: 24px;
@@ -19,73 +18,190 @@
   color: #fff;
 }
 
-/* FLOATING LAUNCHER */
+/* =========================================
+   NASS AI ENERGY ORB LAUNCHER
+========================================= */
 
-.nass-ai-launcher {
+.nass-orb-launcher {
   position: relative;
-  width: 82px;
-  height: 94px;
-  border: 1px solid rgba(250,204,21,.6);
-  border-radius: 22px;
-  background: linear-gradient(145deg,#102c50,#07111f);
-  box-shadow: 0 0 25px rgba(37,99,235,.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+  width: 112px;
+  height: 135px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
   cursor: pointer;
-  color: white;
-  animation: launcherFloat 3s ease-in-out infinite;
-  transition: .3s;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-start;
+  isolation: isolate;
+  overflow: visible;
+  animation: orbFloat 4s ease-in-out infinite;
 }
 
-.nass-ai-launcher:hover {
-  transform: translateY(-5px) scale(1.04);
-  box-shadow: 0 0 35px rgba(56,189,248,.45);
-}
-
-.launcher-ring {
+.energy-core {
   position: absolute;
-  inset: -5px;
-  border: 1px solid rgba(56,189,248,.4);
-  border-radius: 25px;
-  animation: ringPulse 2.5s infinite;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 67px;
+  height: 67px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%,
+      #e0f7ff 0%,
+      #67d9ff 12%,
+      #168bff 35%,
+      #102e85 65%,
+      #050c27 100%);
+  border: 1px solid rgba(125,220,255,.9);
+  box-shadow:
+    0 0 12px #38bdf8,
+    0 0 30px rgba(0,140,255,.8),
+    0 0 65px rgba(37,99,235,.5),
+    inset 0 0 18px rgba(255,255,255,.35);
+  z-index: 4;
+  overflow: hidden;
+  animation: corePulse 3s ease-in-out infinite;
+}
+
+.core-light {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 8px;
+  left: 11px;
+  border-radius: 50%;
+  background: #fff;
+  filter: blur(13px);
+  opacity: .85;
+  animation: lightShift 3s infinite alternate;
+}
+
+.energy-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #168bff;
+  filter: blur(30px);
+  opacity: .35;
+  z-index: 1;
+  animation: glowPulse 2s infinite alternate;
+}
+
+/* Holographic rotating rings */
+
+.energy-orbit {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  width: 83px;
+  height: 62px;
+  border: 1.5px solid rgba(56,189,248,.8);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
   pointer-events: none;
 }
 
-.launcher-avatar {
-  width: 43px;
-  height: 43px;
+.orbit-one {
+  animation: orbitRotate 5s linear infinite;
+}
+
+.orbit-two {
+  width: 97px;
+  height: 46px;
+  border-color: rgba(250,204,21,.75);
+  transform: translateX(-50%) rotate(55deg);
+  animation: orbitTwo 7s linear infinite;
+}
+
+.orbit-three {
+  width: 74px;
+  height: 90px;
+  border-color: rgba(56,189,248,.5);
+  transform: translateX(-50%) rotate(65deg);
+  animation: orbitThree 8s linear infinite;
+}
+
+/* Energy particles */
+
+.energy-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--ai-gold);
-  box-shadow: 0 0 15px rgba(250,204,21,.35);
+  background: #7dd3fc;
+  box-shadow: 0 0 12px #38bdf8;
+  z-index: 6;
 }
 
-.launcher-avatar img,
-.orb-core img,
-.welcome-orb-inner img,
-.message-avatar img {
+.particle-one {
+  top: 5px;
+  left: 15px;
+  animation: particleFloat 3s infinite;
+}
+
+.particle-two {
+  top: 60px;
+  right: 9px;
+  background: #facc15;
+  box-shadow: 0 0 12px #facc15;
+  animation: particleFloat 4s infinite .5s;
+}
+
+.particle-three {
+  top: 48px;
+  left: 8px;
+  animation: particleFloat 3s infinite 1s;
+}
+
+/* Orb labels */
+
+.orb-label {
+  position: absolute;
+  top: 96px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.launcher-label {
+  text-align: center;
+  color: #fff;
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 12px #38bdf8;
 }
 
-.launcher-status {
-  font-size: 7px;
-  letter-spacing: 1px;
-  color: #9cc9e9;
+.orb-online {
+  position: absolute;
+  top: 113px;
+  width: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  color: #9cc9e9;
+  font-size: 8px;
+  letter-spacing: 1.5px;
 }
+
+.nass-orb-launcher:hover {
+  transform: scale(1.12);
+}
+
+.nass-orb-launcher:hover .energy-core {
+  box-shadow:
+    0 0 20px #38bdf8,
+    0 0 50px #168bff,
+    0 0 90px rgba(37,99,235,.8);
+}
+
+/* =========================================
+   SHARED STATUS INDICATOR
+========================================= */
 
 .status-dot {
   width: 6px;
@@ -97,7 +213,9 @@
   animation: statusPulse 1.5s infinite;
 }
 
-/* CHAT WINDOW */
+/* =========================================
+   CHAT WINDOW
+========================================= */
 
 .nass-ai-window {
   width: 390px;
@@ -114,7 +232,9 @@
   animation: windowEnter .4s cubic-bezier(.2,.8,.2,1);
 }
 
-/* HEADER */
+/* =========================================
+   HEADER
+========================================= */
 
 .nass-ai-header {
   min-height: 88px;
@@ -124,6 +244,7 @@
   gap: 13px;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
   background:
     radial-gradient(circle at 15% 50%,rgba(37,99,235,.3),transparent 50%),
     linear-gradient(120deg,#102747,#091626);
@@ -170,6 +291,12 @@
   z-index: 1;
 }
 
+.orb-core img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .orb-pulse {
   position: absolute;
   inset: -5px;
@@ -180,6 +307,7 @@
 
 .header-info {
   flex: 1;
+  min-width: 0;
 }
 
 .header-title {
@@ -214,6 +342,7 @@
 .close-chat {
   width: 31px;
   height: 31px;
+  flex-shrink: 0;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.12);
   color: #b8cce0;
@@ -229,10 +358,13 @@
   transform: rotate(90deg);
 }
 
-/* MESSAGE AREA */
+/* =========================================
+   MESSAGE AREA
+========================================= */
 
 .nass-ai-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 18px 13px;
   display: flex;
@@ -255,7 +387,9 @@
   border-radius: 10px;
 }
 
-/* WELCOME SCREEN */
+/* =========================================
+   WELCOME SCREEN
+========================================= */
 
 .welcome-screen {
   text-align: center;
@@ -298,6 +432,12 @@
   overflow: hidden;
   border-radius: 50%;
   border: 2px solid var(--ai-gold);
+}
+
+.welcome-orb-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .welcome-tag {
@@ -369,7 +509,9 @@
   font-size: 14px;
 }
 
-/* CHAT BUBBLES */
+/* =========================================
+   CHAT BUBBLES
+========================================= */
 
 .message-row {
   display: flex;
@@ -393,6 +535,12 @@
   overflow: hidden;
   border: 1px solid var(--ai-gold);
   flex-shrink: 0;
+}
+
+.message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .message-bubble {
@@ -434,7 +582,9 @@
   white-space: pre-wrap;
 }
 
-/* TYPING INDICATOR */
+/* =========================================
+   TYPING INDICATOR
+========================================= */
 
 .typing-bubble {
   display: flex;
@@ -466,12 +616,15 @@
   animation-delay: .3s;
 }
 
-/* FOOTER AND INPUT */
+/* =========================================
+   FOOTER AND INPUT
+========================================= */
 
 .nass-ai-footer {
   padding: 12px;
   background: linear-gradient(120deg,#0c1c30,#091523);
   border-top: 1px solid rgba(56,189,248,.17);
+  flex-shrink: 0;
 }
 
 .input-container form {
@@ -536,16 +689,54 @@
   margin-top: 10px;
 }
 
-/* ANIMATIONS */
+/* =========================================
+   ANIMATIONS
+========================================= */
 
-@keyframes launcherFloat {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+@keyframes orbFloat {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
 }
 
-@keyframes ringPulse {
-  0% { transform: scale(.95); opacity: .8; }
-  100% { transform: scale(1.18); opacity: 0; }
+@keyframes corePulse {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.07; }
+}
+
+@keyframes glowPulse {
+  from { opacity: .2; scale: .85; }
+  to { opacity: .5; scale: 1.2; }
+}
+
+@keyframes lightShift {
+  from { transform: translate(0,0); }
+  to { transform: translate(10px,12px); }
+}
+
+@keyframes orbitRotate {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+
+@keyframes orbitTwo {
+  from { transform: translateX(-50%) rotate(55deg); }
+  to { transform: translateX(-50%) rotate(415deg); }
+}
+
+@keyframes orbitThree {
+  from { transform: translateX(-50%) rotate(65deg); }
+  to { transform: translateX(-50%) rotate(425deg); }
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: .4;
+  }
+  50% {
+    transform: translateY(-12px);
+    opacity: 1;
+  }
 }
 
 @keyframes statusPulse {
@@ -568,6 +759,11 @@
   to { opacity: .8; transform: scale(1.15); }
 }
 
+@keyframes ringPulse {
+  0% { transform: scale(.95); opacity: .8; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
 @keyframes welcomeFloat {
   0%,100% { transform: translateY(0); }
   50% { transform: translateY(-7px); }
@@ -578,21 +774,41 @@
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes messageEnter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes typing {
-  0%,60%,100% { transform: translateY(0); opacity: .5; }
-  30% { transform: translateY(-5px); opacity: 1; }
+  0%,60%,100% {
+    transform: translateY(0);
+    opacity: .5;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
 }
 
-/* MOBILE RESPONSIVENESS */
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
 
 @media (max-width: 480px) {
   .nass-ai-root {
@@ -617,7 +833,9 @@
   }
 }
 
-/* Respect accessibility preferences */
+/* =========================================
+   ACCESSIBILITY
+========================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .nass-ai-root *,
