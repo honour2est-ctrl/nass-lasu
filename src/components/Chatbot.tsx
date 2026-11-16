@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
 
-// Change this one line if Google retires or renames the model
+import React, { useState } from 'react';
+import './Chatbot.css';
+
+// Keep your existing Gemini model configuration
 const GEMINI_MODEL = 'gemini-3.6-flash';
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'model', parts: [{ text: 'Hello! I am Nass AI, your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?' }] }
+    {
+      role: 'model',
+      parts: [{
+        text: 'Hello! I am Nass AI, your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?'
+      }]
+    }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const systemInstruction = 
+  const systemInstruction =
     "You are the official NASS-LASU Secretariat Assistant, an intelligent digital representative for the Nigerian Association of Science Students, Lagos State University Chapter. " +
     "Use the official knowledge base extracted from the NASS-LASU Constitution (2023 As Amended) and SSRC Standing Orders: " +
     "1. Association Name: Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU). Motto: 'Toward Scientific Advancement'. " +
@@ -22,16 +29,23 @@ export function Chatbot() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!input.trim() || loading) return;
 
     const userText = input;
     setInput('');
-    const newMessages = [...messages, { role: 'user', parts: [{ text: userText }] }];
+
+    const newMessages = [
+      ...messages,
+      { role: 'user', parts: [{ text: userText }] }
+    ];
+
     setMessages(newMessages);
     setLoading(true);
 
     try {
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
         {
@@ -47,90 +61,230 @@ export function Chatbot() {
       );
 
       const data = await response.json();
+
       if (data.candidates && data.candidates[0].content) {
-        const aiResponseText = data.candidates[0].content.parts[0].text;
-        setMessages([...newMessages, { role: 'model', parts: [{ text: aiResponseText }] }]);
+        const aiResponseText =
+          data.candidates[0].content.parts[0].text;
+
+        setMessages([
+          ...newMessages,
+          { role: 'model', parts: [{ text: aiResponseText }] }
+        ]);
       } else {
-        throw new Error(data.error?.message || 'Failed to generate response');
+        throw new Error(
+          data.error?.message || 'Failed to generate response'
+        );
       }
     } catch (error) {
       console.error('Chatbot Error:', error);
+
       setMessages([
         ...newMessages,
-        { role: 'model', parts: [{ text: 'Sorry, I encountered an error. Please check your connection or configuration.' }] }
+        {
+          role: 'model',
+          parts: [{
+            text: 'Sorry, I encountered an error. Please check your connection or configuration.'
+          }]
+        }
       ]);
     } finally {
       setLoading(false);
     }
   };
 
+  const suggestions = [
+    'What is the NASS-LASU Constitution?',
+    'What are the duties of the General Secretary?',
+    'Explain the SSRC Standing Orders',
+    'How are association funds shared?'
+  ];
+
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Floating Toggle Button with Custom Robot Avatar */}
+    <div className="nass-ai-root">
+
+      {/* Floating AI Launcher */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-yellow-400 text-slate-900 p-2.5 rounded-2xl shadow-2xl hover:bg-yellow-300 transition-all flex flex-col items-center justify-center font-bold text-xs border-2 border-slate-900 group"
+          className="nass-ai-launcher"
           title="Open Nass AI Secretariat Assistant"
+          aria-label="Open Nass AI"
         >
-          <img 
-            src="/bot-avatar.jpg" 
-            alt="Nass AI" 
-            className="w-9 h-9 rounded-full object-cover mb-1 border border-slate-900 shadow-inner" 
-          />
-          <span className="tracking-wide font-extrabold text-[11px]">Nass AI</span>
+          <span className="launcher-ring" />
+
+          <span className="launcher-avatar">
+            <img src="/bot-avatar.jpg" alt="Nass AI" />
+          </span>
+
+          <span className="launcher-label">NASS AI</span>
+          <span className="launcher-status">
+            <span className="status-dot" />
+            ONLINE
+          </span>
         </button>
       )}
 
-      {/* Floating Chat Window */}
+      {/* Main Chat Interface */}
       {isOpen && (
-        <div className="w-80 md:w-96 h-[500px] bg-slate-900 text-white border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-xl">
-          {/* Header */}
-          <div className="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
-            <div className="flex items-center gap-2.5">
-              <img 
-                src="/bot-avatar.jpg" 
-                alt="Nass AI" 
-                className="w-7 h-7 rounded-full object-cover border border-yellow-400" 
-              />
-              <div>
-                <h3 className="font-bold text-yellow-400 text-sm">Nass AI Assistant</h3>
-                <p className="text-[10px] text-slate-400">Secretariat Digital Hub</p>
+        <div className="nass-ai-window">
+
+          {/* Animated Header */}
+          <header className="nass-ai-header">
+
+            <div className="header-orb">
+              <div className="orb-glow" />
+              <div className="orb-core">
+                <img src="/bot-avatar.jpg" alt="Nass AI" />
+              </div>
+              <span className="orb-pulse" />
+            </div>
+
+            <div className="header-info">
+              <div className="header-title">
+                NASS AI
+                <span className="verified-mark">✦</span>
+              </div>
+
+              <div className="header-subtitle">
+                SECRETARIAT INTELLIGENCE SYSTEM
+              </div>
+
+              <div className="online-indicator">
+                <span className="status-dot" />
+                SYSTEM ONLINE
               </div>
             </div>
+
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-white text-xl font-bold px-2 py-1 rounded"
+              className="close-chat"
+              aria-label="Close chatbot"
             >
-              &times;
+              ×
             </button>
-          </div>
+          </header>
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto space-y-3 p-3">
+          {/* Chat Messages */}
+          <div className="nass-ai-messages">
+
+            {/* Welcome Screen */}
+            {messages.length === 1 && (
+              <div className="welcome-screen">
+
+                <div className="welcome-orb">
+                  <div className="welcome-orb-inner">
+                    <img src="/bot-avatar.jpg" alt="NASS AI" />
+                  </div>
+                </div>
+
+                <div className="welcome-tag">
+                  INTELLIGENCE AT YOUR SERVICE
+                </div>
+
+                <h2>
+                  Welcome to <span>NASS AI</span>
+                </h2>
+
+                <p className="welcome-description">
+                  Your intelligent digital companion for the
+                  NASS-LASU Constitution, parliamentary affairs
+                  and Secretariat operations.
+                </p>
+
+                <div className="suggestion-heading">
+                  EXPLORE WHAT I CAN DO
+                </div>
+
+                <div className="suggestion-list">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setInput(suggestion)}
+                      className="suggestion-button"
+                    >
+                      <span>{suggestion}</span>
+                      <span className="suggestion-arrow">↗</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {messages.map((msg, index) => (
-              <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 rounded-xl text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-yellow-300 border border-slate-700'}`}>
-                  {msg.parts[0].text}
+              <div
+                key={index}
+                className={`message-row ${
+                  msg.role === 'user' ? 'user-row' : 'ai-row'
+                }`}
+              >
+                {msg.role === 'model' && (
+                  <div className="message-avatar">
+                    <img src="/bot-avatar.jpg" alt="AI" />
+                  </div>
+                )}
+
+                <div
+                  className={`message-bubble ${
+                    msg.role === 'user' ? 'user-bubble' : 'ai-bubble'
+                  }`}
+                >
+                  <div className="message-label">
+                    {msg.role === 'user' ? 'YOU' : 'NASS AI'}
+                  </div>
+                  <div className="message-text">
+                    {msg.parts[0].text}
+                  </div>
                 </div>
               </div>
             ))}
-            {loading && <div className="text-slate-400 text-xs italic p-1">Nass AI is typing...</div>}
+
+            {/* Animated Typing Indicator */}
+            {loading && (
+              <div className="message-row ai-row">
+                <div className="message-avatar">
+                  <img src="/bot-avatar.jpg" alt="AI" />
+                </div>
+
+                <div className="message-bubble ai-bubble typing-bubble">
+                  <span>PROCESSING RESPONSE</span>
+                  <div className="typing-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Input Form */}
-          <form onSubmit={handleSendMessage} className="p-3 bg-slate-800 border-t border-slate-700 flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a constitutional question..."
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
-            <button type="submit" className="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-300 transition-colors">
-              Send
-            </button>
-          </form>
+          {/* Input Area */}
+          <div className="nass-ai-footer">
+            <div className="input-container">
+              <form onSubmit={handleSendMessage}>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask NASS AI anything..."
+                  disabled={loading}
+                  aria-label="Message NASS AI"
+                />
+
+                <button
+                  type="submit"
+                  disabled={!input.trim() || loading}
+                  className="send-button"
+                  aria-label="Send message"
+                >
+                  <span>➤</span>
+                </button>
+              </form>
+            </div>
+
+            <div className="footer-caption">
+              POWERED BY AI · NASS-LASU DIGITAL SECRETARIAT
+            </div>
+          </div>
         </div>
       )}
     </div>
