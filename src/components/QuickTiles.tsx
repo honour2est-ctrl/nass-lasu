@@ -1,6 +1,7 @@
 import React from 'react';
 import { BookOpen, Megaphone, Eye, Siren, ArrowRight } from 'lucide-react';
 import { scrollToSection } from './MobileNav';
+import { track } from '../lib/analytics';
 
 interface QuickTilesProps {
   isDarkMode: boolean;
@@ -11,10 +12,10 @@ interface QuickTilesProps {
 // On phones the four tiles sit in one short row of icons so they fit on the first screen.
 export function QuickTiles({ isDarkMode, onEmergency }: QuickTilesProps) {
   const tiles = [
-    { key: 'vault', title: 'Past Questions', desc: 'By department and level', icon: BookOpen, onClick: () => scrollToSection('vault'), danger: false },
-    { key: 'news', title: 'News Flash', desc: 'Latest official updates', icon: Megaphone, onClick: () => scrollToSection('news'), danger: false },
-    { key: 'events', title: 'Events & Photos', desc: 'Galleries and memories', icon: Eye, onClick: () => scrollToSection('events'), danger: false },
-    { key: 'emergency', title: 'Emergency', desc: 'Call or send an alert', icon: Siren, onClick: onEmergency, danger: true },
+    { key: 'vault', title: 'Past Questions', desc: 'By department and level', icon: BookOpen, onClick: () => { track('tile_click', { tile: 'vault' }); scrollToSection('vault'); }, danger: false },
+    { key: 'news', title: 'News Flash', desc: 'Latest official updates', icon: Megaphone, onClick: () => { track('tile_click', { tile: 'news' }); scrollToSection('news'); }, danger: false },
+    { key: 'events', title: 'Events & Photos', desc: 'Galleries and memories', icon: Eye, onClick: () => { track('tile_click', { tile: 'events' }); scrollToSection('events'); }, danger: false },
+    { key: 'emergency', title: 'Emergency', desc: 'Call or send an alert', icon: Siren, onClick: () => { track('tile_click', { tile: 'emergency' }); onEmergency(); }, danger: true },
   ];
 
   return (
