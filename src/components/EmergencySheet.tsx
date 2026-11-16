@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Siren, PhoneCall, MessageCircle, Send, X } from 'lucide-react';
 import { useQuickTilesInView } from '../lib/useQuickTilesInView';
+import { track } from '../lib/analytics';
 
 // 09125603852 -> 0912 560 3852 (easier to read and to say aloud)
 const formatNumber = (n: string): string => {
@@ -49,6 +50,7 @@ interface EmergencySheetProps {
 export function EmergencySheet({ isOpen, onClose, numbers, whatsappNumber, onSendAlert, isDarkMode }: EmergencySheetProps) {
   useEffect(() => {
     if (!isOpen) return;
+    track('emergency_open');
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -108,6 +110,7 @@ export function EmergencySheet({ isOpen, onClose, numbers, whatsappNumber, onSen
                 <a
                   key={n}
                   href={`tel:${n.replace(/\s+/g, '')}`}
+                  onClick={() => track('emergency_call', { slot: i + 1 })}
                   className={`flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5 font-bold transition-transform active:scale-[0.98] ${
                     i === 0
                       ? 'bg-red-600 text-white shadow-[0_4px_16px_rgba(220,38,38,0.4)]'
