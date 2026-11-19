@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useQuickTilesInView } from '../lib/useQuickTilesInView';
 
-// What a visitor sees for each kind of problem
+import './Chatbot.css';
+
 const FRIENDLY: Record<string, string> = {
   rate_limited: "You've asked a lot of questions in a short time. Please wait a few minutes and try again.",
   blocked: "I can't help with that one. Please try rephrasing your question.",
@@ -15,11 +16,18 @@ type Message = {
   parts: { text: string }[];
 };
 
+const SUGGESTIONS = [
+  'What are the responsibilities of the General Secretary?',
+  'Explain the NASS-LASU Constitution.',
+  'How does the Secretariat handle official correspondence?',
+  'What are the financial guidelines of the House?',
+];
+
 export function Chatbot() {
   const tilesVisible = useQuickTilesInView();
 
-  const [showHint, setShowHint] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,12 +35,12 @@ export function Chatbot() {
     {
       role: 'model',
       parts: [{
-        text: 'Hello! I am Nass AI, your NASS-LASU Secretariat Assistant. How can I assist you with the Constitution or Secretariat guidelines today?'
+        text: 'Welcome to NASS AI, your intelligent NASS-LASU Secretariat Assistant. I am here to help you navigate the Constitution, Standing Orders, parliamentary procedures and Secretariat guidelines. How may I assist you today?'
       }]
     }
   ]);
 
-  // Show friendly hint once per visit
+  // Friendly introductory hint
   useEffect(() => {
     let seen = false;
 
@@ -67,17 +75,24 @@ export function Chatbot() {
     setIsOpen(true);
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Send message to AI
+  const sendMessage = async (
+    text: string,
+    e?: React.FormEvent
+  ) => {
+    e?.preventDefault();
 
-    if (!input.trim() || loading) return;
+    if (!text.trim() || loading) return;
 
-    const userText = input.trim();
+    const userText = text.trim();
     setInput('');
 
     const newMessages: Message[] = [
       ...messages,
-      { role: 'user', parts: [{ text: userText }] }
+      {
+        role: 'user',
+        parts: [{ text: userText }]
+      }
     ];
 
     setMessages(newMessages);
@@ -89,7 +104,9 @@ export function Chatbot() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({
+          messages: newMessages
+        })
       });
 
       const data = await response.json().catch(() => null);
@@ -97,23 +114,27 @@ export function Chatbot() {
       if (response.ok && data?.text) {
         setMessages([
           ...newMessages,
-          { role: 'model', parts: [{ text: data.text }] }
+          {
+            role: 'model',
+            parts: [{ text: data.text }]
+          }
         ]);
       } else {
-        const failure: any = new Error(
+        const error: any = new Error(
           data?.error || 'Failed to generate response'
         );
-        failure.code = data?.code;
-        throw failure;
+
+        error.code = data?.code;
+        throw error;
       }
     } catch (error) {
-      console.error('Chatbot Error:', error);
+      console.error('NASS AI Error:', error);
 
       const code = (error as any)?.code;
 
       const errorMessage =
         FRIENDLY[code] ||
-        'Sorry, I could not answer just now. Please check your connection and try again in a moment.';
+        'Sorry, I could not answer just now. Please check your connection and try again.';
 
       setMessages([
         ...newMessages,
@@ -130,142 +151,288 @@ export function Chatbot() {
     }
   };
 
-  return (
-    <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] right-4 md:bottom-6 md:right-6 z-50 pointer-events-none">
+  const handleSendMessage = (e: React.FormEvent) => {
+    sendMessage(input, e);
+  };
 
-      {/* Floating Toggle Button */}
+  return (
+    <div className="nass-ai-root">
+
+      {/* =====================================
+          FUTURISTIC ENERGY ORB LAUNCHER
+      ====================================== */}
+
       {!isOpen && (
-        <div
-          className={`relative flex items-center justify-end pointer-events-none max-md:transition-opacity ${
-            tilesVisible ? 'max-md:opacity-0' : ''
-          }`}
-        >
+        <div className="relative">
+
           {showHint && !tilesVisible && (
             <button
               onClick={openChat}
-              className="pointer-events-auto absolute right-full mr-3 bottom-1 whitespace-nowrap rounded-2xl rounded-br-md border border-yellow-400/50 bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-xl cursor-pointer"
-              style={{ animation: 'nassHintIn 0.35s ease-out' }}
+              className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl border border-yellow-400/40 bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-xl"
             >
               Questions? Ask Nass AI
             </button>
           )}
 
           <button
-            onClick={openChat}
-            aria-label="Open Nass AI assistant"
-            title="Ask Nass AI"
-            className={`pointer-events-auto relative w-14 h-14 md:w-16 md:h-16 rounded-full shadow-[0_6px_22px_rgba(2,6,23,0.6)] transition-transform hover:scale-105 active:scale-95 cursor-pointer ${
-              tilesVisible ? 'max-md:pointer-events-none' : ''
+            className={`nass-orb-launcher ${
+              tilesVisible ? 'max-md:opacity-0 max-md:pointer-events-none' : ''
             }`}
+            onClick={openChat}
+            aria-label="Open Nass AI Assistant"
+            title="Ask Nass AI"
           >
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 rounded-full border-2 border-yellow-400/70 animate-ping opacity-30"
-            />
+            <div className="energy-glow" />
 
-            <img
-              src="/bot-avatar.jpg"
-              alt="Nass AI"
-              className="relative w-full h-full rounded-full object-cover drop-shadow-lg"
-            />
+            <div className="energy-orbit orbit-one" />
+            <div className="energy-orbit orbit-two" />
+            <div className="energy-orbit orbit-three" />
 
-            <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900" />
+            <div className="energy-particle particle-one" />
+            <div className="energy-particle particle-two" />
+            <div className="energy-particle particle-three" />
+
+            <div className="energy-core">
+              <div className="core-light" />
+
+              <img
+                src="/bot-avatar.jpg"
+                alt="Nass AI"
+                className="absolute inset-0 w-full h-full rounded-full object-cover"
+              />
+            </div>
+
+            <span className="orb-label">
+              NASS AI
+            </span>
+
+            <span className="orb-online">
+              <span className="status-dot" />
+              ONLINE
+            </span>
           </button>
         </div>
       )}
 
-      {/* Floating Chat Window */}
+      {/* =====================================
+          MAIN CHAT WINDOW
+      ====================================== */}
+
       {isOpen && (
-        <div className="pointer-events-auto w-80 md:w-96 h-[500px] max-h-[calc(100vh-9rem)] bg-slate-900 text-white border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-xl">
+        <div className="nass-ai-window">
 
-          {/* Header */}
-          <div className="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
+          {/* HEADER */}
 
-            <div className="flex items-center gap-2.5">
-              <img
-                src="/bot-avatar.jpg"
-                alt="Nass AI"
-                className="w-9 h-9 rounded-full object-cover shrink-0"
-              />
+          <div className="nass-ai-header">
 
-              <div>
-                <h3 className="font-bold text-yellow-400 text-sm">
-                  Nass AI Assistant
-                </h3>
+            <div className="header-orb">
+              <div className="orb-glow" />
+              <div className="orb-pulse" />
 
-                <p className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Online · Secretariat Digital Hub
-                </p>
+              <div className="orb-core">
+                <img
+                  src="/bot-avatar.jpg"
+                  alt="Nass AI"
+                />
               </div>
             </div>
 
+            <div className="header-info">
+
+              <div className="header-title">
+                Nass AI
+                <span className="verified-mark">✦</span>
+              </div>
+
+              <div className="header-subtitle">
+                NASS-LASU INTELLIGENT SECRETARIAT
+              </div>
+
+              <div className="online-indicator">
+                <span className="status-dot" />
+                ONLINE · READY TO ASSIST
+              </div>
+
+            </div>
+
             <button
+              className="close-chat"
               onClick={() => setIsOpen(false)}
               aria-label="Close chat"
-              className="text-slate-400 hover:text-white text-xl font-bold px-2 py-1 rounded"
             >
-              &times;
+              ×
             </button>
+
           </div>
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto space-y-3 p-3">
+          {/* =================================
+              MESSAGE AREA
+          ================================== */}
 
-            {messages.map((msg, index) => (
+          <div className="nass-ai-messages">
+
+            {/* WELCOME SCREEN */}
+
+            {messages.length === 1 && (
+              <div className="welcome-screen">
+
+                <div className="welcome-orb">
+                  <div className="welcome-orb-inner">
+                    <img
+                      src="/bot-avatar.jpg"
+                      alt="Nass AI"
+                    />
+                  </div>
+                </div>
+
+                <div className="welcome-tag">
+                  YOUR INTELLIGENT SECRETARIAT ASSISTANT
+                </div>
+
+                <h2>
+                  Welcome to <span>NASS AI</span>
+                </h2>
+
+                <p className="welcome-description">
+                  Your digital parliamentary companion.
+                  Explore the Constitution, Standing Orders,
+                  Secretariat operations and everything
+                  you need to know about NASS-LASU.
+                </p>
+
+                <div className="suggestion-heading">
+                  QUICK QUESTIONS TO GET STARTED
+                </div>
+
+                <div className="suggestion-list">
+
+                  {SUGGESTIONS.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      className="suggestion-button"
+                      onClick={() => sendMessage(suggestion)}
+                      disabled={loading}
+                    >
+                      <span>{suggestion}</span>
+                      <span className="suggestion-arrow">→</span>
+                    </button>
+                  ))}
+
+                </div>
+
+              </div>
+            )}
+
+            {/* CHAT MESSAGES */}
+
+            {messages.slice(1).map((msg, index) => (
               <div
                 key={index}
-                className={`flex ${
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                className={`message-row ${
+                  msg.role === 'user' ? 'user-row' : 'ai-row'
                 }`}
               >
+
+                {msg.role === 'model' && (
+                  <div className="message-avatar">
+                    <img
+                      src="/bot-avatar.jpg"
+                      alt="Nass AI"
+                    />
+                  </div>
+                )}
+
                 <div
-                  className={`max-w-[85%] p-3 rounded-xl text-sm whitespace-pre-wrap break-words ${
+                  className={`message-bubble ${
                     msg.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-800 text-yellow-300 border border-slate-700'
+                      ? 'user-bubble'
+                      : 'ai-bubble'
                   }`}
                 >
-                  {msg.parts[0].text}
+
+                  <div className="message-label">
+                    {msg.role === 'user' ? 'YOU' : 'NASS AI'}
+                  </div>
+
+                  <div className="message-text">
+                    {msg.parts[0].text}
+                  </div>
+
                 </div>
+
               </div>
             ))}
 
-            {/* Typing Indicator */}
+            {/* TYPING ANIMATION */}
+
             {loading && (
-              <div className="flex justify-start">
-                <div className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 flex gap-1 items-center">
-                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" />
-                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce [animation-delay:300ms]" />
+              <div className="message-row ai-row">
+
+                <div className="message-avatar">
+                  <img
+                    src="/bot-avatar.jpg"
+                    alt="Nass AI"
+                  />
                 </div>
+
+                <div className="typing-bubble">
+
+                  <span>GENERATING RESPONSE</span>
+
+                  <div className="typing-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+
+                </div>
+
               </div>
             )}
+
           </div>
 
-          {/* Input Form */}
-          <form
-            onSubmit={handleSendMessage}
-            className="p-3 bg-slate-800 border-t border-slate-700 flex gap-2"
-          >
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a constitutional question..."
-              className="min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
+          {/* =================================
+              INPUT FOOTER
+          ================================== */}
 
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-300 transition-colors disabled:opacity-50"
-            >
-              Send
-            </button>
-          </form>
+          <div className="nass-ai-footer">
+
+            <div className="input-container">
+
+              <form onSubmit={handleSendMessage}>
+
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask Nass AI anything..."
+                  disabled={loading}
+                  aria-label="Type your message"
+                />
+
+                <button
+                  type="submit"
+                  className="send-button"
+                  disabled={loading || !input.trim()}
+                  aria-label="Send message"
+                >
+                  ➤
+                </button>
+
+              </form>
+
+            </div>
+
+            <div className="footer-caption">
+              POWERED BY THE DIGITALIZED AND INNOVATIVE SECRETARIAT
+            </div>
+
+          </div>
+
         </div>
       )}
+
     </div>
   );
 }
