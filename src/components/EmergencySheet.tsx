@@ -10,15 +10,27 @@ const formatNumber = (n: string): string => {
   return /^0\d{10}$/.test(digits) ? `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}` : n;
 };
 
-// Always-visible emergency button: a round SOS button on phones, a red pill on larger screens
+// Always-visible emergency button: hides automatically on mobile when QuickTiles or Nass AI is open
 export function EmergencyButton({ onOpen }: { onOpen: () => void }) {
-  const tilesVisible = useQuickTilesInView(); // the Emergency tile is right there, so the round button waits
+  const tilesVisible = useQuickTilesInView();
+  const [chatOpen, setChatOpen] = React.useState(false);
+
+  useEffect(() => {
+    const onToggle = (e: any) => setChatOpen(!!e?.detail?.isOpen);
+    window.addEventListener('nass-chat-toggle', onToggle);
+    return () => window.removeEventListener('nass-chat-toggle', onToggle);
+  }, []);
+
+  const hideMobile = tilesVisible || chatOpen;
+
   return (
     <>
       <button
         onClick={onOpen}
         aria-label="Emergency help"
-        className={`md:hidden fixed left-4 z-[60] bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] w-14 h-14 rounded-full bg-red-600 text-white border-2 border-white/80 shadow-[0_6px_20px_rgba(220,38,38,0.55)] flex flex-col items-center justify-center active:scale-95 cursor-pointer transition-all duration-200 ${tilesVisible ? 'opacity-0 pointer-events-none translate-y-2' : ''}`}
+        className={`md:hidden fixed left-4 z-[60] bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] w-14 h-14 rounded-full bg-red-600 text-white border-2 border-white/80 shadow-[0_6px_20px_rgba(220,38,38,0.55)] flex flex-col items-center justify-center active:scale-95 cursor-pointer transition-all duration-200 ${
+          hideMobile ? 'opacity-0 pointer-events-none translate-y-2' : ''
+        }`}
       >
         <Siren size={20} />
         <span className="text-[9px] font-black leading-none mt-0.5">SOS</span>
