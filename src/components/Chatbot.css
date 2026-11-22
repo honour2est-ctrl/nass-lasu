@@ -1,4 +1,3 @@
-
 /* =========================================
    NASS AI FUTURISTIC CHATBOT INTERFACE
 ========================================= */
@@ -11,8 +10,8 @@
   --ai-panel: #0b192b;
 
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 56px;
+  right: 20px;
   z-index: 9999;
   font-family: inherit;
   color: #fff;
@@ -24,8 +23,8 @@
 
 .nass-orb-launcher {
   position: relative;
-  width: 112px;
-  height: 135px;
+  width: 104px;
+  height: 126px;
   padding: 0;
   border: none;
   outline: none;
@@ -42,11 +41,11 @@
 
 .energy-core {
   position: absolute;
-  top: 12px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 67px;
-  height: 67px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background:
     radial-gradient(circle at 35% 30%,
@@ -68,10 +67,10 @@
 
 .core-light {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   top: 8px;
-  left: 11px;
+  left: 10px;
   border-radius: 50%;
   background: #fff;
   filter: blur(13px);
@@ -84,24 +83,22 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 90px;
-  height: 90px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
   background: #168bff;
-  filter: blur(30px);
+  filter: blur(28px);
   opacity: .35;
   z-index: 1;
   animation: glowPulse 2s infinite alternate;
 }
 
-/* Holographic rotating rings */
-
 .energy-orbit {
   position: absolute;
-  top: 15px;
+  top: 13px;
   left: 50%;
-  width: 83px;
-  height: 62px;
+  width: 78px;
+  height: 58px;
   border: 1.5px solid rgba(56,189,248,.8);
   border-radius: 50%;
   transform: translateX(-50%);
@@ -109,27 +106,23 @@
   pointer-events: none;
 }
 
-.orbit-one {
-  animation: orbitRotate 5s linear infinite;
-}
+.orbit-one { animation: orbitRotate 5s linear infinite; }
 
 .orbit-two {
-  width: 97px;
-  height: 46px;
+  width: 90px;
+  height: 44px;
   border-color: rgba(250,204,21,.75);
   transform: translateX(-50%) rotate(55deg);
   animation: orbitTwo 7s linear infinite;
 }
 
 .orbit-three {
-  width: 74px;
-  height: 90px;
+  width: 70px;
+  height: 84px;
   border-color: rgba(56,189,248,.5);
   transform: translateX(-50%) rotate(65deg);
   animation: orbitThree 8s linear infinite;
 }
-
-/* Energy particles */
 
 .energy-particle {
   position: absolute;
@@ -141,35 +134,23 @@
   z-index: 6;
 }
 
-.particle-one {
-  top: 5px;
-  left: 15px;
-  animation: particleFloat 3s infinite;
-}
-
+.particle-one { top: 5px; left: 15px; animation: particleFloat 3s infinite; }
 .particle-two {
-  top: 60px;
+  top: 56px;
   right: 9px;
   background: #facc15;
   box-shadow: 0 0 12px #facc15;
   animation: particleFloat 4s infinite .5s;
 }
-
-.particle-three {
-  top: 48px;
-  left: 8px;
-  animation: particleFloat 3s infinite 1s;
-}
-
-/* Orb labels */
+.particle-three { top: 44px; left: 8px; animation: particleFloat 3s infinite 1s; }
 
 .orb-label {
   position: absolute;
-  top: 96px;
+  top: 88px;
   width: 100%;
   text-align: center;
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 2px;
   text-shadow: 0 0 12px #38bdf8;
@@ -177,7 +158,7 @@
 
 .orb-online {
   position: absolute;
-  top: 113px;
+  top: 104px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -188,16 +169,7 @@
   letter-spacing: 1.5px;
 }
 
-.nass-orb-launcher:hover {
-  transform: scale(1.12);
-}
-
-.nass-orb-launcher:hover .energy-core {
-  box-shadow:
-    0 0 20px #38bdf8,
-    0 0 50px #168bff,
-    0 0 90px rgba(37,99,235,.8);
-}
+.nass-orb-launcher:hover { transform: scale(1.08); }
 
 /* =========================================
    SHARED STATUS INDICATOR
@@ -218,18 +190,18 @@
 ========================================= */
 
 .nass-ai-window {
-  width: 390px;
-  height: min(620px, calc(100dvh - 40px));
+  width: 400px;
+  height: min(630px, calc(100dvh - 80px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 25px;
-  border: 1px solid rgba(56,189,248,.3);
+  border-radius: 24px;
+  border: 1px solid rgba(56,189,248,.35);
   background: var(--ai-bg);
   box-shadow:
-    0 20px 80px rgba(0,0,0,.65),
-    0 0 35px rgba(37,99,235,.15);
-  animation: windowEnter .4s cubic-bezier(.2,.8,.2,1);
+    0 24px 80px rgba(0,0,0,.78),
+    0 0 35px rgba(37,99,235,.18);
+  animation: windowEnter .35s cubic-bezier(.2,.8,.2,1);
 }
 
 /* =========================================
@@ -237,18 +209,18 @@
 ========================================= */
 
 .nass-ai-header {
-  min-height: 88px;
-  padding: 14px 17px;
+  min-height: 76px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
   background:
     radial-gradient(circle at 15% 50%,rgba(37,99,235,.3),transparent 50%),
     linear-gradient(120deg,#102747,#091626);
-  border-bottom: 1px solid rgba(56,189,248,.2);
+  border-bottom: 1px solid rgba(56,189,248,.22);
 }
 
 .nass-ai-header::after {
@@ -262,11 +234,9 @@
   animation: headerScan 5s linear infinite;
 }
 
-/* REDUCED HEADER ROBOT AVATAR */
-
 .header-orb {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   position: relative;
   flex-shrink: 0;
   display: grid;
@@ -280,7 +250,6 @@
   background: var(--ai-blue);
   filter: blur(9px);
   opacity: .5;
-  animation: orbGlow 2s infinite alternate;
 }
 
 .orb-core {
@@ -316,20 +285,20 @@
 .header-title {
   color: var(--ai-gold);
   font-weight: 900;
-  font-size: 17px;
-  letter-spacing: 1px;
+  font-size: 16px;
+  letter-spacing: .5px;
 }
 
 .verified-mark {
   color: var(--ai-cyan);
-  margin-left: 6px;
+  margin-left: 5px;
 }
 
 .header-subtitle {
-  font-size: 8px;
+  font-size: 8.5px;
   color: #a7c6e4;
-  letter-spacing: 1.2px;
-  margin-top: 3px;
+  letter-spacing: 1px;
+  margin-top: 2px;
 }
 
 .online-indicator {
@@ -339,18 +308,21 @@
   color: #8bd8ae;
   font-size: 8px;
   letter-spacing: 1px;
-  margin-top: 7px;
+  margin-top: 5px;
 }
 
 .close-chat {
-  width: 31px;
-  height: 31px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.12);
-  color: #b8cce0;
-  background: rgba(255,255,255,.06);
-  font-size: 23px;
+  border: 1px solid rgba(255,255,255,.15);
+  color: #d4e5f7;
+  background: rgba(255,255,255,.08);
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
   cursor: pointer;
   transition: .2s;
 }
@@ -358,7 +330,6 @@
 .close-chat:hover {
   color: white;
   background: #dc2626;
-  transform: rotate(90deg);
 }
 
 /* =========================================
@@ -369,10 +340,10 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 18px 13px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
   background:
     radial-gradient(circle at 90% 20%,rgba(37,99,235,.07),transparent 35%),
     radial-gradient(circle at 10% 80%,rgba(56,189,248,.05),transparent 35%),
@@ -381,59 +352,31 @@
   scrollbar-color: #244c77 transparent;
 }
 
-.nass-ai-messages::-webkit-scrollbar {
-  width: 4px;
-}
-
-.nass-ai-messages::-webkit-scrollbar-thumb {
-  background: #244c77;
-  border-radius: 10px;
-}
-
 /* =========================================
    WELCOME SCREEN
 ========================================= */
 
 .welcome-screen {
   text-align: center;
-  padding: 12px 3px 5px;
-  animation: fadeUp .6s ease;
+  padding: 6px 2px 4px;
+  animation: fadeUp .4s ease;
 }
 
-/* REDUCED WELCOME ROBOT AVATAR */
-
 .welcome-orb {
-  width: 85px;
-  height: 85px;
-  margin: 0 auto 17px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   position: relative;
   background: radial-gradient(circle,#123d70,#081526);
   box-shadow: 0 0 25px rgba(37,99,235,.3);
-  animation: welcomeFloat 4s ease-in-out infinite;
-}
-
-.welcome-orb::before,
-.welcome-orb::after {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border: 1px solid rgba(56,189,248,.6);
-  border-radius: 50%;
-  animation: ringPulse 3s infinite;
-}
-
-.welcome-orb::after {
-  inset: -10px;
-  border-color: rgba(250,204,21,.25);
-  animation-delay: 1s;
 }
 
 .welcome-orb-inner {
-  width: 72px;
-  height: 72px;
+  width: 62px;
+  height: 62px;
   overflow: hidden;
   border-radius: 50%;
   border: 2px solid var(--ai-gold);
@@ -443,49 +386,46 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .welcome-tag {
   color: var(--ai-cyan);
-  font-size: 8px;
-  letter-spacing: 2px;
-  font-weight: bold;
-  margin-bottom: 9px;
+  font-size: 8.5px;
+  letter-spacing: 1.6px;
+  font-weight: 800;
+  margin-bottom: 6px;
 }
 
 .welcome-screen h2 {
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 900;
   color: white;
-  margin: 0 0 9px;
+  margin: 0 0 6px;
 }
 
-.welcome-screen h2 span {
-  color: var(--ai-gold);
-}
+.welcome-screen h2 span { color: var(--ai-gold); }
 
 .welcome-description {
   color: #9db1c8;
-  font-size: 11px;
-  line-height: 1.7;
-  max-width: 290px;
-  margin: 0 auto 21px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  max-width: 310px;
+  margin: 0 auto 16px;
 }
 
 .suggestion-heading {
   text-align: left;
   color: #7999bb;
-  font-size: 8px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-  margin-bottom: 9px;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  margin-bottom: 8px;
 }
 
 .suggestion-list {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 }
 
 .suggestion-button {
@@ -493,26 +433,47 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   text-align: left;
-  padding: 11px 12px;
-  border: 1px solid rgba(56,189,248,.17);
-  background: rgba(16,39,71,.6);
-  border-radius: 10px;
-  color: #d4e5f7;
-  font-size: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(56,189,248,.2);
+  background: rgba(16,39,71,.65);
+  border-radius: 12px;
+  color: #e2effc;
+  font-size: 11px;
+  line-height: 1.4;
   cursor: pointer;
-  transition: .25s;
+  transition: .2s;
+}
+
+.suggestion-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.suggestion-badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ai-gold);
+  background: rgba(250,204,21,.12);
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
 .suggestion-button:hover {
   border-color: var(--ai-gold);
-  background: rgba(37,99,235,.18);
-  transform: translateX(3px);
+  background: rgba(37,99,235,.22);
 }
 
 .suggestion-arrow {
   color: var(--ai-gold);
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 /* =========================================
@@ -523,23 +484,16 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  animation: messageEnter .3s ease;
+  animation: messageEnter .25s ease;
 }
 
-.user-row {
-  justify-content: flex-end;
-}
-
-.ai-row {
-  justify-content: flex-start;
-}
-
-/* REDUCED MESSAGE ROBOT AVATAR */
+.user-row { justify-content: flex-end; }
+.ai-row { justify-content: flex-start; }
 
 .message-avatar {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
   border-radius: 50%;
   overflow: hidden;
   border: 1px solid var(--ai-gold);
@@ -550,29 +504,28 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .message-bubble {
   max-width: 84%;
-  padding: 11px 12px;
-  border-radius: 13px;
-  font-size: 12px;
-  line-height: 1.65;
+  padding: 11px 13px;
+  border-radius: 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
   overflow-wrap: anywhere;
 }
 
 .ai-bubble {
   background: linear-gradient(145deg,#112944,#0b1c30);
-  border: 1px solid rgba(56,189,248,.2);
-  border-bottom-left-radius: 3px;
+  border: 1px solid rgba(56,189,248,.22);
+  border-bottom-left-radius: 4px;
   color: #e2efff;
 }
 
 .user-bubble {
   background: linear-gradient(135deg,#1d4ed8,#2563eb);
-  border: 1px solid rgba(96,165,250,.3);
-  border-bottom-right-radius: 3px;
+  border: 1px solid rgba(96,165,250,.35);
+  border-bottom-right-radius: 4px;
   color: white;
 }
 
@@ -581,16 +534,11 @@
   font-weight: 900;
   letter-spacing: 1px;
   color: var(--ai-gold);
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
-.user-bubble .message-label {
-  color: #bfdbfe;
-}
-
-.message-text {
-  white-space: pre-wrap;
-}
+.user-bubble .message-label { color: #bfdbfe; }
+.message-text { white-space: pre-wrap; }
 
 /* =========================================
    TYPING INDICATOR
@@ -599,16 +547,13 @@
 .typing-bubble {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #91b5d8;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1px;
 }
 
-.typing-dots {
-  display: flex;
-  gap: 4px;
-}
+.typing-dots { display: flex; gap: 4px; }
 
 .typing-dots i {
   width: 5px;
@@ -618,39 +563,62 @@
   animation: typing 1s infinite ease-in-out;
 }
 
-.typing-dots i:nth-child(2) {
-  animation-delay: .15s;
-}
-
-.typing-dots i:nth-child(3) {
-  animation-delay: .3s;
-}
+.typing-dots i:nth-child(2) { animation-delay: .15s; }
+.typing-dots i:nth-child(3) { animation-delay: .3s; }
 
 /* =========================================
-   FOOTER AND INPUT
+   FOOTER, QUICK CHIPS & INPUT
 ========================================= */
 
 .nass-ai-footer {
-  padding: 12px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(120deg,#0c1c30,#091523);
-  border-top: 1px solid rgba(56,189,248,.17);
+  border-top: 1px solid rgba(56,189,248,.2);
   flex-shrink: 0;
+}
+
+.quick-chips-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.quick-chips-row::-webkit-scrollbar { display: none; }
+
+.quick-chip {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(250,204,21,.3);
+  background: rgba(250,204,21,.08);
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .15s;
+}
+
+.quick-chip:hover {
+  background: rgba(250,204,21,.2);
+  border-color: var(--ai-gold);
 }
 
 .input-container form {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px;
+  padding: 5px 6px;
   background: #07111f;
   border: 1px solid #24466b;
-  border-radius: 13px;
+  border-radius: 14px;
   transition: .2s;
 }
 
 .input-container form:focus-within {
   border-color: var(--ai-cyan);
-  box-shadow: 0 0 14px rgba(56,189,248,.12);
+  box-shadow: 0 0 14px rgba(56,189,248,.15);
 }
 
 .input-container input {
@@ -661,215 +629,93 @@
   background: transparent;
   color: white;
   padding: 9px 8px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.input-container input::placeholder {
-  color: #617d9c;
-}
+.input-container input::placeholder { color: #6c89a8; }
 
 .send-button {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   border: none;
   border-radius: 10px;
   background: linear-gradient(135deg,#facc15,#eab308);
   color: #07111f;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: bold;
+  display: grid;
+  place-items: center;
   cursor: pointer;
   transition: .2s;
 }
 
 .send-button:hover:not(:disabled) {
-  transform: scale(1.08);
+  transform: scale(1.05);
   box-shadow: 0 0 15px rgba(250,204,21,.4);
 }
 
-.send-button:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-}
+.send-button:disabled { opacity: .4; cursor: not-allowed; }
 
 .footer-caption {
   text-align: center;
-  color: #58718e;
-  font-size: 7px;
-  letter-spacing: 1.2px;
-  margin-top: 10px;
+  color: #6b86a4;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =========================================
    ANIMATIONS
 ========================================= */
 
-@keyframes orbFloat {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -7px; }
-}
-
-@keyframes corePulse {
-  0%, 100% { scale: 1; }
-  50% { scale: 1.07; }
-}
-
-@keyframes glowPulse {
-  from { opacity: .2; scale: .85; }
-  to { opacity: .5; scale: 1.2; }
-}
-
-@keyframes lightShift {
-  from { transform: translate(0,0); }
-  to { transform: translate(10px,12px); }
-}
-
-@keyframes orbitRotate {
-  from { transform: translateX(-50%) rotate(0deg); }
-  to { transform: translateX(-50%) rotate(360deg); }
-}
-
-@keyframes orbitTwo {
-  from { transform: translateX(-50%) rotate(55deg); }
-  to { transform: translateX(-50%) rotate(415deg); }
-}
-
-@keyframes orbitThree {
-  from { transform: translateX(-50%) rotate(65deg); }
-  to { transform: translateX(-50%) rotate(425deg); }
-}
-
-@keyframes particleFloat {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: .4;
-  }
-  50% {
-    transform: translateY(-12px);
-    opacity: 1;
-  }
-}
-
-@keyframes statusPulse {
-  50% { opacity: .4; }
-}
-
-@keyframes windowEnter {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes orbGlow {
-  from { opacity: .35; transform: scale(.9); }
-  to { opacity: .8; transform: scale(1.15); }
-}
-
-@keyframes ringPulse {
-  0% { transform: scale(.95); opacity: .8; }
-  100% { transform: scale(1.18); opacity: 0; }
-}
-
-@keyframes welcomeFloat {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
-}
-
-@keyframes headerScan {
-  to { left: 100%; }
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes messageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes typing {
-  0%,60%,100% {
-    transform: translateY(0);
-    opacity: .5;
-  }
-  30% {
-    transform: translateY(-5px);
-    opacity: 1;
-  }
-}
+@keyframes orbFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+@keyframes corePulse { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
+@keyframes glowPulse { from { opacity: .2; scale: .85; } to { opacity: .5; scale: 1.15; } }
+@keyframes lightShift { from { transform: translate(0,0); } to { transform: translate(10px,12px); } }
+@keyframes orbitRotate { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
+@keyframes orbitTwo { from { transform: translateX(-50%) rotate(55deg); } to { transform: translateX(-50%) rotate(415deg); } }
+@keyframes orbitThree { from { transform: translateX(-50%) rotate(65deg); } to { transform: translateX(-50%) rotate(425deg); } }
+@keyframes particleFloat { 0%, 100% { transform: translateY(0); opacity: .4; } 50% { transform: translateY(-10px); opacity: 1; } }
+@keyframes statusPulse { 50% { opacity: .4; } }
+@keyframes windowEnter { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ringPulse { 0% { transform: scale(.95); opacity: .8; } 100% { transform: scale(1.18); opacity: 0; } }
+@keyframes headerScan { to { left: 100%; } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes messageEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-5px); opacity: 1; } }
 
 /* =========================================
-   RESPONSIVE DESIGN
+   MOBILE RESPONSIVE OVERRIDES (NO OVERLAP)
 ========================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  /* Closed orb sits cleanly above the bottom nav + ticker */
   .nass-ai-root {
-    right: 14px;
-    bottom: 14px;
+    right: 12px;
+    bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+    z-index: 120;
   }
 
-  .nass-ai-window {
-    width: min(390px, calc(100vw - 28px));
-    height: min(620px, calc(100dvh - 28px));
+  /* Open chat becomes a full-screen overlay above nav, ticker, and SOS */
+  .nass-ai-root.is-open {
+    inset: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
   }
 
-  /* Smaller header avatar on mobile */
-
-  .header-orb {
-    width: 38px;
-    height: 38px;
-  }
-
-  .orb-core {
-    width: 31px;
-    height: 31px;
-  }
-
-  /* Smaller welcome avatar on mobile */
-
-  .welcome-orb {
-    width: 78px;
-    height: 78px;
-  }
-
-  .welcome-orb-inner {
-    width: 66px;
-    height: 66px;
+  .nass-ai-root.is-open .nass-ai-window {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
   }
 }
-
-@media (max-width: 360px) {
-  .nass-ai-window {
-    width: calc(100vw - 20px);
-  }
-
-  .nass-ai-root {
-    right: 10px;
-    bottom: 10px;
-  }
-}
-
-/* =========================================
-   ACCESSIBILITY
-========================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .nass-ai-root *,
@@ -877,7 +723,6 @@
   .nass-ai-root *::after {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
     transition-duration: .01ms !important;
   }
 }
