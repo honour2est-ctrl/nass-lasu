@@ -123,6 +123,8 @@ export default async function handler(req: any, res: any) {
       if (!upstream.ok) {
         const message = String(data?.error?.message || '');
         console.error(`Gemini error [${model}]`, upstream.status, message.slice(0, 300));
+        // Out of prepaid credits (HTTP 402): every model draws from the same balance, so trying others is pointless
+        if (upstream.status === 402 || /prepay|credits? (are )?depleted|billing/i.test(message)) { lastCode = 'billing'; break; }
         // A bad or blocked key will fail on every model, so stop straight away
         if (upstream.status === 401 || upstream.status === 403 || /api key/i.test(message)) { lastCode = 'key_problem'; break; }
         lastCode = upstream.status === 429 ? 'busy' : 'model_unavailable';
