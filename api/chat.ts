@@ -1,33 +1,34 @@
 // ============================================================================
-// api/chat.ts  -  Vercel serverless function for the Nass AI chatbot
-// ----------------------------------------------------------------------------
-// The Gemini key lives ONLY here, as the Vercel environment variable
-// GEMINI_API_KEY. The browser never sees it. Optional settings:
-//   GEMINI_MODEL     e.g. gemini-3.8-flash (change without touching code)
-//   ALLOWED_ORIGINS  comma-separated site addresses allowed to call this,
-//                    e.g. https://yoursite.com,https://www.yoursite.com
+// api/chat.ts - Vercel serverless function for the Nass AI chatbot
 // ============================================================================
 
 const SYSTEM_INSTRUCTION =
-    "You are the official NASS-LASU Secretariat Assistant, an intelligent digital representative for the Nigerian Association of Science Students, Lagos State University Chapter. " +
-    "Use the official knowledge base extracted from the NASS-LASU Constitution (2023 As Amended) and SSRC Standing Orders: " +
-    "1. Association Name: Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU). Motto: 'Toward Scientific Advancement'. " +
-    "2. Membership: All duly matriculated full-time undergraduate students of the Faculty of Science who pay their association dues. " +
-    "3. Executive Council (SSEC): Comprises President, Vice President, General Secretary, Welfare Director, PRO, Social Director, Financial Secretary, Treasurer, Sport Director, and Assistant General Secretary. Executives must have a CGPA >= 3.00. " +
-    "4. Legislative Council (SSRC): 5 members per department. Functionaries include Speaker, Deputy Speaker, Clerk, Chief Whip, Under Secretary, and Sergeant-at-Arms. " +
-    "5. Finances & Sharing Formula: Central Account sharing formula is SSEC (64%), SSRC (35%), and Auditor General (1%).";
+  "You are Nass AI, the Intelligent Secretariat & Academic Assistant for the Nigerian Association of Science Students, Lagos State University Chapter (NASS-LASU, 36th Administration under the Office of the General Secretary, Comr. Onovwiome Honourable Onome). " +
+  "You serve Faculty of Science students at LASU across two core areas:\n\n" +
+  "AREA 1 — NASS-LASU SECRETARIAT, CONSTITUTION & GOVERNANCE:\n" +
+  "1. Association Name & Motto: Nigerian Association of Science Students - Lagos State University Chapter (NASS-LASU). Motto: 'Toward Scientific Advancement'.\n" +
+  "2. Membership & Branches: All duly matriculated full-time undergraduate students of the LASU Faculty of Science across Biological Sciences (Biochemistry, Botany, Fisheries & Aquatic Biology, Microbiology, SLT, Zoology & Environmental Biology), Chemical Sciences (Chemistry), and Physical Sciences (Physics, Mathematics).\n" +
+  "3. Executive Council (SSEC): President, Vice President, General Secretary, Welfare Director, PRO, Social Director, Financial Secretary, Treasurer, Sport Director, and Assistant General Secretary (minimum CGPA requirement: 3.00).\n" +
+  "4. Legislative Council (SSRC): 5 members per department. Functionaries: Speaker, Deputy Speaker, Clerk, Chief Whip, Under Secretary, and Sergeant-at-Arms.\n" +
+  "5. Finances & Sharing Formula: Central Account sharing formula is SSEC (64%), SSRC (35%), and Auditor General (1%).\n" +
+  "6. Official Secretariat Contact: Phone/WhatsApp +234 814 169 3252 | Email: nasslasu@gmail.com.\n\n" +
+  "AREA 2 — ACADEMIC TUTORING & STUDY SUPPORT:\n" +
+  "- Help Faculty of Science students understand coursework, solve problems step-by-step, summarize concepts, and prepare for CBT/written exams across Mathematics, Computer Science, Physics, Chemistry, Biochemistry, Microbiology, Botany, Zoology, Fisheries, and SLT.\n" +
+  "- Use clear formatting (numbered steps, bullet points, bold key terms) and plain, student-friendly explanations.\n\n" +
+  "RULES:\n" +
+  "- Keep answers concise, structured, and directly helpful so responses are fast and easy to read on mobile.\n" +
+  "- Never fabricate specific exam dates, school fees, or unpublished Secretariat memos—advise students to check the News Flash section or contact the Secretariat at +234 814 169 3252.";
 
-// Models are tried in this order. If one is retired, busy or out of quota, the next one answers,
-// so the chatbot keeps working without you doing anything. To use your own order, set GEMINI_MODEL in Vercel
-// to a comma-separated list, for example: gemini-3.8-flash,gemini-3.6-flash
-const MODELS = (process.env.GEMINI_MODEL || 'gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash-lite')
+// Low-cost Flash-Lite first to preserve credits, with automatic fallback
+const MODELS = (process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.6-flash')
   .split(',')
   .map((m) => m.trim())
   .filter(Boolean);
-const MAX_MESSAGES = 12;     // only the most recent turns are sent to Gemini
-const MAX_CHARS = 1000;      // per message
+
+const MAX_MESSAGES = 10;
+const MAX_CHARS = 1000;
 const WINDOW_MS = 10 * 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 30; // per visitor, best-effort (resets if the server restarts)
+const MAX_REQUESTS_PER_WINDOW = 30;
 
 const hits = new Map<string, number[]>();
 
@@ -36,7 +37,7 @@ function isRateLimited(ip: string): boolean {
   const recent = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
   recent.push(now);
   hits.set(ip, recent);
-  if (hits.size > 5000) hits.clear(); // keep memory small
+  if (hits.size > 5000) hits.clear();
   return recent.length > MAX_REQUESTS_PER_WINDOW;
 }
 
@@ -48,7 +49,6 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed', code: 'method' });
   }
 
-  // Only your own website may call this endpoint (when ALLOWED_ORIGINS is set)
   const allowed = (process.env.ALLOWED_ORIGINS || '')
     .split(',')
     .map((s) => s.trim().replace(/\/$/, ''))
@@ -86,14 +86,13 @@ export default async function handler(req: any, res: any) {
     }))
     .filter((m: { text: string }) => m.text.trim().length > 0);
 
-  // Gemini expects the conversation to start with the visitor, not the greeting
   while (turns.length > 0 && turns[0].role === 'model') turns.shift();
 
   if (turns.length === 0 || turns[turns.length - 1].role !== 'user') {
     return res.status(400).json({ error: 'Invalid request', code: 'bad_request' });
   }
 
-  const budgetMs = Number(process.env.CHAT_BUDGET_MS) || 25000; // never wait forever for an answer
+  const budgetMs = Number(process.env.CHAT_BUDGET_MS) || 25000;
   const started = Date.now();
   let lastCode = 'unavailable';
 
@@ -112,8 +111,11 @@ export default async function handler(req: any, res: any) {
           body: JSON.stringify({
             contents: turns.map((t: { role: string; text: string }) => ({ role: t.role, parts: [{ text: t.text }] })),
             systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-            // generous, because "thinking" models spend part of this budget before they write the answer
-            generationConfig: { maxOutputTokens: 2048 },
+            generationConfig: {
+              maxOutputTokens: 1024,
+              temperature: 0.6,
+              thinkingConfig: { thinkingBudget: 0 },
+            },
           }),
           signal: controller.signal,
         }
@@ -123,12 +125,10 @@ export default async function handler(req: any, res: any) {
       if (!upstream.ok) {
         const message = String(data?.error?.message || '');
         console.error(`Gemini error [${model}]`, upstream.status, message.slice(0, 300));
-        // Out of prepaid credits (HTTP 402): every model draws from the same balance, so trying others is pointless
         if (upstream.status === 402 || /prepay|credits? (are )?depleted|billing/i.test(message)) { lastCode = 'billing'; break; }
-        // A bad or blocked key will fail on every model, so stop straight away
         if (upstream.status === 401 || upstream.status === 403 || /api key/i.test(message)) { lastCode = 'key_problem'; break; }
         lastCode = upstream.status === 429 ? 'busy' : 'model_unavailable';
-        continue; // retired, busy or out of quota: try the next model
+        continue;
       }
 
       const candidate = data?.candidates?.[0];
@@ -141,10 +141,9 @@ export default async function handler(req: any, res: any) {
       if (data?.promptFeedback?.blockReason || candidate?.finishReason === 'SAFETY') {
         return res.status(422).json({ error: 'The assistant cannot help with that one.', code: 'blocked' });
       }
-      console.error(`Gemini returned no text [${model}]`, candidate?.finishReason);
       lastCode = 'empty';
     } catch (err: any) {
-      if (err?.name === 'AbortError') { console.error(`Gemini timed out [${model}]`); lastCode = 'timeout'; break; }
+      if (err?.name === 'AbortError') { lastCode = 'timeout'; break; }
       console.error(`Chat request failed [${model}]`, String(err?.message || err));
       lastCode = 'unavailable';
     } finally {
