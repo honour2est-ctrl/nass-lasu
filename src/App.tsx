@@ -12,6 +12,7 @@ import { IntroSplash } from './components/IntroSplash';
 import { MobileNav, scrollToSection } from './components/MobileNav';
 import { EmergencySheet, EmergencyButton } from './components/EmergencySheet';
 import { QuickTiles } from './components/QuickTiles';
+import { HeroBackdrop } from './components/HeroBackdrop';
 import { ShowMoreButton } from './components/ShowMoreButton';
 import { ShareButton } from './components/ShareButton';
 import { initAnalytics, track } from './lib/analytics';
@@ -817,6 +818,7 @@ export default function App() {
   
   const [partnersData, setPartnersData] = useState<any[]>([]);
   const [sponsorsData, setSponsorsData] = useState<any[]>([]);
+  const [heroPhotosData, setHeroPhotosData] = useState<any[]>([]);
 
   const [lastViewedResources, setLastViewedResources] = useState<any[]>(() => {
     try {
@@ -891,6 +893,7 @@ export default function App() {
     studentBrands: () => listen('studentBrands', 'studentBrands', setStudentBrandsData),
     partners: () => listen('partners', 'partners', setPartnersData),
     sponsors: () => listen('sponsors', 'sponsors', setSponsorsData),
+    heroPhotos: () => listen('heroPhotos', 'heroPhotos', setHeroPhotosData),
     newsFlash: () => listen('newsFlash', 'newsFlash', setNewsPosts),
     landmarks: () => listen('landmarks', 'landmarks', setLandmarksData, INITIAL_LANDMARKS_DATA),
   };
@@ -985,6 +988,11 @@ export default function App() {
     });
     wanted.forEach(key => feedStarters[key]?.());
   }, [nearSections]);
+
+  // The hero photos are the first thing visitors see, so they load straight away
+  useEffect(() => {
+    feedStarters.heroPhotos();
+  }, []);
 
   // Stop every feed when the page closes
   useEffect(() => () => {
@@ -1137,6 +1145,7 @@ export default function App() {
     }
   };
 
+  const heroPhotoUrls = heroPhotosData.map((p: any) => String(p.imageUrl || p.image || '').trim()).filter(Boolean);
   const activeMarqueeText = siteContentMap.marquee_text || DEFAULT_MARQUEE;
   const socialUrl = (key: string) => safeUrl(siteContentMap[key]) || DEFAULT_SOCIAL_LINKS[key];
 
@@ -1295,8 +1304,9 @@ export default function App() {
         <main className="flex flex-col gap-20 md:gap-32 pb-16 pt-24 w-full overflow-x-hidden">
           
           {/* HERO SECTION */}
-          <section id="hero" className="min-h-[56vh] md:min-h-[80vh] flex items-center justify-center px-4">
-            <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
+          <section id="hero" className="relative overflow-hidden min-h-[56vh] md:min-h-[80vh] flex items-center justify-center px-4">
+            <HeroBackdrop photos={heroPhotoUrls} isDarkMode={isDarkMode} />
+            <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center">
               
               <div className="relative inline-flex items-center justify-center mb-1">
                 <div className="absolute inset-0 bg-yellow-400/20 blur-md rounded-full -z-10" />
@@ -1332,7 +1342,7 @@ export default function App() {
                 </div>
               </div>
               
-              <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+              <p className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed ${heroPhotoUrls.length > 0 ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : (isDarkMode ? 'text-slate-400' : 'text-slate-600')}`}>
                 {siteContentMap.hero_subtitle || 'Powering the next generation of science students through immediate access, transparency, and digital excellence.'}
               </p>
 
