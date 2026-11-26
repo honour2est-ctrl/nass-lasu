@@ -181,6 +181,16 @@ export const BUILT_IN_SECTIONS: AdminSection[] = [
     ],
   },
   {
+    key: 'heroPhotos',
+    label: 'Hero Photos',
+    collection: 'heroPhotos',
+    titleField: 'caption',
+    fields: [
+      { key: 'imageUrl', label: 'Photo (landscape photos work best)', type: 'image', required: true },
+      { key: 'caption', label: 'Short description (for you to recognise it, and for screen readers)', type: 'text', placeholder: 'e.g. Faculty of Science Relaxation Center' },
+    ],
+  },
+  {
     key: 'vaultItems',
     label: 'Academic Vault',
     collection: 'vaultItems',
