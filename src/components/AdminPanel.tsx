@@ -197,6 +197,112 @@ const GalleryUploadZone = ({ value, onChange, highContrast }: { value: string; o
   );
 };
 
+// ============================================================================
+// HERO PHOTOS BATCH UPLOADER
+// Each uploaded image becomes its own document in the existing heroPhotos
+// collection. The document schema remains: imageUrl + caption.
+// ============================================================================
+const HeroPhotosBatchUploader = ({ highContrast }: { highContrast: boolean }) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleBatchUpload = async (fileList: FileList | null) => {
+    if (!fileList?.length) return;
+
+    const files = Array.from(fileList).filter((file) => file.type.startsWith('image/'));
+    if (!files.length) {
+      setError('Please select valid image files.');
+      return;
+    }
+
+    setIsUploading(true);
+    setError('');
+    setSuccess('');
+    setProgress({ current: 0, total: files.length });
+
+    let uploaded = 0;
+    const failures: string[] = [];
+
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
+      try {
+        const imageUrl = await uploadFile(file);
+        const caption = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim();
+
+        await addDoc(collection(db, 'heroPhotos'), {
+          imageUrl,
+          caption,
+          createdAt: new Date().toISOString(),
+        });
+        uploaded++;
+      } catch (uploadError) {
+        console.error(`Failed to upload hero photo: ${file.name}`, uploadError);
+        failures.push(file.name);
+      } finally {
+        setProgress({ current: index + 1, total: files.length });
+      }
+    }
+
+    if (uploaded) {
+      setSuccess(`${uploaded} of ${files.length} hero photo(s) uploaded successfully.`);
+    }
+    if (failures.length) {
+      setError(`${failures.length} photo(s) failed: ${failures.join(', ')}. You can select them again to retry.`);
+    }
+
+    setIsUploading(false);
+  };
+
+  return (
+    <div className={`mb-6 p-5 rounded-2xl border ${highContrast ? 'bg-black border-white' : 'bg-slate-900/80 border-yellow-400/30'}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <ImageIcon size={18} className="text-yellow-400" />
+        <h4 className="text-sm font-bold text-white">Batch Upload Hero Photos</h4>
+      </div>
+      <p className="text-xs text-slate-400 mb-4">
+        Select multiple images at once. Each photo is uploaded to Firebase Storage and saved as a separate record in Hero Photos.
+      </p>
+
+      <label className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold cursor-pointer transition-colors ${isUploading ? 'bg-slate-700 text-slate-300 cursor-not-allowed' : 'bg-yellow-400 hover:bg-yellow-300 text-slate-900'}`}>
+        {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+        {isUploading ? `Uploading ${progress.current}/${progress.total}...` : 'Choose Multiple Photos'}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={isUploading}
+          className="hidden"
+          onChange={(event) => {
+            const selectedFiles = event.target.files;
+            event.target.value = '';
+            void handleBatchUpload(selectedFiles);
+          }}
+        />
+      </label>
+
+      {isUploading && (
+        <div className="mt-4">
+          <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+            <span>Upload progress</span>
+            <span>{progress.current} / {progress.total}</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+            <div
+              className="h-full bg-yellow-400 transition-all duration-300"
+              style={{ width: `${progress.total ? (progress.current / progress.total) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {success && <p className="mt-3 text-xs font-bold text-green-400">{success}</p>}
+      {error && <p className="mt-3 text-xs font-bold text-red-400">{error}</p>}
+    </div>
+  );
+};
+
 const AdminFieldInput = ({ field, value, onChange, highContrast }: { field: AdminField; value: any; onChange: (val: any) => void; highContrast: boolean; }) => {
   switch (field.type) {
     case 'textarea':
@@ -837,6 +943,11 @@ export const AdminPanel = () => {
           </button>
         )}
       </div>
+
+      {/* Dedicated multi-image uploader for the Hero Photos collection */}
+      {activeSectionKey === 'heroPhotos' && !isLimitedOfficer && (
+        <HeroPhotosBatchUploader highContrast={highContrast} />
+      )}
 
       {/* News Flash Bulletin & Marquee Editor (Visible on Site Content Tab) */}
       {(activeSectionKey === 'newsFlash' || activeSectionKey === 'site_content') && !isLimitedOfficer && hasOldBulletin && (
