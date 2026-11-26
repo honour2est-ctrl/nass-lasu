@@ -9,6 +9,8 @@ interface ImageSlideshowProps {
   fallbackImage?: string;
   /** Show the arrows and dots (default). Turn off where the page already has its own controls. */
   showControls?: boolean;
+  /** The first photo is the main picture of the page: load it straight away (used by the hero) */
+  priority?: boolean;
 }
 
 const FALLBACK_MAP: Record<string, string> = {
@@ -38,7 +40,7 @@ const cleanUrl = (raw: string): string => {
 // sometimes never start slideshowing at all. Now it just renders whatever is
 // in the event's `images` field directly — which is exactly what the Admin
 // Panel's photo uploads already write there.
-export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage, showControls = true }: ImageSlideshowProps) {
+export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage, showControls = true, priority = false }: ImageSlideshowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
   const rootRef = useRef<HTMLDivElement>(null);
@@ -112,7 +114,7 @@ export function ImageSlideshow({ images, interval = 3000, alt, fallbackImage, sh
           key={`${currentCleanUrl}-${currentIndex}`}
           referrerPolicy="no-referrer"
           src={activeSrcUrl}
-          loading="lazy"
+          loading={priority && currentIndex === 0 ? 'eager' : 'lazy'}
           decoding="async"
           alt={`${alt} - ${currentIndex + 1}`}
           initial={{ opacity: 0, scale: 1.03 }}
