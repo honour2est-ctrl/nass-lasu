@@ -19,7 +19,7 @@ export function QuickTiles({ isDarkMode, onEmergency }: QuickTilesProps) {
   ];
 
   return (
-    <section id="quick" aria-label="Quick links" className="px-4 max-w-7xl mx-auto w-full -mt-28 md:-mt-24">
+    <section id="quick" aria-label="Quick links" className="relative z-10 px-4 max-w-7xl mx-auto w-full -mt-28 md:-mt-24">
       <div className="grid grid-cols-4 gap-2 md:gap-5">
         {tiles.map(({ key, title, desc, icon: Icon, onClick, danger }) => (
           <button
